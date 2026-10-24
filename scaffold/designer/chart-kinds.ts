@@ -7,7 +7,8 @@
  * switch never loses anything and switching back restores the original exactly.
  *
  * Grouped charts with a second split (stacked, heatmap ...) and plain grouped charts (bar, pie, word cloud ...) can
- * switch both ways: the split is simply not drawn by a chart that has none, and comes back with one that has.
+ * switch both ways: the split is simply not drawn by a chart that has none, and comes back with one that has. A heatmap
+ * is the exception: without a second split it has nothing to compare, so it is offered only when the widget has one.
  */
 
 import { carbonSpec } from './carbon-specs';
@@ -26,6 +27,8 @@ export const FAMILIES: Array<{ id: string; label: string; types: string[] }> = [
 
 /** Types that exist in this Designer (a Carbon type must have a spec). */
 const known = (t: string) => !t.startsWith('carbon:') || Boolean(carbonSpec(t));
+/** Types that draw nothing without Data > Series by. */
+const NEEDS_SERIES = [cc('HeatmapChart')];
 
 export const familyOf = (type: string) => FAMILIES.find(f => f.types.includes(type));
 
@@ -33,7 +36,7 @@ export const familyOf = (type: string) => FAMILIES.find(f => f.types.includes(ty
 export function viewAsChoices(w: Pick<Widget, 'type' | 'config'>, original?: string): Array<{ type: string; label: string }> | null {
   const fam = familyOf(original || w.type);
   if (!fam) return null;
-  const list = fam.types.filter(known).map(type => ({ type, label: typeLabel(type) }));
+  const list = fam.types.filter(t => known(t) && (t === (original || w.type) || w.config.seriesBy || !NEEDS_SERIES.includes(t))).map(type => ({ type, label: typeLabel(type) }));
   return list.length > 1 ? list : null;
 }
 

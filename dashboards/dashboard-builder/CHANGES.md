@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.61.1
+- View as: *heatmap* is offered only when the chart has a second split (Data > Series by). Without one it had nothing to compare and asked for Series by.
+
 ## v1.61.0
 **View as.** While a dashboard is used, a chart can be shown as another kind of chart that reads the same data: an *as …* menu on the widget (shown on hover, and kept visible once switched).
 - Families: groups (bar, donut, simple bar, lollipop, pie, Carbon donut, treemap, word cloud, grouped and stacked bar, heatmap, radar), over time (timeline, line, area, stacked area, scatter), one figure (number, gauge, meter) and rows (table, data table, structured list). A chart only offers its own family, so nothing is lost and switching back restores it.

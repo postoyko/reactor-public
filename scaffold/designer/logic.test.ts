@@ -610,7 +610,12 @@ describe('View as (chart type switching)', () => {
     expect(viewAsChoices(w('text'))).toBeNull();
     expect(viewAsChoices(w('carbon:AlluvialChart'))).toBeNull();
     FAMILIES.forEach(f => f.types.forEach(t => expect(familyOf(t)).toBe(f)));
-    FAMILIES.forEach(f => expect(viewAsChoices(w(f.types[0]))!.length).toBe(f.types.length));
+    FAMILIES.forEach(f => expect(viewAsChoices({ type: f.types[0] as any, config: { query: 'getAlerts', seriesBy: 'team' } })!.length).toBe(f.types.length));
+  });
+  it('a heatmap is offered only when the chart has a second split (Series by)', () => {
+    expect(viewAsChoices(w('bar'))!.map(c => c.type)).not.toContain('carbon:HeatmapChart');
+    expect(viewAsByName(w('bar'), 'heatmap')).toBeUndefined();
+    expect(viewAsChoices({ type: 'carbon:StackedBarChart' as any, config: { query: 'getAlerts', seriesBy: 'team' } })!.map(c => c.type)).toContain('carbon:HeatmapChart');
   });
   it('the action finds a type by its label, ignoring case, or by the start of it', () => {
     expect(viewAsByName(w('bar'), 'Word cloud')).toBe('carbon:WordCloudChart');
