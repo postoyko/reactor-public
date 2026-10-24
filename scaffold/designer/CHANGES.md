@@ -1,5 +1,17 @@
 # Dashboard Designer changes
 
+## v1.64.0
+**Explain this.** Right-click any widget that shows alerts or incidents (Shift+right-click keeps the browser's menu), or open the rows behind a click: the panel starts with an explanation of those rows.
+- *What*: how many, by severity or priority, since when; for alerts, how many started in the last hour against the usual hourly rate of the day before.
+- *Where*: the top resources, services and types.
+- *Why*: how many alerts are in incidents, and for the top three incidents Concert's own probable cause (rank, score, classification), read once per session; anomaly, seasonal, golden-signal and log-fix counts.
+- *What to do*: runbooks attached (and how many are automated); similar past incidents on request.
+- Everything is worked out from the rows or read from Concert; nothing is guessed (explanation.ts).
+
+**Incident replay.** The incident timeline in the drill panel uses Concert's own incident record when there is one: each alert at the moment it was added, with its severity then (and its severity now when different). A slider and Play step through it; later events are dimmed.
+
+- sync-designer.sh removes files from the build copy that were removed or renamed in the master copy.
+
 ## v1.63.2
 - API check probes, after the first run on the tenant: the incident diagnosis is called with `contextId` (what the server asked for), `getSimilarIncidents` is tried, and the incident timeline found in the alert groups answer is summarised (kinds of entry, their fields, the time span; never the content).
 

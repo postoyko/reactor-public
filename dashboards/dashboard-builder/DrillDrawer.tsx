@@ -12,6 +12,7 @@ import { DrillRequest, openAddress } from './drill';
 import { cell, fieldLabel, fieldsOf } from './rows';
 import { Row } from './types';
 import { SemCell } from './Sem';
+import Explain from './Explain';
 import IncidentInsights from './IncidentInsights';
 import IncidentTimeline from './IncidentTimeline';
 import RunbookPanel from './RunbookPanel';
@@ -19,7 +20,8 @@ import { shapeOf } from './sources';
 
 export default function DrillDrawer({ req, onClose }: { req: DrillRequest; onClose: () => void }) {
   const [q, setQ] = useState('');
-  const [open, setOpen] = useState<number | null>(req.rows.length === 1 ? 0 : null);
+  const [open, setOpen] = useState<number | null>(req.rows.length === 1 && !req.explain ? 0 : null);
+  const [explain, setExplain] = useState(Boolean(req.explain));
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', k);
@@ -51,6 +53,12 @@ export default function DrillDrawer({ req, onClose }: { req: DrillRequest; onClo
         </label>
       )}
       <div className="db-drawer-body">
+        {(shape === 'alerts' || shape === 'stories') && req.rows.length > 0 && (
+          <div className="db-ex-wrap">
+            <button type="button" className="db-ex-toggle" aria-expanded={explain} onClick={() => setExplain(x => !x)}>{explain ? '▾' : '▸'} Explain {req.rows.length === 1 ? `this ${noun}` : `these ${req.rows.length} ${noun}s`}</button>
+            {explain && <Explain query={req.query} rows={req.rows} />}
+          </div>
+        )}
         {shown.length === 0 && <p className="db-lib-none">Nothing matches “{q}”.</p>}
         {shown.map((r, i) => (
           <div key={`${r.id}-${i}`} className={`db-drow${open === i ? ' open' : ''}`}>

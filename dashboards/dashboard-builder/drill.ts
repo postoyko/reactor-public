@@ -19,6 +19,8 @@ export interface DrillRequest {
   /** Address template for an Open button on each row (details) */
   url?: string;
   newTab?: boolean;
+  /** Opened for "Explain this" (right-click): the explanation starts open. */
+  explain?: boolean;
 }
 
 /** Only web and in-app addresses: never javascript: or data: */

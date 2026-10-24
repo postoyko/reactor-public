@@ -3579,4 +3579,24 @@ body.db-dragging iframe { pointer-events: none; }
   .db-pick-label { font-size: 13px; color: var(--db-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .db-pick-sub { font-size: 11px; color: var(--db-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .db-pick-note { padding: 8px 10px; font-size: 12px; color: var(--db-muted); }
+
+  /* Explain this (drill panel) */
+  .db-explain-zone { display: contents; }
+  .db-ex-wrap { margin: 0 0 10px; border: 1px solid var(--db-line); border-radius: var(--db-radius); background: var(--db-card); }
+  .db-ex-toggle { display: block; width: 100%; padding: 10px 12px; border: 0; background: none; color: var(--db-accent); font: inherit; font-size: 13px; font-weight: 600; text-align: left; cursor: pointer; }
+  .db-ex { padding: 0 12px 10px; font-size: 13px; line-height: 1.45;
+    p, li { font-size: 13px; }
+    h4 { margin: 10px 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--db-muted); }
+    p { margin: 2px 0; }
+  }
+  .db-ex-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .db-ex-chip { display: inline-block; padding: 1px 8px; border-radius: 10px; background: var(--db-hover); font-size: 12px; b { font-weight: 600; } }
+  .db-ex-k { display: inline-block; min-width: 76px; color: var(--db-muted); }
+  .db-ex-inc { margin: 4px 0; padding-left: 18px; li { margin: 0 0 6px; } }
+  .db-ex-sub { color: var(--db-muted); font-size: 12px; }
+  .db-tl-replay { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 12px; color: var(--db-muted);
+    input[type=range] { flex: 1; min-width: 80px; }
+  }
+  .db-tl-later { opacity: 0.3; }
+  .db-tl-now b { text-decoration: underline; }
 }

@@ -10,7 +10,7 @@ import ThresholdBell, { useThreshold } from './ThresholdBell';
 import { LinkCtx } from './nest';
 import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { Widget, Row, Cond } from './types';
+import { Widget, Row, Cond, QueryName } from './types';
 import { useBuilder } from './context';
 import { sourceKey, SourceState } from './datahub';
 import {
@@ -20,6 +20,7 @@ import {
 import { Tile } from './Tiles';
 import { Slot } from './nest';
 import { openAddress } from './drill';
+import { shapeOf } from './sources';
 import { tileDef } from './registry';
 import { CarbonWidget } from './carbon-catalog';
 import { useEmit } from './actions';
@@ -32,6 +33,9 @@ export interface WidgetData {
   /** Values this widget has selected on a field (to highlight, since it does not filter itself). */
   selected: Set<string>;
   followed: number;
+  /** For "Explain this" (right-click): what the rows are and where they show. */
+  query?: QueryName;
+  title?: string;
 }
 
 /** One `where` condition; numeric compare when both sides are numbers, otherwise text. */
@@ -76,7 +80,7 @@ export function useWidgetData(w: Widget): WidgetData {
   const key = followed.map(f => `${f.field}=${f.value}`).join('&');
   const rows = useMemo(() => applyFilters(base, followed), [base, key]);
   const selected = new Set(mine.filter(f => f.from === w.id).map(f => f.value));
-  return { rows, base, state, selected, followed: followed.length };
+  return { rows, base, state, selected, followed: followed.length, query: cfg.query, title: w.title };
 }
 
 /** Drill-through for a widget, when it has one: what a click opens. */
@@ -95,6 +99,7 @@ export function useDrillAction(w: Widget) {
 
 export function Status({ d, children }: { d: WidgetData; children: React.ReactNode }) {
   const { state } = d;
+  const { drill } = useBuilder();
   if (state.error && state.rows.length === 0) {
     // a source still waiting for its incident id or filter is not a failure: say what it needs
     if (/^Enter the /.test(state.error)) return <div className="db-empty"><strong>Waiting for a value</strong><span>{state.error}</span></div>;
@@ -102,12 +107,19 @@ export function Status({ d, children }: { d: WidgetData; children: React.ReactNo
   }
   // Until the first answer arrives there is nothing true to show yet, not even a zero.
   if (state.updated === undefined) return <div className="db-empty">Loading…</div>;
+  // Right-click on alerts or incidents: "Explain this" for everything the widget shows
+  const explainable = Boolean(drill && d.query && d.rows.length && (shapeOf(d.query) === 'alerts' || shapeOf(d.query) === 'stories'));
+  const onContext = explainable ? (e: React.MouseEvent) => {
+    if (e.shiftKey) return; // Shift+right-click: the browser's own menu
+    e.preventDefault();
+    drill!({ title: `Explain: ${d.title || 'this widget'}`, query: d.query!, rows: d.rows, explain: true });
+  } : undefined;
   return (
-    <>
+    <div className="db-explain-zone" onContextMenu={onContext}>
       {state.error && <div className="db-banner" role="alert">Refresh failed: {state.error}. Showing the last result.</div>}
       {state.truncated && <div className="db-banner">Showing the first {state.rows.length.toLocaleString()} of {state.truncated.toLocaleString()} rows. Narrow the source (a filter or a condition) to see the rest.</div>}
       {children}
-    </>
+    </div>
   );
 }
 

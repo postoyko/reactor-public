@@ -660,3 +660,46 @@ describe('Data snapshot keys', () => {
     expect(callKey({ storyId: 'inc-1' })).not.toBe(callKey({ storyId: 'inc-2' }));
   });
 });
+
+import { explainAlerts, explainIncidents, rateNote, readTimeline, top } from './explanation';
+describe('Explain this', () => {
+  const now = Date.parse('2026-10-24T12:00:00Z');
+  const at = (h: number) => new Date(now - h * 3600000).toISOString();
+  const alerts = [
+    { id: 'a1', severityLabel: 'Critical', firstOccurrence: at(0.2), lastOccurrence: at(0.1), resource: 'db-1', service: 'Payments', type: 'Saturation', inIncident: 'Yes', causalGroup: 'inc-1', anomaly: 'Yes', runbooks: 1, runbookAutomated: 'Automated', goldenSignal: 'None' },
+    { id: 'a2', severityLabel: 'Major', firstOccurrence: at(0.5), lastOccurrence: at(0.4), resource: 'db-1', service: 'Payments', type: 'Latency', inIncident: 'Yes', causalGroup: 'inc-1', goldenSignal: 'Latency' },
+    { id: 'a3', severityLabel: 'Major', firstOccurrence: at(0.7), resource: 'web-2', service: '-', inIncident: 'No', causalGroup: 'x' },
+    { id: 'a4', severityLabel: 'Minor', firstOccurrence: at(5), resource: 'web-2', inIncident: 'No' }
+  ];
+  it('counts what the alerts have in common, Critical first, and leaves out empty values', () => {
+    const e = explainAlerts(alerts, now);
+    expect(e.count).toBe(4);
+    expect(e.severities).toEqual([['Critical', 1], ['Major', 2], ['Minor', 1]]);
+    expect(e.resources).toEqual([['db-1', 2], ['web-2', 2]]);
+    expect(e.services).toEqual([['Payments', 2]]);
+    expect(e.inIncidents).toBe(2);
+    expect(e.incidents).toEqual([['inc-1', 2]]);
+    expect(e.signals).toEqual({ anomaly: 1, seasonal: 0, goldenSignal: 1, logFixes: 0 });
+    expect(e.runbooks).toEqual({ alerts: 1, automated: 1 });
+    expect(e.lastHour).toBe(3);
+    expect(rateNote(e)).toBe('none in the day before');
+    expect(rateNote({ lastHour: 6, perHourBefore: 1 })).toBe('6.0× the usual hourly rate');
+    expect(rateNote({ lastHour: 2, perHourBefore: 1 })).toBe('');
+    expect(top([{ v: '-' }, { v: 'None' }], 'v')).toEqual([]);
+  });
+  it('picks the incidents to look at first: highest priority, then most alerts', () => {
+    const ix = explainIncidents([{ id: 'i1', priority: 3, alertCount: 9 }, { id: 'i2', priority: 1, alertCount: 1 }, { id: 'i3', priority: 1, alertCount: 5 }]);
+    expect(ix.lead.map(r => r.id)).toEqual(['i3', 'i2', 'i1']);
+  });
+  it('reads Concert’s incident timeline: created, then each alert with its severity when added', () => {
+    const tl = readTimeline({ tenant: { story: { timeline: [
+      { createdTime: '2026-10-07T10:51:12.176Z', type: 'alertadded', content: { alertid: 'a2', severity: 6, summary: 'later', timeAdded: '2026-10-07T10:53:00.000Z' } },
+      { createdTime: '2026-10-07T10:51:12.176Z', type: 'created', content: {} },
+      { createdTime: '2026-10-07T10:51:12.176Z', type: 'alertadded', content: { alertid: 'a1', severity: 5, timeAdded: 1759834300000 } }
+    ] } } });
+    expect(tl.map(e => e.kind)).toEqual(['alertadded', 'created', 'alertadded']);
+    expect(tl[0].alertId).toBe('a1');
+    expect(tl[2]).toMatchObject({ alertId: 'a2', severity: 6, summary: 'later' });
+    expect(readTimeline({})).toEqual([]);
+  });
+});

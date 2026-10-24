@@ -49,4 +49,13 @@ for f in "$from"/*; do
   is_generated "$b" && continue
   if ! cmp -s "$f" "$to/$b" 2>/dev/null; then cp "$f" "$to/$b"; echo "  $b"; n=$((n + 1)); fi
 done
-echo "✅ $n file(s) copied from ${from#$ROOT_DIR/} to ${to#$ROOT_DIR/}"
+# A file removed or renamed in the master copy is removed from the build copy too (generated files excepted).
+if [ "$mode" != "--back" ]; then
+  for f in "$to"/*; do
+    [ -f "$f" ] || continue
+    b="$(basename "$f")"
+    is_generated "$b" && continue
+    [ -e "$from/$b" ] || { rm "$f"; echo "  removed $b (no longer in ${from#$ROOT_DIR/})"; n=$((n + 1)); }
+  done
+fi
+echo "✅ $n file(s) copied or removed, ${from#$ROOT_DIR/} -> ${to#$ROOT_DIR/}"

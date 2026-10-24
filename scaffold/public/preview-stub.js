@@ -147,7 +147,19 @@
     getUsersAndGroups: function () { return later({ tenant: { groups: GROUPS.map(function (g) { return { id: 'grp-' + g.toLowerCase(), name: g }; }), users: USERS.map(function (u) { return { id: 'usr-' + u, name: u }; }) } }); },
     // Detail and configuration queries (Designer data sources). Shapes follow the toolkit's query list; values are invented.
     getIncidentAlerts: function (o) { var inc = incidents.filter(function (x) { return x.id === o.incidentId; })[0]; var r = alertsResponse({ columns: o.columns }); var ids = inc ? inc.alertIds : []; r.tenant.alerts.rows = r.tenant.alerts.rows.filter(function (row) { return ids.indexOf(row.fields[r.tenant.alerts.columns.findIndex(function (c) { return c.name === 'id'; })]) >= 0; }); return later({ tenant: { incident: r.tenant } }); },
-    getStoryAlertsGroups: function (o) { return api.getIncidentAlerts({ incidentId: o.storyId, columns: o.columns }); },
+    getStoryAlertsGroups: function (o) {
+      // like Concert: the incident with its timeline (created, then each alert as it was added), and its alerts
+      var inc = incidents.filter(function (x) { return x.id === o.storyId; })[0];
+      return api.getIncidentAlerts({ incidentId: o.storyId, columns: o.columns }).then(function (r) {
+        if (!inc) return r;
+        var c0 = Date.parse(inc.createdTime);
+        var tl = [{ id: 'tl-0', createdTime: inc.createdTime, type: 'created', content: {} }].concat(inc.alertIds.map(function (id, k) {
+          var a = alerts.filter(function (x) { return x.id === id; })[0] || {};
+          return { id: 'tl-' + (k + 1), createdTime: inc.createdTime, type: 'alertadded', content: { alertid: id, severity: Math.max(1, (a.severity || 3) - (k % 2)), summary: a.summary, timeAdded: new Date(c0 + (k + 1) * 7 * 60000).toISOString() } };
+        }));
+        return { tenant: { story: { id: inc.id, title: inc.title, timeline: tl }, alerts: r.tenant.incident.alerts } };
+      });
+    },
     getRawAlerts: function (o) { return later({ tenant: { rawAlerts: alerts.slice(0, 60).map(function (a) { return { id: a.id, severity: a.severity, state: a.state, summary: a.summary, type: { classification: a['type.classification'] }, sender: { name: a['sender.name'] }, resource: { name: a['resource.name'] }, firstOccurrenceTime: a.firstOccurrenceTime, lastOccurrenceTime: a.lastOccurrenceTime }; }) } }); },
     getStoriesByAlerts: function () { return later({ tenant: { storiesByAlerts: storiesResponse().tenant.stories.stories.slice(0, 5) } }); },
     getRelatedStories: function (o) { return later({ tenant: { relatedStories: storiesResponse().tenant.stories.stories.filter(function (x) { return x.id !== o.storyId; }).slice(0, 3) } }); },
