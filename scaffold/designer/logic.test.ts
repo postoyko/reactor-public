@@ -402,7 +402,9 @@ describe('more data sources', () => {
     const calls: any[] = [];
     const hub = new DataHub((q, p) => { calls.push([q, p]); return Promise.resolve({}); }, 't1');
     expect(hub.paramsFor('getIncidentAlerts', '')).toMatchObject({ __missing: 'Incident id' });
-    expect(hub.paramsFor('getIncidentAlerts', 'inc-1')).toMatchObject({ tenantId: 't1', incidentId: 'inc-1' });
+    expect(hub.paramsFor('getIncidentAlerts', 'inc-1')).toMatchObject({ tenantId: 't1', storyId: 'inc-1', format: 'AIOPS' });
+    expect(hub.paramsFor('getIncidentAlerts', 'inc-1')).not.toHaveProperty('filter');
+    expect(hub.paramsFor('getFiltersViews', '')).toMatchObject({ condition: "type = 'alert'" });
     expect(hub.paramsFor('getRelatedStories', 'alert-1, alert-2')).toMatchObject({ alertIds: ['alert-1', 'alert-2'] });
     expect(hub.paramsFor('getRelatedStories', 'inc-9')).toMatchObject({ storyId: 'inc-9' });
   });
@@ -437,5 +439,48 @@ describe('Concert Operate actions', () => {
   });
   it('missing or broken fields fall back to the defaults', () => {
     expect(partValues(platformAction('api:addToIncident')!.parts, 'not json')).toEqual({ alertIds: '{value}', correlationKey: '{value}' });
+  });
+});
+
+/* Shapes copied from a real Concert Operate API check (2026-10-24), values shortened. */
+describe('real Concert Operate responses', () => {
+  const insight = { id: 'x', type: 'aiops.ibm.com/insight-type/probable-cause', source: 'aiops.ibm.com/insight-source/probable-cause', details: { id: 'x', rank: 2 } };
+  const story = (id: string) => ({ id, createdBy: 'system', title: 'GET /loyalty - error rate', description: 'd', priority: 3, state: 'unassigned', owner: '-', team: '-', createdTime: '2026-10-20T20:39:11.870Z', insights: Array.from({ length: 9 }, () => insight), alertIds: ['a1', 'a2'], contextualAlertIds: [] as string[] });
+  const groups = [{ __typename: 'Group', id: 'All Users', users: [{ __typename: 'RawUsers', id: 'cpadmin', properties: { fullName: 'cpadmin' } }, { id: 'u2' }] }];
+  it('getStoriesByAlerts: the incidents, not their insights', () => {
+    const rows = toRows('getStoriesByAlerts', { tenant: { __typename: 'Tenant', storiesByAlerts: [story('s1'), story('s2')], groups } });
+    expect(rows.map(r => r.id)).toEqual(['s1', 's2']);
+    expect(rows[0]).toMatchObject({ priority: 3, title: 'GET /loyalty - error rate', alertCount: 2 });
+    expect(rows[0].owner).toBeUndefined();
+  });
+  it('getRelatedStories: empty is empty', () => {
+    expect(toRows('getRelatedStories', { tenant: { __typename: 'Tenant', relatedStories: [] } })).toEqual([]);
+  });
+  it('getGroups: user groups with their members, no __typename', () => {
+    const rows = toRows('getGroups', { tenant: { __typename: 'Tenant', groups: [{ __typename: 'Group', id: 'All Users', description: null, users: [{ __typename: 'RawUsers', id: 'cpadmin' }, { __typename: 'RawUsers', id: 'admin' }] }] } });
+    expect(rows).toEqual([{ id: 'All Users', users: 'cpadmin, admin', usersCount: 2 }]);
+  });
+  it('getRawAlerts: flags as true / false and the insight fields', () => {
+    const raw = { tenant: { rawAlerts: [{
+      sender: { type: 'instana', name: 'Instana' }, resource: { name: 'QM1@10.21.61.33', type: 'INFRASTRUCTURE' }, signature: 'sig1', type: { classification: 'Issue' },
+      id: 'a1', severity: 6, summary: 'Queue depth', firstOccurrenceTime: '2026-10-17T23:49:22.000Z', team: '-', owner: '-', state: 'open', eventCount: 1, acknowledged: false, suppressed: false,
+      insights: [{ id: 'g', type: 'aiops.ibm.com/insight-type/topology/group', details: { name: 'QM1@10.21.61.33' } }], relatedStoryIds: ['s1'], relatedContextualStoryIds: [] as string[]
+    }] } };
+    const [r] = toRows('getRawAlerts', raw);
+    expect(r).toMatchObject({ id: 'a1', severityLabel: 'Critical', sender: 'Instana', resource: 'QM1@10.21.61.33', type: 'Issue', acknowledged: 'false', suppressed: 'false', topologyGroup: 'QM1@10.21.61.33', inIncident: 'Yes', incidentCount: 1, signature: 'sig1', service: 'Mainframe & IBM MQ' });
+    expect(r.team).toBeUndefined();
+  });
+  it('getImpactedApplications: no severity counts is "Not reported", not healthy', () => {
+    const [r] = toRows('getApplications', { tenant: { impactedApplications: { items: [{ id: 'm2', name: 'Applications', iconId: 'application', count: 14, severityCounts: null, storyPriorityCounts: null, businessCriticality: { name: 'Tier 1', businessCriticalityValue: 100 } }] } } });
+    expect(r).toMatchObject({ alerts: 14, severityLabel: 'Not reported', criticality: 'Tier 1' });
+  });
+  it('getActions: nested parameter lists stay inside their action', () => {
+    const rows = toRows('getActions', { tenant: { actions: [{ __typename: 'Action', id: 'a', name: 'Send', description: '', version: 1, client: null, modifiedAt: '2025-01-17T01:48:37.658Z', parameters: [{ __typename: 'RunbookParameter', name: 'target' }, { name: 'user' }], author: 'cpadmin' }] } });
+    expect(rows).toEqual([{ id: 'a', name: 'Send', version: 1, modifiedAt: '2025-01-17T01:48:37.658Z', parameters: 'target, user', parametersCount: 2, author: 'cpadmin' }]);
+  });
+  it('getUsersAndGroups: full names', () => {
+    const rows = toRows('getPeople', { tenant: { groups: [{ id: 'All Users' }], users: [{ id: 'u1', groups: [{ id: 'All Users' }], properties: { fullName: 'Ada Lovelace' } }] } });
+    expect(rows[0]).toMatchObject({ kind: 'User', name: 'Ada Lovelace', groups: 'All Users' });
+    expect(rows[1]).toMatchObject({ kind: 'Group', name: 'All Users', members: 1 });
   });
 });

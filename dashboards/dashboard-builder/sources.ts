@@ -51,8 +51,9 @@ export const SOURCES: SourceDef[] = [
     param: { label: 'Alert filter', help: 'Incidents whose alerts match this filter, for example severity = 6. Empty means open alerts.', placeholder: "severity = 6" }
   },
   {
-    id: 'getIncidentAlerts', label: 'Alerts of an incident', api: 'getIncidentAlerts', group: 'Incident details', shape: 'alerts',
-    description: 'Every alert in one incident.',
+    // getIncidentAlerts itself fails inside Concert Operate (checked 2026-10-24); getAlerts takes the incident as storyId
+    id: 'getIncidentAlerts', label: 'Alerts of an incident', api: 'getAlerts', group: 'Incident details', shape: 'alerts',
+    description: 'Every alert in one incident, cleared ones included.',
     param: { label: 'Incident id', help: 'Type an id, or let an action set it: "Change its source parameter" to {value} when an incident is picked.', placeholder: 'incident id', required: true }
   },
   {
@@ -71,15 +72,17 @@ export const SOURCES: SourceDef[] = [
     param: { label: 'Resource id', help: 'The topology resource to read.', placeholder: 'resource id', required: true }
   },
   { id: 'getPeople', label: 'People and teams', api: 'getUsersAndGroups', group: 'People and configuration', shape: 'people', description: 'Users and user groups of the tenant, one row each.' },
-  { id: 'getGroups', label: 'Resource groups', api: 'getGroups', group: 'People and configuration', shape: 'generic', description: 'The groups defined in the tenant.' },
+  { id: 'getGroups', label: 'User groups', api: 'getGroups', group: 'People and configuration', shape: 'generic', description: 'The user groups of the tenant and their members.' },
   { id: 'getActions', label: 'Automation actions', api: 'getActions', group: 'People and configuration', shape: 'generic', description: 'The automation actions available in the tenant.' },
   {
     id: 'getTools', label: 'Tools', api: 'getTools', group: 'People and configuration', shape: 'generic', description: 'The tools people can launch from alerts and incidents.',
     param: { label: 'Tool type (optional)', help: 'Only tools of this type. Empty means all.', placeholder: 'any type' }
   },
   {
-    id: 'getFiltersViews', label: 'Saved filters and views', api: 'getFiltersViews', group: 'People and configuration', shape: 'generic', description: 'The alert and incident filters and views people have saved.',
-    param: { label: 'View type (optional)', help: 'Only views of this type. Empty means all.', placeholder: 'any type' }
+    // getFiltersViews without a type fails on tenants with inventory filters; getFilters with a type condition is what
+    // the toolkit's own Monitor Box uses
+    id: 'getFiltersViews', label: 'Saved filters', api: 'getFilters', group: 'People and configuration', shape: 'generic', description: 'The filters people have saved, of one type.',
+    param: { label: 'Filter type', help: 'alert (the default) or incident filters.', placeholder: 'alert' }
   }
 ];
 

@@ -1,5 +1,15 @@
 # Dashboard Designer changes
 
+## v1.56.0
+Fixes from the first API check against a real Concert Operate (2026-10-24):
+- *Incidents of matching alerts* and *Related incidents* read the incidents themselves, not the insight records inside each one. Generic sources take the outermost list of an answer, so *User groups* lists the groups (with their members) rather than the users inside them.
+- *Alerts of an incident* reads through getAlerts with the incident id (getIncidentAlerts fails inside Concert Operate) and includes cleared alerts.
+- *Saved filters* uses getFilters with a type (alert by default), as the toolkit's Monitor Box does; getFiltersViews without a type is refused on tenants with inventory filters.
+- *Resource groups* is renamed *User groups*: that is what getGroups returns.
+- Raw alerts give Acknowledged and Suppressed as true / false like the other alert sources, and get the insight fields (topology group, anomaly, seasonal, golden signal, causal links, incident link, runbooks) from their records.
+- Applications whose severity counts Concert does not send show *Not reported* instead of *Healthy*. People show their full names. GraphQL `__typename` fields no longer appear as columns.
+- The API check picks an incident that has alerts, calls the extra read functions the tenant offers (getIncident, getAlertSummary, getPoliciesSummary, getTickets …) and asks the API to describe itself (GraphQL introspection) for the exact parameters of every mutation.
+
 ## v1.55.2
 - A first visit opens an empty *New dashboard* with the start screen (templates or a blank page) instead of a ready-made dashboard. The shared layout set in Concert Workbench is still one click away: ⋮ > Add the shared layout. Dashboards people saved still reopen where they left off.
 

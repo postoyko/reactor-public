@@ -338,7 +338,8 @@ export function applicationRows(data: any): Row[] {
       id: String(a.id), name: String(a.name || a.id), alerts: num(a.count),
       critical: num(sev.critical), major: num(sev.major), minor: num(sev.minor), warning: num(sev.warning),
       incidents: prios.reduce((n, p) => n + num(pri[p]), 0),
-      severityLabel: num(sev.critical) > 0 ? 'Critical' : num(sev.major) > 0 ? 'Major' : num(sev.minor) > 0 ? 'Minor' : num(sev.warning) > 0 ? 'Warning' : 'Healthy'
+      // Concert sends severityCounts: null when it has none to report; that is not the same as healthy
+      severityLabel: a.severityCounts == null ? 'Not reported' : num(sev.critical) > 0 ? 'Critical' : num(sev.major) > 0 ? 'Major' : num(sev.minor) > 0 ? 'Minor' : num(sev.warning) > 0 ? 'Warning' : 'Healthy'
     };
     if (a.iconId) row.type = String(a.iconId);
     if (prios.length) row.priority = prios[0];
@@ -376,7 +377,7 @@ export function toRows(query: QueryName, data: any): Row[] {
   if (query === 'getMetricSeries') return metricRows(data);
   const shape = shapeOf(query);
   if (shape === 'alerts') return anyAlertRows(data);
-  if (shape === 'stories') return incidentRows({ tenant: { stories: largestList(data, o => 'id' in o) } });
+  if (shape === 'stories') return incidentRows({ tenant: { stories: largestList(data, isStory) } });
   if (shape === 'people') return peopleRows(data);
   const rows = genericRows(data);
   learnFields(query, rows);
@@ -387,27 +388,39 @@ export function toRows(query: QueryName, data: any): Row[] {
 
 const isRec = (v: unknown): v is Record<string, any> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-/** The longest list of records anywhere in a response (depth 6), optionally only lists whose records pass `ok`. */
+/**
+ * The main list of records in a response: the shallowest list whose records pass `ok` (the longest one at that depth).
+ * Shallowest first, because real answers nest smaller lists inside each record (an incident's insights, a group's
+ * users, an action's parameters) that must not be mistaken for the answer itself.
+ */
 export function largestList(data: unknown, ok: (o: Record<string, any>) => boolean = () => true): Record<string, any>[] {
-  let best: Record<string, any>[] = [];
-  const walk = (v: unknown, depth: number) => {
-    if (depth > 6 || v === null || typeof v !== 'object') return;
-    if (Array.isArray(v)) {
-      const recs = v.filter(isRec);
-      if (recs.length > best.length && recs.length >= v.length / 2 && recs.some(ok)) best = recs.filter(ok);
-      v.slice(0, 50).forEach(x => walk(x, depth + 1));
-      return;
-    }
-    Object.keys(v as object).forEach(k => walk((v as Record<string, unknown>)[k], depth + 1));
-  };
-  walk(data, 0);
-  return best;
+  let level: unknown[] = [data];
+  for (let depth = 0; depth < 7 && level.length; depth++) {
+    let best: Record<string, any>[] = [];
+    const next: unknown[] = [];
+    level.forEach(v => {
+      if (v === null || typeof v !== 'object') return;
+      if (Array.isArray(v)) {
+        const recs = v.filter(isRec);
+        const good = recs.filter(ok);
+        if (good.length && recs.length >= v.length / 2 && good.length > best.length) best = good;
+        v.slice(0, 50).forEach(x => next.push(x));
+      } else Object.keys(v as object).forEach(k => next.push((v as Record<string, unknown>)[k]));
+    });
+    if (best.length) return best;
+    level = next;
+  }
+  return [];
 }
+
+/** Records that are incidents (stories): an id and a title or a priority. Their insights and groups are not. */
+export const isStory = (o: Record<string, any>): boolean => 'id' in o && ('title' in o || 'priority' in o);
 
 /** A record as one flat row: scalars as they are, nested records one level deep as "parent.child", lists as text and a count. */
 export function flatten(o: Record<string, any>, prefix = '', depth = 0): Row {
   const row: Row = {};
   Object.keys(o).slice(0, 80).forEach(k => {
+    if (k === '__typename') return; // GraphQL bookkeeping, not data
     const v = o[k];
     const key = prefix ? `${prefix}.${k}` : k;
     if (v === null || v === undefined || v === '') return;
@@ -456,14 +469,17 @@ export function anyAlertRows(data: any): Row[] {
   };
   find(data, 0);
   if (table) return alertRows({ tenant: { alerts: table } });
-  return largestList(data, o => 'id' in o).map(o => {
+  return largestList(data, o => 'id' in o && ('severity' in o || 'summary' in o)).map(o => {
     const flat = flatten(o);
     const row: Row = {};
     ALERT_FIELD_MAP.forEach(([col, key]) => {
-      const v = flat[col] !== undefined ? flat[col] : flat[key];
+      const raw = (o as Record<string, unknown>)[col] !== undefined ? (o as Record<string, unknown>)[col] : (o as Record<string, unknown>)[key];
+      // flags read as 'true' / 'false', as getAlerts gives them, so filters and drill-downs match across sources
+      const v = typeof raw === 'boolean' ? String(raw) : flat[col] !== undefined ? flat[col] : flat[key];
       if (v !== undefined && !(v === '-' && (key === 'team' || key === 'owner'))) row[key] = key === 'severity' ? Number(v) : v;
     });
     row.id = String(flat.id);
+    insightsOfRecord(row, o);
     if (typeof row.severity === 'number' && !Number.isFinite(row.severity)) delete row.severity;
     if (typeof row.severity === 'number') row.severityLabel = SEVERITY_LABELS[row.severity] || `Severity ${row.severity}`;
     row.service = serviceOf(`${row.resource || ''} ${row.summary || ''}`);
@@ -471,10 +487,38 @@ export function anyAlertRows(data: any): Row[] {
   });
 }
 
+/** A raw alert record's insights and incident links, read into the same fields getAlerts' insight columns give. */
+function insightsOfRecord(row: Row, o: Record<string, any>) {
+  const ins: any[] = Array.isArray(o.insights) ? o.insights : [];
+  const cols = [COL.criticality, COL.topoRes, COL.topoGroup, COL.anomaly, COL.seasonal, COL.golden, COL.lad1, COL.lad2, COL.union, ...COL.causal];
+  const index = new Map<string, number>();
+  const f: Array<string | null> = [];
+  const typeOf = (c: string) => (/type='([^']+)'/.exec(c) || [])[1] || '';
+  const sourceOf = (c: string) => (/source='([^']+)'/.exec(c) || [])[1];
+  cols.forEach(c => {
+    const t = typeOf(c), src = sourceOf(c);
+    index.set(c, f.length);
+    f.push(JSON.stringify(ins.filter(i => i && i.type === t && (!src || i.source === src))));
+  });
+  if (Array.isArray(o.relatedStoryIds) || Array.isArray(o.relatedContextualStoryIds)) {
+    index.set('relatedStoryIds', f.length); f.push(JSON.stringify(o.relatedStoryIds || []));
+    index.set('relatedContextualStoryIds', f.length); f.push(JSON.stringify(o.relatedContextualStoryIds || []));
+  }
+  if (typeof o.signature === 'string') { index.set('signature', f.length); f.push(o.signature); }
+  enrichInsights(row, index, f);
+  const rb = ins.filter(i => i && typeof i.type === 'string' && i.type.includes('runbook'));
+  if (rb.length) {
+    row.runbooks = rb.reduce((n, p) => n + (p.details && Array.isArray(p.details.runbooks) && p.details.runbooks.length ? p.details.runbooks.length : 1), 0);
+    row.runbookAutomated = rb.some(p => p.details && p.details.isAutomated === true) ? 'Automated' : 'Manual';
+    const ids = rb.map(p => p.details && (p.details.runbookId || p.id)).filter(Boolean).map(String);
+    if (ids.length) row.runbookIds = Array.from(new Set(ids)).join(',');
+  } else if (ins.length) { row.runbooks = 0; row.runbookAutomated = 'No runbook'; }
+}
+
 /** getUsersAndGroups: one row per user and per group. */
 export function peopleRows(data: any): Row[] {
   const t = isRec(data) && isRec(data.tenant) ? data.tenant : data;
-  const name = (x: any) => (isRec(x) ? String(x.name || x.displayName || x.username || x.userName || x.email || x.id || '') : String(x || ''));
+  const name = (x: any) => (isRec(x) ? String((isRec(x.properties) && x.properties.fullName) || x.name || x.displayName || x.username || x.userName || x.email || x.id || '') : String(x || ''));
   const users: any[] = isRec(t) && Array.isArray(t.users) ? t.users : [];
   const groups: any[] = isRec(t) && Array.isArray(t.groups) ? t.groups : [];
   const members = new Map<string, number>();

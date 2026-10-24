@@ -91,7 +91,11 @@
   }
   var later = function (v) { return new Promise(function (res) { setTimeout(function () { res(v); }, 120); }); };
   var api = {
-    getAlerts: function (o) { return later(alertsResponse(o)); },
+    getAlerts: function (o) {
+      var r = alertsResponse(o);
+      if (o && o.storyId) { var inc = incidents.filter(function (x) { return x.id === o.storyId; })[0]; var ids = inc ? inc.alertIds : []; var at = r.tenant.alerts.columns.findIndex(function (c) { return c.name === 'id'; }); r.tenant.alerts.rows = r.tenant.alerts.rows.filter(function (row) { return ids.indexOf(row.fields[at]) >= 0; }); }
+      return later(r);
+    },
     getStories: function () { return later(storiesResponse()); },
     getImpactedApplications: function () {
       var APPS = [['Banking & Payments', 'application', 'Tier 1', 100], ['Digital Microservices', 'service', 'Tier 2', 70], ['Mainframe & IBM MQ', 'service', 'Tier 1', 100], ['OpenShift & Ingress', 'service', 'Tier 3', 40], ['Database & Storage', 'service', 'Tier 2', 70]];

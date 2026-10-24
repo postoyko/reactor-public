@@ -143,7 +143,7 @@ export class DataHub {
     switch (query) {
       case 'getRawAlerts': return { ...t, filter: p };
       case 'getStoriesByAlerts': return { ...t, filter: p || ALERT_QUERY_PARAMS.filter };
-      case 'getIncidentAlerts': return { ...t, incidentId: p, columns };
+      case 'getIncidentAlerts': return { ...t, storyId: p, columns: this.paramsFor('getAlerts', '').columns, format: ALERT_QUERY_PARAMS.format };
       case 'getStoryAlertsGroups': return { ...t, storyId: p, columns, format: ALERT_QUERY_PARAMS.format, includeGroups: true };
       case 'getRelatedStories': {
         // one incident id, or alert ids separated by commas
@@ -152,7 +152,7 @@ export class DataHub {
       }
       case 'getTopologyResource': return { ...t, resourceId: p };
       case 'getTools': return p ? { ...t, type: p } : t;
-      case 'getFiltersViews': return p ? { ...t, viewType: p } : t;
+      case 'getFiltersViews': return { ...t, condition: `type = '${(p || 'alert').replace(/'/g, '')}'` };
       default: return t;
     }
   }

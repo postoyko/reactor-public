@@ -20,7 +20,7 @@ export type CheckStatus = 'ok' | 'empty' | 'error' | 'missing' | 'skipped';
 export interface CheckResult {
   name: string;
   api: string;
-  kind: 'source' | 'mutation' | 'helper';
+  kind: 'source' | 'mutation' | 'helper' | 'extra' | 'schema';
   status: CheckStatus;
   ms?: number;
   params?: Record<string, unknown>;
@@ -131,7 +131,12 @@ export async function runApiCheck(hub: DataHub, opt: CheckOptions, onResult: (r:
       if (!param) { push({ ...base, status: 'skipped', note: `Needs ${def.param.label.toLowerCase()}: type one at the top and run again.` }); continue; }
     }
     const r = await read(def.id, param);
-    if (def.id === 'getStories' && !incidentId) incidentId = String((r.rows[0] || {}).id || '');
+    if (def.id === 'getStories' && !incidentId) {
+      // an incident that has alerts (open ones first), so the incident sources have something to show
+      const withAlerts = r.rows.filter(x => Number(x.alertCount) > 0);
+      const pick = withAlerts.find(x => x.state !== 'closed' && x.state !== 'resolved') || withAlerts[0] || r.rows[0];
+      incidentId = String((pick || {}).id || '');
+    }
     if (def.id === 'getAlerts') alertIds = r.rows.slice(0, 3).map(x => String(x.id));
     const fields = Array.from(new Set(r.rows.slice(0, 50).flatMap(x => Object.keys(x)))).sort();
     push({
@@ -146,6 +151,28 @@ export async function runApiCheck(hub: DataHub, opt: CheckOptions, onResult: (r:
       ...(opt.values && r.rows[0] ? { sample: r.rows[0] } : {})
     });
   }
+
+  // Read functions this tenant has beyond the toolkit's list: called once with the tenant (and the incident where it
+  // obviously needs one), to see what they return. All are reads.
+  const EXTRA: Array<[string, Record<string, unknown>]> = [
+    ['getIncident', { incident: incidentId }], ['getAlertSummary', {}], ['getStandingAlertCount', {}], ['getStandingStoryCount', {}],
+    ['getPoliciesSummary', {}], ['getPoliciesMetadata', {}], ['getTickets', {}], ['getProfiles', {}], ['getSeasonalFindings', {}],
+    ['getDataQualityIssues', {}], ['getBlockedResources', {}], ['getStoriesWithAlertFilter', { filter: "state != 'clear'" }], ['getAlertSchema', {}], ['getStorySchema', {}]
+  ];
+  for (const [name, extra] of EXTRA) {
+    if (typeof a[name] !== 'function') { push({ name, api: name, kind: 'extra', status: 'missing' }); continue; }
+    const params = { tenantId: hub.paramsFor('getPeople', '').tenantId, ...extra };
+    const t0 = Date.now();
+    try {
+      const data = await withTimeout(Promise.resolve(a[name](params)), 25000);
+      const list = data === undefined || data === null ? [] : [data];
+      push({ name, api: name, kind: 'extra', status: list.length ? 'ok' : 'empty', ms: Date.now() - t0, params: showParams(params, opt.values), outline: outline(data, opt.values) });
+    } catch (e: any) {
+      push({ name, api: name, kind: 'extra', status: 'error', ms: Date.now() - t0, params: showParams(params, opt.values), note: e && e.message ? String(e.message).slice(0, 400) : String(e) });
+    }
+  }
+
+  push(await schemaCheck(a));
 
   HELPERS.forEach(name => push({ name, api: name, kind: 'helper', status: typeof a[name] === 'function' ? 'ok' : 'missing', note: 'Looked up only.', ...(opt.code && a[name] ? { code: codeOf(a[name]) } : {}) }));
 
@@ -181,4 +208,41 @@ export function reportText(results: CheckResult[], meta: { version: string; valu
     lines.push(``);
   });
   return lines.join('\n');
+}
+
+/** Asks the API to describe itself (GraphQL introspection), for the exact parameters of every query and mutation. Read-only. */
+const INTROSPECT = `query DesignerIntrospection { __schema { queryType { name } mutationType { name } types { name kind fields { name args { name type { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } } } }`;
+
+const typeText = (t: any): string => (!t ? '?' : t.kind === 'NON_NULL' ? `${typeText(t.ofType)}!` : t.kind === 'LIST' ? `[${typeText(t.ofType)}]` : t.name || '?');
+
+async function schemaCheck(a: Record<string, any>): Promise<CheckResult> {
+  const base: CheckResult = { name: 'API description (GraphQL introspection)', api: 'graphql', kind: 'schema', status: 'ok' };
+  if (typeof a.graphql !== 'function') return { ...base, status: 'missing', note: 'There is no graphql function here.' };
+  const tries: Array<[string, () => unknown]> = [
+    ['graphql({ query })', () => a.graphql({ query: INTROSPECT })],
+    ['graphql(query)', () => a.graphql(INTROSPECT)],
+    ['graphql({ query, variables })', () => a.graphql({ query: INTROSPECT, variables: {} })]
+  ];
+  const errors: string[] = [];
+  for (const [how, call] of tries) {
+    const t0 = Date.now();
+    try {
+      const res: any = await withTimeout(Promise.resolve(call()), 25000);
+      let schema: any;
+      const find = (v: any, d: number) => { if (schema || !v || typeof v !== 'object' || d > 4) return; if (v.__schema) { schema = v.__schema; return; } Object.keys(v).forEach(k => find(v[k], d + 1)); };
+      find(res, 0);
+      if (!schema || !Array.isArray(schema.types)) { errors.push(`${how}: answered without a schema (${outline(res, false).slice(0, 200)})`); continue; }
+      const roots = [schema.queryType && schema.queryType.name, schema.mutationType && schema.mutationType.name].filter(Boolean);
+      const keep = schema.types.filter((t: any) => t && Array.isArray(t.fields) && (roots.includes(t.name) || /tenant|mutation/i.test(t.name)) && !/^__/.test(t.name));
+      const lines: string[] = [];
+      keep.forEach((t: any) => {
+        lines.push(`type ${t.name}${roots.includes(t.name) ? ` (${t.name === roots[0] ? 'queries' : 'mutations'})` : ''}`);
+        t.fields.forEach((f: any) => lines.push(`  ${f.name}(${(f.args || []).map((x: any) => `${x.name}: ${typeText(x.type)}`).join(', ')})`));
+      });
+      return { ...base, ms: Date.now() - t0, note: `Answered to ${how}. ${keep.length} types with their fields and parameters.`, outline: lines.join('\n') };
+    } catch (e: any) {
+      errors.push(`${how}: ${e && e.message ? String(e.message).slice(0, 200) : String(e)}`);
+    }
+  }
+  return { ...base, status: 'error', note: errors.join('\n') };
 }
