@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.55.2
+- A first visit opens an empty *New dashboard* with the start screen (templates or a blank page) instead of a ready-made dashboard. The shared layout set in Concert Workbench is still one click away: ⋮ > Add the shared layout. Dashboards people saved still reopen where they left off.
+
 ## v1.55.1
 - Fixes the squeezed Preview / Edit switch in the toolbar: the widget library's list / grid switch (v1.51.0) reused its class name.
 

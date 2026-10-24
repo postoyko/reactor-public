@@ -691,13 +691,9 @@ async function open() {
     }
   } catch (e) { /* the frame reports its own failure */ }
   await refreshTiles();
-  // Always land in the editor: the starting layout, else the first saved one, else a blank one.
-  if (!S.dash) {
-    const pick = S.layouts.find(l => l.slug === S.defaultSlug) || S.layouts[0];
-    let opened = false;
-    if (pick) { try { const d = await api('/api/layouts/' + encodeURIComponent(pick.slug)); openDash(pick.slug, d.dashboard); opened = true; } catch (e) { /* fall through to a blank layout */ } }
-    if (!opened) openDash(null, { id: newId('d'), name: 'New dashboard', updated: Date.now(), widgets: [] });
-  }
+  // Always land in the editor on a blank dashboard: the Designer's start screen offers the templates, and saved
+  // dashboards are one click away under Dashboards.
+  if (!S.dash) openDash(null, { id: newId('d'), name: 'New dashboard', updated: Date.now(), widgets: [] });
   renderAll();
   sendLoad();
 }

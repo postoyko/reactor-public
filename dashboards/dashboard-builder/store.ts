@@ -37,6 +37,11 @@ function widget(type: Widget['type'], title: string, x: number, y: number, w: nu
   return { id: newId('w'), type, title, x, y, w, h, config: { ...defaultConfig(type, cfg.query), ...cfg } };
 }
 
+/** What a first visit opens: an empty dashboard, so the start screen offers templates or a blank page. */
+export function emptyDashboard(): Dashboard {
+  return { id: newId('d'), name: 'New dashboard', updated: Date.now(), widgets: [] };
+}
+
 /** A starting point built only from live-bound widgets: every figure comes from the queries. */
 export function starterDashboard(): Dashboard {
   return {
@@ -288,8 +293,8 @@ export function loadState(storage?: KV, seed?: Dashboard | null): StoreState {
   } catch (e) {
     // Fall through to a fresh state: unreadable storage must never block the page.
   }
-  // First visit in this browser: start from the shared layout when there is one.
-  const starter = seed || starterDashboard();
+  // First visit in this browser: an empty dashboard (or the seed the caller passes).
+  const starter = seed || emptyDashboard();
   return { version: 1, activeId: starter.id, dashboards: [starter] };
 }
 

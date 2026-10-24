@@ -94,7 +94,7 @@ export default function DashboardBuilder(props: Props) {
   const readOnly = !authoring && (Boolean(props.readOnly) || fixed !== null);
   const [store, setStore] = useState<StoreState>(() =>
     authoring ? { version: 1, activeId: authoring.dashboard.id, dashboards: [authoring.dashboard] } :
-    fixed ? { version: 1, activeId: fixed.id, dashboards: [fixed] } : loadState(undefined, sharedDashboard(DEFAULT_LAYOUT)));
+    fixed ? { version: 1, activeId: fixed.id, dashboards: [fixed] } : loadState());
   const [editing, setEditing] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filter[]>(() => (typeof window !== 'undefined' ? urlFilters(window.location.search) : []));
