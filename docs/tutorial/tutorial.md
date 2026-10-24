@@ -349,6 +349,25 @@ Inside Concert Operate the Designer saves automatically, in that person's browse
 - To share with one person: **Export as JSON**, send the file, they **Import JSON**.
 - To give everyone a dashboard: import the file in the Workbench (**Dashboards › Import from file…**), then **Publish** (section 12).
 
+### Explain this, and the incident replay
+
+**Right-click** any widget that shows alerts or incidents (a chart, table or number) and a panel opens with **Explain**. It answers four questions about exactly what that widget shows, after every filter:
+
+| | For alerts | For incidents |
+| --- | --- | --- |
+| **What** | How many, by severity, since when; how many started in the last hour against the usual hourly rate | How many, by priority, when they were created, their states |
+| **Where** | The top resources, services and types | The top services |
+| **Why** | How many are in incidents, and for the top three incidents Concert's own **probable cause** (rank, score, classification); anomalies, seasonal and golden-signal alerts, log fixes | The incidents to look at first, each with its probable cause |
+| **What to do** | Runbooks attached, and how many are automated; similar past incidents on request | Similar past incidents on request |
+
+Nothing is guessed: everything is counted from the rows, and the probable cause is Concert's own analysis. The same explanation is at the top of every *Show the rows behind it* panel. Shift+right-click keeps the browser's own menu.
+
+![Explain: 12 critical alerts, where they are, the incidents they belong to and their probable causes](img/explain.png)
+
+**Incident replay.** Open an incident in that panel and its timeline shows how it grew: when it was created, each alert at the moment Concert added it (with its severity then, and now if it changed), and every runbook run. **Play**, or drag the slider, to replay it step by step; later events are dimmed.
+
+![Replaying an incident: created, then each alert as it was added](img/replay.png)
+
 ### View as: switch the chart type at runtime
 
 <div class="usp"><span class="usp-tag">★ USP</span> Any chart can be switched to another chart type while the dashboard is in use: bar to pie, treemap or word cloud, number to gauge.</div>
