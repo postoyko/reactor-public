@@ -330,20 +330,20 @@ describe('tile props', () => {
   it('keeps flat string / number / boolean options on a tile', () => {
     expect(tile({ part: 'services', limit: 5, compact: true }).props).toEqual({ part: 'services', limit: 5, compact: true });
   });
-  it('drops nested values, functions, bad names and non-finite numbers', () => {
-    const p = tile({ ok: 'yes', nested: { a: 1 }, list: [1], fn: () => 1, 'bad-name': 'x', '1abc': 'x', __proto__x: 'x', n: Infinity, nan: NaN }).props;
-    expect(p).toEqual({ ok: 'yes' });
+  it('keeps lists and records; drops functions, bad names and non-finite numbers', () => {
+    const p = tile({ ok: 'yes', nested: { a: 1, f: () => 1 }, list: [1, NaN], fn: () => 1, 'bad-name': 'x', '1abc': 'x', __proto__x: 'x', n: Infinity, nan: NaN }).props;
+    expect(p).toEqual({ ok: 'yes', nested: { a: 1 }, list: [1] });
   });
   it('caps the number of options and the length of values', () => {
     const many: Record<string, string> = {};
-    for (let i = 0; i < 20; i++) many['k' + i] = 'v'.repeat(300);
+    for (let i = 0; i < 30; i++) many['k' + i] = 'v'.repeat(600);
     const p = tile(many).props;
-    expect(Object.keys(p).length).toBe(8);
-    expect(p.k0.length).toBe(100);
+    expect(Object.keys(p).length).toBe(24);
+    expect(p.k0.length).toBe(500);
   });
   it('is ignored on widgets that are not tiles, and absent when nothing is valid', () => {
     expect(tile({ part: 'x' }, 'kpi').props).toBeUndefined();
-    expect(tile({ nested: {} }).props).toBeUndefined();
+    expect(tile({ fn: () => 1, 'bad-name': 'x' }).props).toBeUndefined();
     expect(tile('nope').props).toBeUndefined();
   });
   it('does not touch the prototype', () => {
