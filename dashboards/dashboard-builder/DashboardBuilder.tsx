@@ -8,7 +8,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { InlineNotification } from '@carbon/react';
-import { Add, Checkmark, ChevronDown, Connect, Copy, Download, Help, Template, OverflowMenuVertical, Redo, Renew, TrashCan, Undo, Upload } from '@carbon/icons-react';
+import { Add, Checkmark, ChevronDown, Connect, Copy, Download, Flow, Help, Template, OverflowMenuVertical, Redo, Renew, TrashCan, Undo, Upload } from '@carbon/icons-react';
 import './dashboard-builder.scss';
 import { ActionLink, Dashboard, Filter, FilterBarConfig, QueryName, Row, Widget } from './types';
 import { ActionApi, ActionCtx, coerce } from './actions';
@@ -45,6 +45,7 @@ import DrillDrawer from './DrillDrawer';
 import { DrillRequest, urlFilters } from './drill';
 import { inputDefault } from './bindings';
 import Inspector from './Inspector';
+import ActionStudio from './ActionStudio';
 import { WidgetBody } from './Widgets';
 import { VERSION } from './version';
 import { DEFAULT_LAYOUT } from './default-layout';
@@ -100,6 +101,8 @@ export default function DashboardBuilder(props: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [wireMode, setWireMode] = useState(false);
   const [wireKind, setWireKind] = useState<'data' | 'action'>('data');
+  /** Action flows editor: open (with the widget in focus, or null) or closed (undefined). */
+  const [flows, setFlows] = useState<string | null | undefined>(undefined);
   const [tour, setTour] = useState(false);
   const [pick, setPick] = useState(false);
   const [barSel, setBarSel] = useState<Record<string, string[]>>({});
@@ -731,6 +734,9 @@ export default function DashboardBuilder(props: Props) {
               <button type="button" data-tour="wire" className={`db-tb${wireMode ? ' is-on' : ''}`} aria-pressed={wireMode} title="Wire mode (W): drag from a widget's port to the widgets it should filter" onClick={() => setWireMode(m => !m)}>
                 <Connect size={16} aria-hidden="true" />Wire
               </button>
+              <button type="button" className={`db-tb${flows !== undefined ? ' is-on' : ''}`} title="Action flows: what happens when people click, change or pick something" onClick={() => setFlows(selected ? selected.id : null)}>
+                <Flow size={16} aria-hidden="true" />Flows
+              </button>
               <span className="db-sep" />
               <FilterBarSettings bar={bar} onChange={setBar} />
               <button type="button" className="db-tb" data-tour="templates" title="Start from a template" onClick={() => setPick(true)}>
@@ -901,7 +907,7 @@ export default function DashboardBuilder(props: Props) {
             <aside className={`db-dock db-dock--right${selected ? '' : ' db-dock--idle'}`} aria-label="Settings" data-tour="settings">
               <div className="db-dock-in">
               {selected ? (
-                <Inspector widget={selected} barOn={Boolean(bar)} everyone={active.widgets} slots={slots} onMove={moveTo} onChange={updateWidget} partsFor={authoring ? authoring.partsFor : undefined} onClose={() => setSelectedId(null)} />
+                <Inspector widget={selected} barOn={Boolean(bar)} everyone={active.widgets} slots={slots} onMove={moveTo} onFlows={id => setFlows(id)} onChange={updateWidget} partsFor={authoring ? authoring.partsFor : undefined} onClose={() => setSelectedId(null)} />
               ) : (
                 <div className="db-rest">
                   <h2>Nothing selected</h2>
@@ -932,6 +938,7 @@ export default function DashboardBuilder(props: Props) {
             <span className="db-status-sel"><Glyph type={selected.type} size={16} />{typeLabel(selected.type)}<code>x {selected.x} · y {selected.y} · {selected.w}×{selected.h}</code></span>
           )}
         </footer>
+        {isEditing && flows !== undefined && <ActionStudio widgets={active.widgets} focus={flows} onWidgets={setWidgets} onClose={() => setFlows(undefined)} />}
       </div>
       {tour && <Tour onClose={() => setTour(false)} />}
       </NestCtx.Provider>

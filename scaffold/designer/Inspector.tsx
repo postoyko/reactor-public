@@ -9,7 +9,7 @@
 import { pivotChoices } from './pivot';
 import React from 'react';
 import { Button, Checkbox, Select, SelectItem, TextInput } from '@carbon/react';
-import { Close, ColorPalette, DataBase, Flash, Settings } from '@carbon/icons-react';
+import { ArrowRight, Close, ColorPalette, DataBase, Flash, Flow, Settings } from '@carbon/icons-react';
 import { Glyph } from './Glyph';
 import { typeLabel } from './meta';
 import { COND_OPS, CondOp, Cond, Metric, QueryName, Widget, WidgetConfig } from './types';
@@ -17,7 +17,7 @@ import { DEFAULT_GROUP, DEFAULT_TIME, fieldLabel, fieldsOf } from './rows';
 import { isNative, tileDef } from './registry';
 import TileSettings from './TileSettings';
 import { canSend, WireEditor } from './Wiring';
-import { ActionRules } from './ActionEditor';
+import { actionLabel, eventsOf } from './component-api';
 import DrillEditor from './DrillEditor';
 import MetricPicker from './MetricPicker';
 import { SlotInfo } from './nesting';
@@ -35,6 +35,8 @@ interface Props {
   /** Panels this widget could be moved into (containers, tabs, sections). */
   slots?: SlotInfo[];
   onMove?: (id: string, slot: string) => void;
+  /** Opens the Action flows editor with this widget in focus. */
+  onFlows?: (id: string) => void;
   /** Studio only: the sections a tile can show instead of the whole dashboard. */
   partsFor?: (tile: string) => { id: string; label: string }[];
   widget: Widget;
@@ -62,7 +64,7 @@ const METRICS: Array<{ v: Metric; t: string }> = [
   { v: 'sum', t: 'Sum of…' }
 ];
 
-export default function Inspector({ widget, onChange, onClose, partsFor, everyone, barOn, slots, onMove }: Props) {
+export default function Inspector({ widget, onChange, onClose, partsFor, everyone, barOn, slots, onMove, onFlows }: Props) {
   const [imageError, setImageError] = React.useState('');
   const [tab, setTab] = React.useState<Tab>(lastTab);
   const pick = (k: Tab) => { lastTab = k; setTab(k); };
@@ -441,7 +443,27 @@ export default function Inspector({ widget, onChange, onClose, partsFor, everyon
             {everyone && (
               <>
                 <SectionHead title="Actions" hint={<p>When something happens in this widget, change another one. Wires only run while a dashboard is being used (Preview), never while you design.</p>} />
-                <ActionRules widget={widget} all={everyone} onChange={onChange} />
+                {(c.on || []).length > 0 && (
+                  <ul className="db-act-sum">
+                    {(c.on || []).map((l, i) => {
+                      const to = everyone.find(x => x.id === l.to);
+                      const ev = eventsOf(widget).find(e => e.id === l.event);
+                      return (
+                        <li key={i}>
+                          <span>{ev ? ev.label : l.event}{l.when ? ` (“${l.when}”)` : ''}</span>
+                          <ArrowRight size={12} />
+                          <span><b>{to ? actionLabel(to, l.do) : 'missing widget'}</b>{to ? <> on <b>{to.title}</b></> : null}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+                {(c.on || []).length === 0 && <p className="db-help">Nothing happens yet. Make another widget react when this one is clicked, changed or picked.</p>}
+                {onFlows && (
+                  <button type="button" className="db-flows-btn" onClick={() => onFlows(widget.id)}>
+                    <Flow size={16} />{(c.on || []).length ? 'Edit in Action flows' : 'Add an action in Action flows'}
+                  </button>
+                )}
                 <div className="cds--form-item">
                   <label className="db-check"><input type="checkbox" checked={c.hidden === true} onChange={e => { const cfg = { ...c }; if (e.target.checked) cfg.hidden = true; else delete cfg.hidden; onChange({ ...widget, config: cfg }, `${widget.id}:hidden`); }} /> Hidden at start (an action wire can show it)</label>
                 </div>

@@ -1,5 +1,12 @@
 # Dashboard Designer changes
 
+## v1.52.0
+- **Action flows**: a full-screen visual editor for action wiring (**Flows** in the toolbar, or *Edit in Action flows* in a widget's Interact tab). Three lanes read as a sentence: **When** (the trigger widget and its events), **Then** (one card per action), **On** (the widgets they change), joined by animated connectors that light up on hover and selection.
+- Drag from a trigger's port onto any widget to add an action (every widget is offered as a drop target while dragging); the action that suits the target is preselected. Clicking the port adds one too.
+- The side panel edits the selected action as tiles instead of dropdowns: the trigger's own events first (clicks, pointer and keyboard under *More events*), the target, then only the actions that target understands, grouped and searchable, with On / Off and option chips for settings and a *+ value* token that inserts what the event carries.
+- Suggested flows are proposed from the dashboard (a button and a dialog, a widget hidden at start, a chooser and tabs, a chart and a note, a search box and a table) and added with one click.
+- Delete removes the selected action, Ctrl+Z undoes, Esc closes. The settings panel now lists a widget's actions as sentences. Saved data is unchanged.
+
 ## v1.51.0
 - Widget library (Add): a list / grid switch (grid shows three icon cards per row, the description is in the tooltip; the choice is remembered), a Recently used group with the last six widgets added, Expand all / Collapse all, and a result count.
 - Search matches every word anywhere in the name, description or group ("chart bar", "status") and highlights the matches.
