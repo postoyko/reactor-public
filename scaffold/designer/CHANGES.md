@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.59.1
+- Topology resource (checked against a real Concert Operate): the row takes its `_id` as its id, and epoch-millisecond times such as beginTime and observedTime are read as times, so they show as dates and can drive a timeline.
+
 ## v1.59.0
 Concert Operate actions checked against the parameters a real Concert Operate requires (API check probe, 2026-10-24):
 - Confirmed: create an incident (alertIds, priority), add alerts to an incident (alertIds), activate / reject / restore policies (policyIds), deploy / stop deploying a policy (policyId, deployed), rename a policy (policyId, name). Tests now pin each action to those parameters.

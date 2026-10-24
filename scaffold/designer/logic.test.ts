@@ -541,3 +541,11 @@ describe('change actions match the parameters Concert Operate requires (probe, 2
   it('renamePolicy: policyId ID!, name String!', () => { expect(call('api:renamePolicy', { policyId: 'p1', name: 'New' }).params).toEqual({ policyId: 'p1', name: 'New' }); });
   it('lock / unlock are marked unsupported', () => { expect(platformAction('api:lockPolicy')!.unsupported).toBeTruthy(); });
 });
+
+describe('topology resource (fourth real check)', () => {
+  it('one row: its _id as the id, epoch times learnt as times', () => {
+    const rows = toRows('getTopologyResource', { tenant: { __typename: 'Tenant', topologyResource: { __typename: 'TopologyResource', _id: 'Epg9I0zlCjLNbXBkwHfgOA', name: 'tu201_12.55.182.10_12346_5062', beginTime: 1791366456101, observedTime: 1791366456101, endTime: null } } });
+    expect(rows).toEqual([{ _id: 'Epg9I0zlCjLNbXBkwHfgOA', name: 'tu201_12.55.182.10_12346_5062', beginTime: 1791366456101, observedTime: 1791366456101, id: 'Epg9I0zlCjLNbXBkwHfgOA' }]);
+    expect(fieldsOf('getTopologyResource').find(f => f.key === 'beginTime')!.kind).toBe('time');
+  });
+});

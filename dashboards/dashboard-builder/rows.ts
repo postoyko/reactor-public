@@ -196,7 +196,9 @@ export function learnFields(query: QueryName, rows: Row[]) {
   rows.slice(0, 200).forEach(r => Object.keys(r).forEach(k => {
     const v = r[k];
     if (v === undefined || base.has(k)) return;
-    const kind: FieldInfo['kind'] = typeof v === 'number' ? 'number' : /time|date|created|updated|timestamp/i.test(k) && Number.isFinite(Date.parse(String(v))) ? 'time' : 'text';
+    const timeName = /time|date|created|updated|timestamp/i.test(k);
+    // epoch milliseconds (topology's beginTime, observedTime) are times too, not plain numbers
+    const kind: FieldInfo['kind'] = timeName && typeof v === 'number' && v > 1e12 && v < 1e14 ? 'time' : typeof v === 'number' ? 'number' : timeName && Number.isFinite(Date.parse(String(v))) ? 'time' : 'text';
     const was = keys.get(k);
     keys.set(k, was && was !== kind ? 'text' : kind);
   }));
@@ -463,7 +465,7 @@ export function genericRows(data: any): Row[] {
   if (!rec) return [];
   const r = flatten(rec);
   if (!Object.keys(r).length) return [];
-  r.id = String(r.id || r.uniqueId || r.name || 'total');
+  r.id = String(r.id || r._id || r.uniqueId || r.name || 'total');
   return [r];
 }
 
