@@ -20,7 +20,7 @@ export type CheckStatus = 'ok' | 'empty' | 'error' | 'missing' | 'skipped';
 export interface CheckResult {
   name: string;
   api: string;
-  kind: 'source' | 'mutation' | 'helper' | 'extra' | 'schema';
+  kind: 'source' | 'mutation' | 'helper' | 'extra' | 'schema' | 'probe';
   status: CheckStatus;
   ms?: number;
   params?: Record<string, unknown>;
@@ -171,6 +171,31 @@ export async function runApiCheck(hub: DataHub, opt: CheckOptions, onResult: (r:
       push({ name, api: name, kind: 'extra', status: list.length ? 'ok' : 'empty', ms: Date.now() - t0, params: showParams(params, opt.values), outline: outline(data, opt.values) });
     } catch (e: any) {
       push({ name, api: name, kind: 'extra', status: 'error', ms: Date.now() - t0, params: showParams(params, opt.values), note: errDetail(e) });
+    }
+  }
+
+  // For "Explain this" and time travel: functions that may hold an incident's diagnosis or an alert's history. Each is
+  // first asked which parameters it requires (a request with an invalid tenant id, refused before it runs), then called
+  // with the first incident and alert. All are reads.
+  const firstAlert = alertIds[0] || '';
+  const PROBES: Array<[string, string, Record<string, unknown>]> = [
+    ['getIncidentDiagnosis', 'diagnosis of an incident (for Explain this)', { storyId: incidentId, incidentId, id: incidentId }],
+    ['getIncidentDiagnosisStatus', 'diagnosis status (for Explain this)', { storyId: incidentId, incidentId, id: incidentId }],
+    ['getEventData', 'event history (for time travel)', { id: firstAlert }],
+    ['getIncidentAlertDetails', 'one alert in detail (for time travel)', { alertId: firstAlert }]
+  ];
+  for (const [name, why, guess] of PROBES) {
+    const label = `${name}: ${why}`;
+    if (typeof a[name] !== 'function') { push({ name: label, api: name, kind: 'probe', status: 'missing' }); continue; }
+    const asked = await probeMutation(name, a[name]);
+    const needs = asked.outline ? asked.outline.split('\n')[0] : `could not tell (${(asked.note || '').slice(0, 200)})`;
+    const params = { tenantId: hub.paramsFor('getPeople', '').tenantId, ...guess };
+    const t0 = Date.now();
+    try {
+      const data = await withTimeout(Promise.resolve(a[name](params)), 25000);
+      push({ name: label, api: name, kind: 'probe', status: data === undefined || data === null ? 'empty' : 'ok', ms: Date.now() - t0, params: showParams(params, opt.values), note: `Parameters the server requires: ${needs}`, outline: outline(data, opt.values) });
+    } catch (e: any) {
+      push({ name: label, api: name, kind: 'probe', status: 'error', ms: Date.now() - t0, params: showParams(params, opt.values), note: `Parameters the server requires: ${needs}\nCalled with the first incident and alert: ${errDetail(e)}` });
     }
   }
 

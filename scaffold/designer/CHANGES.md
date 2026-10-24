@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.63.1
+- API check: new read-only probes for planned features. `getIncidentDiagnosis` and `getIncidentDiagnosisStatus` (for *Explain this*), `getEventData` and `getIncidentAlertDetails` (for time travel) are each asked which parameters they require, then called with the first incident and alert; the report shows what they return.
+
 ## v1.63.0
 **Data snapshot for the Workbench.** The API check (⋮ › Check the Concert Operate API) has *Record and download*: it records the answers of the data sources, plus the alerts, alert groups and related incidents of the first 10 incidents, into a file. Uploaded in the Workbench (Setup › Real data for Design), it replaces the sample data in Design, so dashboards are designed on the tenant's real data. Read-only; answers are matched by their parameters (snapshot.ts, `callKey`).
 
