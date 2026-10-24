@@ -118,6 +118,10 @@ You rarely type ids by hand. Instead, let an action fill the parameter: **Change
 
 **Click-to-filter (linking).** On the Interact tab, set **When clicked** to filter other widgets. Clicking a bar, slice or row then sets a filter on every widget that uses the same source; the active filters show as chips under the toolbar (*Filtering by …*, with **Clear all**). Untick *Follows filters from other widgets* on any widget that should ignore them. The **Wiring** tab on the left lists who filters whom.
 
+**Wire mode (designers).** **Wire** in the toolbar draws every link on the canvas. Drag from the ● dot on a chart or choice onto a widget to connect them; click a line for its menu (type, comparison, cut). Solid blue = a filter, purple = a typed value, dashed = automatic (every widget on the same data).
+
+![Wire mode: every link drawn on the canvas](img/rt-wire.png)
+
 **Drill-down.** To show the details of what was picked, point a detail widget at the pick with an Action flow (section 7):
 
 1. Add a picker: a table of incidents, or a dropdown.
@@ -215,6 +219,20 @@ Switch **Preview** (top right) to see the dashboard as viewers do; **Edit** brin
 | **Link widgets** | Choose which widgets filter each other |
 | **by …** menu | Regroup a chart (e.g. *by Priority* → *by Team*) |
 | **as …** menu | Show a chart as another chart type |
+
+### Resize and rewire at runtime (only for you)
+
+Viewers can reshape a published dashboard without editing it. These changes are kept per person, in their browser, and nobody else sees them. **Reset changes** puts everything back as published.
+
+**Arrange widgets.** Click it, then drag a widget by its title to move it, or drag its bottom-right corner to resize it. Click **Done arranging** to finish.
+
+![Arrange widgets: Alerts by application made taller, the others reflow](img/rt-arrange2.png)
+
+**Link widgets.** Click it to see the links between widgets. Drag from the ● dot on a chart or choice to the widgets it should filter; click a line to cut it. The **Filter bar** chip on each widget switches whether it follows the filter bar. Click **Done linking** to finish.
+
+![Link widgets: rewiring which charts filter which widgets](img/rt-link.png)
+
+As the designer you decide what viewers may change, per widget on the Interact tab: *Viewers can move and resize this widget*, *Viewers can regroup this chart*, *Viewers can show it as another chart*. **Link widgets** appears only when the dashboard has widgets that can send filters.
 
 ### View as: switch the chart type at runtime
 
