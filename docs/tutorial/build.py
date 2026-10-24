@@ -14,8 +14,14 @@ md = open(src, encoding='utf8').read()
 body = markdown.markdown(md, extensions=['tables', 'fenced_code', 'toc', 'md_in_html', 'sane_lists'], extension_configs={'toc': {'title': 'Contents', 'toc_depth': '2-2'}})
 def inline(m):
     p = os.path.join(imgdir, m.group(1))
-    return 'src="data:image/png;base64,' + base64.b64encode(open(p, 'rb').read()).decode() + '"'
-body = re.sub(r'src="([\w./-]+\.png)"', inline, body)
+    kind = 'svg+xml' if p.endswith('.svg') else 'png'
+    return f'src="data:image/{kind};base64,' + base64.b64encode(open(p, 'rb').read()).decode() + '"'
+# diagrams: the SVG itself goes in the page (Mermaid's SVG is HTML, not stand-alone XML, so an <img> cannot load it)
+def diagram(m):
+    svg = open(os.path.join(imgdir, m.group(2)), encoding='utf8').read()
+    return f'<figure class="dia" role="img" aria-label="{m.group(1)}">{svg}</figure>'
+body = re.sub(r'<p><img alt="([^"]*)" src="(diagrams/[\w.-]+\.svg)" ?/?></p>', diagram, body)
+body = re.sub(r'src="([\w./-]+\.(?:png|svg))"', inline, body)
 body = re.sub(r'<p>(<img [^>]*alt="([^"]*)"[^>]*/?>)</p>', r'<figure>\1<figcaption>\2</figcaption></figure>', body)
 css = """
 :root{--bg:#f4f4f4;--paper:#fff;--ink:#161616;--muted:#525252;--line:#e0e0e0;--accent:#0f62fe;--code:#f2f4f8;--th:#f4f4f4}
@@ -35,7 +41,7 @@ table{border-collapse:collapse;width:100%;margin:16px 0;font-size:.93rem;display
 th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--th);font-weight:600}
 figure{margin:20px 0}img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:4px;display:block}
 figcaption{color:var(--muted);font-size:.85rem;margin-top:6px}
-.narrow img{max-width:300px}.narrow2 img{max-width:620px}
+.narrow img{max-width:300px}.dia{background:#fff;padding:12px;border:1px solid var(--line);border-radius:4px;overflow-x:auto}.dia svg{display:block;margin:0 auto;max-width:100%;height:auto}.narrow2 img{max-width:620px}
 .tabs4{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:16px 0}.tabs4 p{display:contents}
 @media(min-width:800px){.tabs4{grid-template-columns:repeat(4,1fr)}}
 .toc{background:var(--th);border:1px solid var(--line);border-radius:4px;padding:12px 20px;margin:24px 0}

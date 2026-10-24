@@ -505,3 +505,59 @@ The contract is also served by the Workbench at http://127.0.0.1:4000/api/contra
 | Versions: Pull refused, same files changed | See *Git from the terminal* above |
 | Slow on a large tenant | Policies and raw alerts can take seconds; narrow with filters. Each source keeps at most 5,000 rows and the widget says when it was cut |
 | A Concert Operate action reports an error | Read the banner: it quotes the server. Policy lock and unlock are not supported by the server |
+
+## 15. How it all connects: interaction diagrams
+
+Every interaction, drawn from the code. The same diagrams, as editable Mermaid, are in `docs/ui-interactions.md` (GitHub draws them).
+
+### From idea to Concert Operate
+
+![From idea to Concert Operate](diagrams/1.svg)
+
+### Editor modes
+
+![Editor modes](diagrams/2.svg)
+
+### The editor's parts
+
+![The editor's parts](diagrams/3.svg)
+
+### Building a widget
+
+![Building a widget](diagrams/4.svg)
+
+### How data reaches a widget
+
+![How data reaches a widget](diagrams/5.svg)
+
+### What a click does
+
+![What a click does](diagrams/6.svg)
+
+### Building an Action flow
+
+![Building an Action flow](diagrams/7.svg)
+
+### A flow at runtime: the drill-down
+
+![A flow at runtime: the drill-down](diagrams/8.svg)
+
+### A Concert Operate action
+
+![A Concert Operate action](diagrams/9.svg)
+
+### Changes a viewer makes for themselves
+
+![Changes a viewer makes for themselves](diagrams/10.svg)
+
+### Dashboard versions in git
+
+![Dashboard versions in git](diagrams/11.svg)
+
+### The API check
+
+![The API check](diagrams/12.svg)
+
+### Deploying
+
+![Deploying](diagrams/13.svg)
