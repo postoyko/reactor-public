@@ -6,7 +6,7 @@ set -euo pipefail
 # User: postoyko
 #
 # SOURCE OF TRUTH:  dashboards/<name>/        (edit and drop new versions HERE)
-# GENERATED COPY:   dashboard-extension/src/components/<name>/   (overwritten on every run)
+# GENERATED COPY:   dashboard-extension/src/components/<name>/   (overwritten on every run; ignored by git)
 #
 # Usage:  ./deploy-dashboards.sh            normal run
 #         FORCE=1 ./deploy-dashboards.sh    overwrite even if the generated copy is newer

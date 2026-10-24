@@ -5,7 +5,7 @@ Custom dashboards and the Dashboard Designer for IBM Concert Operate / Cloud Pak
 | Folder / file | What it is |
 | --- | --- |
 | `dashboard-extension/` | IBM's UI extension toolkit (aiops-ui-extension-template) with these dashboards built in |
-| `dashboards/` | The dashboards' source, one folder each; `deploy-dashboards.sh` copies them into the toolkit |
+| `dashboards/` | The dashboards' source, one folder each; `deploy-dashboards.sh` copies them into the toolkit (`dashboard-extension/src/components/<name>/`, made on every deploy and not kept in git) |
 | `scaffold/` | Concert Workbench: a local tool (http://127.0.0.1:4000) to design, publish and deploy dashboards |
 | `scaffold/designer/` | The Dashboard Designer's master copy |
 | `deploy-dashboards.sh` | Builds and deploys everything to the cluster |
