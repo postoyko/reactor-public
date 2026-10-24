@@ -19,7 +19,17 @@ export interface SourceState {
   loading: boolean;
   error?: string;
   updated?: number;
+  /** How many rows the answer had when more than MAX_ROWS were kept. */
+  truncated?: number;
 }
+
+/* Limits that keep a dashboard usable on large tenants. */
+/** Rows kept per source; the widget says when an answer had more. */
+export const MAX_ROWS = 5000;
+/** A query that has not answered by then counts as failed (the last good rows stay on screen). */
+export const QUERY_TIMEOUT_MS = 60000;
+/** A source is not refreshed more often than this many times its own last load time (Policies takes ~12 s). */
+const SLOW_FACTOR = 10;
 
 const EMPTY: SourceState = { rows: [], loading: false };
 
@@ -32,6 +42,12 @@ interface Entry {
   timerMs: number;
   seq: number;
   started: boolean;
+  /** A load is running: timer ticks wait for it instead of piling up requests. */
+  inflight: boolean;
+  /** How long the last load took, in ms. */
+  lastMs: number;
+  /** A refresh was due while the page was hidden. */
+  stale?: boolean;
 }
 
 export function sourceKey(query: QueryName, filter?: string): string {
@@ -126,7 +142,9 @@ export class DataHub {
   private entries = new Map<string, Entry>();
   private nextSub = 1;
 
-  constructor(private fetcher: Fetcher = defaultFetcher, private tenantId: string = ALERT_QUERY_PARAMS.tenantId) {}
+  constructor(private fetcher: Fetcher = defaultFetcher, private tenantId: string = ALERT_QUERY_PARAMS.tenantId) {
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', this.onVisible);
+  }
 
   paramsFor(query: QueryName, filter: string): Record<string, unknown> {
     if (query === 'getAlerts') {
@@ -172,7 +190,7 @@ export class DataHub {
     const key = sourceKey(query, filter);
     let e = this.entries.get(key);
     if (!e) {
-      e = { query, filter: (filter || '').trim(), state: { rows: [], loading: false }, subs: new Map(), timerMs: 0, seq: 0, started: false };
+      e = { query, filter: (filter || '').trim(), state: { rows: [], loading: false }, subs: new Map(), timerMs: 0, seq: 0, started: false, inflight: false, lastMs: 0 };
       this.entries.set(key, e);
     }
     const id = this.nextSub++;
@@ -195,9 +213,10 @@ export class DataHub {
     };
   }
 
+  /** Reloads one source, or all of them; a source whose last load is still running is left to finish. */
   refresh(key?: string) {
-    if (key) { this.load(key); return; }
-    Array.from(this.entries.keys()).forEach(k => this.load(k));
+    const keys = key ? [key] : Array.from(this.entries.keys());
+    keys.forEach(k => { const e = this.entries.get(k); if (e && !e.inflight) this.load(k); });
   }
 
   private retime(e: Entry) {
@@ -207,8 +226,22 @@ export class DataHub {
     if (e.timer) clearInterval(e.timer);
     e.timer = undefined;
     e.timerMs = ms;
-    if (ms > 0) e.timer = setInterval(() => this.load(sourceKey(e.query, e.filter)), ms);
+    if (ms > 0) e.timer = setInterval(() => this.tick(e), ms);
   }
+
+  /** A scheduled refresh: skipped while the page is hidden, while the last load still runs, and for slow sources too soon after the last one. */
+  private tick(e: Entry) {
+    if (typeof document !== 'undefined' && document.hidden) { e.stale = true; return; }
+    if (e.inflight) return;
+    if (e.state.updated !== undefined && Date.now() - e.state.updated < e.lastMs * SLOW_FACTOR) return;
+    this.load(sourceKey(e.query, e.filter));
+  }
+
+  /** Back on the page: refresh what went stale while it was hidden. */
+  private onVisible = () => {
+    if (typeof document === 'undefined' || document.hidden) return;
+    this.entries.forEach(e => { if (e.stale) { e.stale = false; if (!e.inflight) this.load(sourceKey(e.query, e.filter)); } });
+  };
 
   private notify(e: Entry) {
     Array.from(e.subs.values()).forEach(s => s.fn());
@@ -298,6 +331,8 @@ export class DataHub {
     const e = this.entries.get(key);
     if (!e) return;
     const seq = ++e.seq;
+    const t0 = Date.now();
+    e.inflight = true;
     if (shapeOf(e.query) === 'alerts' || shapeOf(e.query) === 'stories') void this.directory(); // who is in which group, so owners can give their rows a team
     e.state = { ...e.state, loading: true };
     this.notify(e);
@@ -316,10 +351,13 @@ export class DataHub {
     } catch (err) {
       p = Promise.reject(err);
     }
-    p.then(
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const limit = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error(`No answer after ${QUERY_TIMEOUT_MS / 1000} s.`)), QUERY_TIMEOUT_MS); });
+    Promise.race([p, limit]).finally(() => { if (timer) clearTimeout(timer); if (e.seq === seq) { e.inflight = false; e.lastMs = Date.now() - t0; } }).then(
       data => {
         if (e.seq !== seq) return;
-        e.state = { rows: toRows(e.query, data, e.filter), loading: false, updated: Date.now() };
+        const all = toRows(e.query, data, e.filter);
+        e.state = { rows: all.length > MAX_ROWS ? all.slice(0, MAX_ROWS) : all, loading: false, updated: Date.now(), ...(all.length > MAX_ROWS ? { truncated: all.length } : {}) };
         this.applyTeams(e);
         this.notify(e);
         this.shareRunbooks(e);

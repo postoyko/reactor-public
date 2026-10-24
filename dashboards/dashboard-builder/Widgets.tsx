@@ -105,6 +105,7 @@ export function Status({ d, children }: { d: WidgetData; children: React.ReactNo
   return (
     <>
       {state.error && <div className="db-banner" role="alert">Refresh failed: {state.error}. Showing the last result.</div>}
+      {state.truncated && <div className="db-banner">Showing the first {state.rows.length.toLocaleString()} of {state.truncated.toLocaleString()} rows. Narrow the source (a filter or a condition) to see the rest.</div>}
       {children}
     </>
   );

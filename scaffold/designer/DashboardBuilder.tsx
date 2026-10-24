@@ -13,20 +13,20 @@ import './dashboard-builder.scss';
 import { ActionLink, Cond, Dashboard, Filter, FilterBarConfig, QueryName, Row, Widget } from './types';
 import { ActionApi, ActionCtx, coerce } from './actions';
 import { argKind, fill } from './component-api';
-import { partValues, platformAction } from './platform-actions';
+import { hasPolicyNames, partValues, platformAction, POLICY_PARTS, resolvePolicies } from './platform-actions';
 import { PLATFORM_ID } from './sources';
 import { carbonSpec, carbonDefaults } from './carbon-specs';
 import Library, { DockTab, LibSection } from './Library';
 import Menu from './Menu';
 import { Glyph } from './Glyph';
 import { typeLabel } from './meta';
-import { DataHub, sourceKey } from './datahub';
+import { callApi, DataHub, sourceKey } from './datahub';
 import { BuilderCtx, BuilderContext } from './context';
 import { findSpot, fitHeights, moveItem } from './grid';
 import { defaultConfig, defaultTitle, minSize, NATIVE, TILES } from './registry';
 import { CARBON, GROUPS } from './carbon-catalog';
 import { cloneDashboard, exportJson, importJson, loadState, newId, saveState, sharedDashboard, StoreState } from './store';
-import { applyFilters, DEFAULT_GROUP, fieldLabel } from './rows';
+import { applyFilters, DEFAULT_GROUP, fieldLabel, toRows } from './rows';
 import GridCanvas from './GridCanvas';
 import { NestApi, NestCtx } from './nest';
 import { MAX_DEPTH, cloneSubtree, isContainer, isContainerType, slotOwner, slotsOf, subtreeIds } from './nesting';
@@ -325,12 +325,29 @@ export default function DashboardBuilder(props: Props) {
       alertIds = rows.map(r => String(r.id)).filter(Boolean).slice(0, 1000);
       if (!alertIds.length) { setNotice({ kind: 'warning', text: `“${t.title}” shows no alerts, so nothing was sent.` }); return; }
     }
-    const c = spec.call(v, alertIds);
-    if (!window.confirm(`${c.summary}?\n\nThis changes data in Concert Operate.`)) return;
-    hub.call(c.name, c.params).then(
-      () => setNotice({ kind: 'info', text: `${c.summary}: done.` }),
-      (err: any) => setNotice({ kind: 'error', text: `${c.summary} failed: ${err && err.message ? err.message : 'the server refused it'}` })
-    );
+    // Policies may be named rather than given by id: look the names up in the Policies source (loaded if no widget has it)
+    const named = POLICY_PARTS.filter(k => hasPolicyNames(v[k]));
+    const policyRows = (): Promise<Row[]> => {
+      const have = hub.snapshot(sourceKey('getPolicies', '')).rows;
+      if (have.length) return Promise.resolve(have);
+      setNotice({ kind: 'info', text: 'Looking up policy names… (the first time takes a few seconds on large tenants)' });
+      return callApi('getPoliciesMetadata', {}, props.tenantId || undefined).then(d => toRows('getPolicies', d));
+    };
+    (named.length ? policyRows() : Promise.resolve([] as Row[])).then(rows => {
+      const unknown: string[] = [];
+      named.forEach(k => { const r = resolvePolicies(v[k], rows); v[k] = r.text; unknown.push(...r.unknown); });
+      if (named.length && POLICY_PARTS.every(k => !v[k] || !v[k].trim()) && unknown.length) {
+        setNotice({ kind: 'warning', text: `No policy is called ${unknown.map(u => `“${u}”`).join(', ')}, so nothing was sent.` });
+        return;
+      }
+      const c = spec.call(v, alertIds);
+      const extra = unknown.length ? `\n\nNot found, left out: ${unknown.join(', ')}` : '';
+      if (!window.confirm(`${c.summary}?${extra}\n\nThis changes data in Concert Operate.`)) return;
+      hub.call(c.name, c.params).then(
+        () => setNotice({ kind: 'info', text: `${c.summary}: done.` }),
+        (err: any) => setNotice({ kind: 'error', text: `${c.summary} failed: ${err && err.message ? err.message : 'the server refused it'}` })
+      );
+    }, (err: any) => setNotice({ kind: 'error', text: `The policy names could not be looked up: ${err && err.message ? err.message : err}` }));
   };
   const runAction = useCallback((l: ActionLink, value: string) => {
     if (l.to === PLATFORM_ID) { runPlatform(l, value); return; }

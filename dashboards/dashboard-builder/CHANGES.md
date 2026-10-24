@@ -1,5 +1,17 @@
 # Dashboard Designer changes
 
+## v1.60.0
+**Policies by name.** Policy actions (activate, deploy, stop deploying, reject, restore, rename) take policy names as well as ids. Names are looked up in the Policies source (fetched once if no widget shows it); names that match no policy are listed in the confirmation and left out. Names keep their spaces: several are separated by commas. New template **Policy manager**: every policy in a searchable table, with a box per action.
+
+**Large tenants.**
+- A source keeps at most 5,000 rows; the widget says so when an answer had more ("Showing the first 5,000 of 12,345 rows").
+- A query that has not answered after 60 seconds counts as failed; the last good rows stay on screen.
+- One load at a time per source: a refresh (timer or button) while a load still runs waits for it instead of stacking requests.
+- No refreshing while the browser tab is hidden; what went stale refreshes when the tab comes back.
+- A slow source is not refreshed more often than ten times its own load time (Policies takes about 12 seconds, so at most every two minutes).
+
+**Tidy.** The code is lint-clean. `scaffold/designer` is the master copy: `./sync-designer.sh` copies it to `dashboards/dashboard-builder`, and deploying stops if the two differ.
+
 ## v1.59.1
 - Topology resource (checked against a real Concert Operate): the row takes its `_id` as its id, and epoch-millisecond times such as beginTime and observedTime are read as times, so they show as dates and can drive a timeline.
 

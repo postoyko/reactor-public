@@ -558,5 +558,6 @@ export function CarbonWidget({ w }: { w: Widget }) {
 function Bound({ w, def, p }: { w: Widget; def: CarbonDef; p: Props }) {
   const d = useWidgetData(w);
   // Rows widgets draw their own status; the others show a figure only once data has arrived.
-  return <div className="db-carbon">{def.uses === 'rows' ? def.render({ p, w, d }) : <>{def.render({ p, w, d })}{d.state.error && d.state.rows.length === 0 && (/^Enter the /.test(d.state.error) ? <div className="db-note">{d.state.error}</div> : <div className="db-note" role="alert">Query failed: {d.state.error}</div>)}</>}</div>;
+  const cut = d.state.truncated ? <div className="db-note">Showing the first {d.state.rows.length.toLocaleString()} of {d.state.truncated.toLocaleString()} rows: narrow the source to see the rest.</div> : null;
+  return <div className="db-carbon">{cut}{def.uses === 'rows' ? def.render({ p, w, d }) : <>{def.render({ p, w, d })}{d.state.error && d.state.rows.length === 0 && (/^Enter the /.test(d.state.error) ? <div className="db-note">{d.state.error}</div> : <div className="db-note" role="alert">Query failed: {d.state.error}</div>)}</>}</div>;
 }

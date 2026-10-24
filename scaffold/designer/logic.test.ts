@@ -6,7 +6,7 @@
 import { compact, findSpot, moveItem, overlaps, resizeItem, clampBox, gridHeight } from './grid';
 import { alertRows, incidentRows, groupMetric, metricValue, timeBins, applyFilters, orderSeverity } from './rows';
 import { sanitizeDashboard, importJson, exportJson, starterDashboard, loadState, saveState, cloneDashboard, STORE_KEY } from './store';
-import { DataHub, sourceKey } from './datahub';
+import { DataHub, MAX_ROWS, sourceKey } from './datahub';
 import { Box } from './types';
 
 const b = (id: string, x: number, y: number, w: number, h: number): Box => ({ id, x, y, w, h });
@@ -214,15 +214,41 @@ describe('datahub', () => {
     expect(s.rows).toHaveLength(3);
     rel();
   });
-  it('ignores a stale response that arrives after a newer one', async () => {
+  it('runs one load at a time: a refresh while a load runs waits for it', async () => {
     const resolvers: Array<(v: any) => void> = [];
     const hub = new DataHub(() => new Promise(res => { resolvers.push(res); }), 't1');
     const rel = hub.acquire('getAlerts', undefined, 0, () => {});
     hub.refresh();
+    expect(resolvers).toHaveLength(1);
+    resolvers[0]({ tenant: { alerts: { columns: [{ name: 'id' }], rows: [{ fields: ['old'] }] } } });
+    await tick();
+    hub.refresh();
+    expect(resolvers).toHaveLength(2);
     resolvers[1]({ tenant: { alerts: { columns: [{ name: 'id' }], rows: [{ fields: ['new'] }] } } });
-    resolvers[0]({ tenant: { alerts: { columns: [{ name: 'id' }], rows: [{ fields: ['old1'] }, { fields: ['old2'] }] } } });
     await tick();
     expect(hub.snapshot(sourceKey('getAlerts')).rows.map(r => r.id)).toEqual(['new']);
+    rel();
+  });
+  it('ignores an answer that arrives after its source was released', async () => {
+    const resolvers: Array<(v: any) => void> = [];
+    const hub = new DataHub(() => new Promise(res => { resolvers.push(res); }), 't1');
+    let calls = 0;
+    const rel = hub.acquire('getAlerts', undefined, 0, () => { calls++; });
+    const before = calls;
+    rel();
+    resolvers[0]({ tenant: { alerts: { columns: [{ name: 'id' }], rows: [{ fields: ['late'] }] } } });
+    await tick();
+    expect(calls).toBe(before);
+    expect(hub.snapshot(sourceKey('getAlerts')).rows).toEqual([]);
+  });
+  it('keeps at most MAX_ROWS rows and says how many there were', async () => {
+    const many = Array.from({ length: MAX_ROWS + 7 }, (_, i) => ({ fields: [`a${i}`] }));
+    const hub = new DataHub(async () => ({ tenant: { alerts: { columns: [{ name: 'id' }], rows: many } } }), 't1');
+    const rel = hub.acquire('getAlerts', undefined, 0, () => {});
+    await tick();
+    const st = hub.snapshot(sourceKey('getAlerts'));
+    expect(st.rows).toHaveLength(MAX_ROWS);
+    expect(st.truncated).toBe(MAX_ROWS + 7);
     rel();
   });
   it('uses the tenant and the right params per query, and survives a throwing fetcher', async () => {
@@ -547,5 +573,21 @@ describe('topology resource (fourth real check)', () => {
     const rows = toRows('getTopologyResource', { tenant: { __typename: 'Tenant', topologyResource: { __typename: 'TopologyResource', _id: 'Epg9I0zlCjLNbXBkwHfgOA', name: 'tu201_12.55.182.10_12346_5062', beginTime: 1791366456101, observedTime: 1791366456101, endTime: null } } });
     expect(rows).toEqual([{ _id: 'Epg9I0zlCjLNbXBkwHfgOA', name: 'tu201_12.55.182.10_12346_5062', beginTime: 1791366456101, observedTime: 1791366456101, id: 'Epg9I0zlCjLNbXBkwHfgOA' }]);
     expect(fieldsOf('getTopologyResource').find(f => f.key === 'beginTime')!.kind).toBe('time');
+  });
+});
+
+import { hasPolicyNames, resolvePolicies } from './platform-actions';
+describe('policies by name', () => {
+  const policies = [{ id: '092a9508-1f46-4535-942c-ed48280ff96f', name: 'Default alert repeat create guard policy' }, { id: '11111111-2222-3333-4444-555555555555', name: 'Close incidents when all alerts clear' }];
+  it('turns names into ids, keeps ids, reports names it does not know', () => {
+    expect(hasPolicyNames('092a9508-1f46-4535-942c-ed48280ff96f')).toBe(false);
+    expect(hasPolicyNames('Close incidents when all alerts clear')).toBe(true);
+    const r = resolvePolicies('Default alert repeat create guard policy, close INCIDENTS when all alerts clear, 11111111-2222-3333-4444-555555555555, No such policy', policies);
+    expect(r.text).toBe('092a9508-1f46-4535-942c-ed48280ff96f, 11111111-2222-3333-4444-555555555555, 11111111-2222-3333-4444-555555555555');
+    expect(r.unknown).toEqual(['No such policy']);
+  });
+  it('names with spaces stay whole when the action splits them', () => {
+    const c = platformAction('api:activatePolicy')!.call({ policyIds: 'a b c, d e' }, []);
+    expect(c.params.policyIds).toEqual(['a b c', 'd e']);
   });
 });
