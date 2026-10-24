@@ -422,7 +422,9 @@ describe('more data sources', () => {
 
 describe('Concert Operate actions', () => {
   it('the platform target offers the mutations; alert widgets offer the row actions', () => {
-    expect(actionsOf(PLATFORM).map(a => a.id)).toEqual(expect.arrayContaining(['api:createIncident', 'api:addToIncident', 'api:activatePolicy', 'api:lockPolicy']));
+    expect(actionsOf(PLATFORM).map(a => a.id)).toEqual(expect.arrayContaining(['api:createIncident', 'api:addToIncident', 'api:activatePolicy', 'api:rejectPolicy', 'api:deployPolicy', 'api:renamePolicy']));
+    // refused by Concert Operate's API (setPolicyLock), so not offered
+    expect(actionsOf(PLATFORM).some(a => a.id === 'api:lockPolicy' || a.id === 'api:unlockPolicy')).toBe(false);
     expect(actionsOf({ type: 'table', config: { query: 'getAlerts' } }).map(a => a.id)).toEqual(expect.arrayContaining(ROW_ACTIONS.map(a => a.id)));
     expect(actionsOf({ type: 'table', config: { query: 'getStories' } }).some(a => a.id.startsWith('api:'))).toBe(false);
     expect(actionsOf({ type: 'table', config: { query: 'getStories' } }).some(a => a.id === 'cfg:filter')).toBe(true);
@@ -518,4 +520,24 @@ describe('API check: mutation parameter probe', () => {
     expect(r.status).toBe('error');
     expect(r.note).toMatch(/^WARNING/);
   });
+});
+
+describe('change actions match the parameters Concert Operate requires (probe, 2026-10-24)', () => {
+  const call = (id: string, v: Record<string, string>, rows: string[] = []) => platformAction(id)!.call(v, rows);
+  it('createIncidentMutation: alertIds [String]!, priority Int!', () => {
+    const c = call('api:createIncident', { alertIds: 'a1,a2', priority: '2', description: 'x' });
+    expect(c.name).toBe('createIncidentMutation');
+    expect(c.params.alertIds).toEqual(['a1', 'a2']);
+    expect(Number.isInteger(c.params.priority)).toBe(true);
+  });
+  it('updateIncidentMutation: alertIds [String]!', () => { expect(call('api:rowsToIncident', { correlationKey: 'k' }, ['a1']).params).toMatchObject({ alertIds: ['a1'] }); });
+  it('activate / reject / restore: policyIds [ID!]!', () => {
+    ['api:activatePolicy', 'api:rejectPolicy', 'api:restorePolicy'].forEach(id => expect(call(id, { policyIds: 'p1, p2' }).params.policyIds).toEqual(['p1', 'p2']));
+  });
+  it('setPolicyDeployed: policyId ID!, deployed Boolean!', () => {
+    expect(call('api:deployPolicy', { policyId: ' p1 ' }).params).toEqual({ policyId: 'p1', deployed: true });
+    expect(call('api:undeployPolicy', { policyId: 'p1' }).params).toEqual({ policyId: 'p1', deployed: false });
+  });
+  it('renamePolicy: policyId ID!, name String!', () => { expect(call('api:renamePolicy', { policyId: 'p1', name: 'New' }).params).toEqual({ policyId: 'p1', name: 'New' }); });
+  it('lock / unlock are marked unsupported', () => { expect(platformAction('api:lockPolicy')!.unsupported).toBeTruthy(); });
 });

@@ -590,8 +590,8 @@ const incidentActions = (): Widget[] => {
   s.add(cc('TextInput'), 'Incident from ids', 8, 8, 4, 3, { props: { labelText: 'Create an incident from alert ids', placeholder: 'alert-1, alert-2, then Enter' },
     on: [{ event: 'enter', to: PLATFORM_ID, do: 'api:createIncident', arg: JSON.stringify({ alertIds: '{value}', priority: '3', description: 'Created from alert ids' }) }] });
   s.add('text', 'Policies', 8, 11, 4, 4, { ...NOTE, text: 'Policies: type one or more policy ids (separated by commas) in a box below and press Enter.' });
-  s.add(cc('TextInput'), 'Lock policies', 0, 15, 4, 3, { props: { labelText: 'Lock policies', placeholder: 'policy ids, then Enter' }, on: [{ event: 'enter', to: PLATFORM_ID, do: 'api:lockPolicy', arg: JSON.stringify({ policyIds: '{value}' }) }] });
-  s.add(cc('TextInput'), 'Unlock policies', 4, 15, 4, 3, { props: { labelText: 'Unlock policies', placeholder: 'policy ids, then Enter' }, on: [{ event: 'enter', to: PLATFORM_ID, do: 'api:unlockPolicy', arg: JSON.stringify({ policyIds: '{value}' }) }] });
+  s.add(cc('TextInput'), 'Reject policies', 0, 15, 4, 3, { props: { labelText: 'Reject policies', placeholder: 'policy ids, then Enter' }, on: [{ event: 'enter', to: PLATFORM_ID, do: 'api:rejectPolicy', arg: JSON.stringify({ policyIds: '{value}', commentText: 'Rejected from the Incident and policy actions dashboard' }) }] });
+  s.add(cc('TextInput'), 'Restore policies', 4, 15, 4, 3, { props: { labelText: 'Restore policies', placeholder: 'policy ids, then Enter' }, on: [{ event: 'enter', to: PLATFORM_ID, do: 'api:restorePolicy', arg: JSON.stringify({ policyIds: '{value}' }) }] });
   s.add(cc('TextInput'), 'Activate policies', 8, 15, 4, 3, { props: { labelText: 'Activate policies', placeholder: 'policy ids, then Enter' }, on: [{ event: 'enter', to: PLATFORM_ID, do: 'api:activatePolicy', arg: JSON.stringify({ policyIds: '{value}' }) }] });
   return s.list;
 };
@@ -695,7 +695,7 @@ export const TEMPLATES: Template[] = [
     detail: 'Master and detail with the incident sources: a dropdown of incident ids sets the source parameter of four widgets (Alerts of an incident, Alert groups of an incident, Related incidents) through "Change its source parameter" actions. Open Flows to see the wiring.',
     build: headed('Incident drill-down', 'Choose an incident: its alerts, alert groups and related incidents follow. Built with Change its source parameter.', incidentDrill) },
   { id: 'opsactions', rowH: 28, bar: bar(A('severityLabel', 'team')), name: 'Incident and policy actions', tagline: 'Create incidents and change policies from the dashboard',
-    detail: 'The Concert Operate actions: a button creates a P2 incident from the alerts the table shows, a box adds them to an incident, others create an incident from alert ids or lock, unlock and activate policies. Each one asks for confirmation before anything is sent.',
+    detail: 'The Concert Operate actions: a button creates a P2 incident from the alerts the table shows, a box adds them to an incident, others create an incident from alert ids or reject, restore and activate policies. Each one asks for confirmation before anything is sent.',
     build: headed('Incident and policy actions', 'Buttons and boxes that change Concert Operate. Each asks you to confirm first.', incidentActions) },
   { id: 'filterlab', rowH: 28, name: 'Alert filter lab', tagline: 'One server filter driving raw alerts and their incidents',
     detail: 'Type any alert filter and press Enter: figures, charts and tables on raw alerts (getRawAlerts) and on the incidents that contain them (getStoriesByAlerts) all switch to it.',

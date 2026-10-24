@@ -22,6 +22,8 @@ export interface PlatformAction {
   label: string;
   /** Uses the alerts shown by the target widget instead of an "alert ids" field. */
   fromRows?: boolean;
+  /** Why this action cannot work on current Concert Operate: it is no longer offered, and runs only say so. */
+  unsupported?: string;
   parts: ArgPart[];
   /** The API function and its parameters, from the filled-in fields (and the widget's alert ids). */
   call: (v: Record<string, string>, alertIds: string[]) => { name: string; params: Record<string, unknown>; summary: string };
@@ -67,11 +69,12 @@ export const PLATFORM_ACTIONS: PlatformAction[] = [
     call: v => { const p = ids(v.policyIds); return { name: 'activatePolicy', params: { policyIds: p }, summary: `Activate ${n(p, 'policy')}`.replace('policys', 'policies') }; }
   },
   {
-    id: 'api:lockPolicy', label: 'Lock policies', parts: [POLICY_IDS],
+    // Concert's own setPolicyLock sends `locked`, which Mutation.setPolicyStatus does not accept (API check, 2026-10-24)
+    id: 'api:lockPolicy', label: 'Lock policies', parts: [POLICY_IDS], unsupported: 'Concert Operate refuses policy locking from its API (setPolicyLock sends an argument the server does not know).',
     call: v => { const p = ids(v.policyIds); return { name: 'setPolicyLock', params: { policyIds: p, locked: true }, summary: `Lock ${n(p, 'policy')}`.replace('policys', 'policies') }; }
   },
   {
-    id: 'api:unlockPolicy', label: 'Unlock policies', parts: [POLICY_IDS],
+    id: 'api:unlockPolicy', label: 'Unlock policies', parts: [POLICY_IDS], unsupported: 'Concert Operate refuses policy unlocking from its API (setPolicyLock sends an argument the server does not know).',
     call: v => { const p = ids(v.policyIds); return { name: 'setPolicyLock', params: { policyIds: p, locked: false }, summary: `Unlock ${n(p, 'policy')}`.replace('policys', 'policies') }; }
   },
   {
@@ -97,6 +100,8 @@ export const PLATFORM_ACTIONS: PlatformAction[] = [
 ];
 
 const ALL = new Map([...ROW_ACTIONS, ...PLATFORM_ACTIONS].map(a => [a.id, a]));
+/** The actions the Designer offers: the ones current Concert Operate accepts. */
+export const OFFERED_PLATFORM_ACTIONS = PLATFORM_ACTIONS.filter(a => !a.unsupported);
 export const platformAction = (id: string): PlatformAction | undefined => ALL.get(id);
 
 /** The fields of an action, from its stored arg (JSON) with the defaults filled in. */

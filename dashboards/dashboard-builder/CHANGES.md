@@ -1,5 +1,10 @@
 # Dashboard Designer changes
 
+## v1.59.0
+Concert Operate actions checked against the parameters a real Concert Operate requires (API check probe, 2026-10-24):
+- Confirmed: create an incident (alertIds, priority), add alerts to an incident (alertIds), activate / reject / restore policies (policyIds), deploy / stop deploying a policy (policyId, deployed), rename a policy (policyId, name). Tests now pin each action to those parameters.
+- *Lock policies* and *Unlock policies* are no longer offered: Concert Operate's own setPolicyLock sends an argument its server does not accept, so they cannot work from any client on this version. A dashboard that still has one says so when it runs, instead of failing silently. The *Incident and policy actions* template now has Reject and Restore in their place.
+
 ## v1.58.0
 - API check: new opt-in *Ask the server which parameters each incident and policy action needs*. Concert Operate does not allow GraphQL introspection (checked 2026-10-24), but it names every missing required parameter when it refuses a request. The check sends each change action a request with an invalid tenant id, which the server refuses while checking variables, before anything runs, and reports the parameters it named. If a server ever accepted such a request, the check says so in capitals.
 

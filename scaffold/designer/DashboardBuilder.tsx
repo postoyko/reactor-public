@@ -311,6 +311,7 @@ export default function DashboardBuilder(props: Props) {
   const runPlatform = (l: ActionLink, value: string, t?: Widget) => {
     const spec = platformAction(l.do);
     if (!spec) return;
+    if (spec.unsupported) { setNotice({ kind: 'warning', text: `${spec.label}: ${spec.unsupported} Remove or change this action in Flows.` }); return; }
     const v = partValues(spec.parts, l.arg);
     Object.keys(v).forEach(k => { v[k] = fill(v[k], value); });
     let alertIds: string[] = [];

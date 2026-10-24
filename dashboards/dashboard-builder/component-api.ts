@@ -11,7 +11,7 @@
 
 import { carbonSpec, Kind } from './carbon-specs';
 import { ActionLink, Widget } from './types';
-import { ArgPart, defaultParts, PLATFORM_ACTIONS, PlatformAction, ROW_ACTIONS } from './platform-actions';
+import { ArgPart, defaultParts, OFFERED_PLATFORM_ACTIONS, PlatformAction, ROW_ACTIONS } from './platform-actions';
 import { isAlertSource, PLATFORM_ID } from './sources';
 
 export interface EventSpec { id: string; label: string; /** What the event carries, for "only when the value is" and {value}. */ carries?: string }
@@ -70,7 +70,7 @@ const arg = (kind: Kind, label: string, extra?: Partial<ActionArg>): ActionArg =
 
 /** Things that can be done to a widget: for every widget, plus its commands and a "set" for each of its settings. */
 export function actionsOf(w: W): ActionSpec[] {
-  if (w.type === PLATFORM.type) return PLATFORM_ACTIONS.map(apiSpec);
+  if (w.type === PLATFORM.type) return OFFERED_PLATFORM_ACTIONS.map(apiSpec);
   const n = name(w);
   const out: ActionSpec[] = [
     { id: 'show', label: 'Show it', group: 'Visibility' },
