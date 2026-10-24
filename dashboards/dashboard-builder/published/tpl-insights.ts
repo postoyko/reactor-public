@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:PeoplePicker",
         "title": "Owner",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 2,
         "config": {
@@ -54,7 +54,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:PeoplePicker",
         "title": "Team",
         "x": 3,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 2,
         "config": {
@@ -75,7 +75,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Alerts with no incident",
         "x": 0,
-        "y": 6,
+        "y": 4,
         "w": 3,
         "h": 3,
         "config": {
@@ -97,7 +97,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Anomalies",
         "x": 3,
-        "y": 6,
+        "y": 4,
         "w": 3,
         "h": 3,
         "config": {
@@ -117,7 +117,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Seasonal",
         "x": 6,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -137,7 +137,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Automated runbooks",
         "x": 9,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -159,7 +159,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DonutChart",
         "title": "Runbook coverage",
         "x": 0,
-        "y": 9,
+        "y": 7,
         "w": 4,
         "h": 8,
         "config": {
@@ -174,7 +174,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:SimpleBarChart",
         "title": "Runbooks used",
         "x": 4,
-        "y": 9,
+        "y": 7,
         "w": 4,
         "h": 8,
         "config": {
@@ -198,7 +198,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:SimpleBarChart",
         "title": "Golden signals",
         "x": 8,
-        "y": 7,
+        "y": 5,
         "w": 4,
         "h": 8,
         "config": {
@@ -218,7 +218,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:SimpleBarChart",
         "title": "Entity types",
         "x": 0,
-        "y": 17,
+        "y": 15,
         "w": 4,
         "h": 8,
         "config": {
@@ -237,7 +237,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:SimpleBarChart",
         "title": "Alerts that keep recurring",
         "x": 4,
-        "y": 17,
+        "y": 15,
         "w": 4,
         "h": 8,
         "config": {
@@ -261,7 +261,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DonutChart",
         "title": "In an incident",
         "x": 8,
-        "y": 15,
+        "y": 13,
         "w": 4,
         "h": 8,
         "config": {
@@ -276,7 +276,7 @@ export const LAYOUT: unknown = {
         "type": "table",
         "title": "Alerts worth a look: anomalies and repeats",
         "x": 0,
-        "y": 25,
+        "y": 23,
         "w": 12,
         "h": 9,
         "config": {
@@ -311,7 +311,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:RunbookActivity",
         "title": "Runbook activity",
         "x": 0,
-        "y": 34,
+        "y": 32,
         "w": 6,
         "h": 13,
         "config": {
@@ -325,7 +325,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:IncidentInsights",
         "title": "Incident insights",
         "x": 6,
-        "y": 34,
+        "y": 32,
         "w": 6,
         "h": 13,
         "config": {

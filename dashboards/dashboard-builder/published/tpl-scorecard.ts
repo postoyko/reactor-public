@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ShapeIndicator",
         "title": "Critical status",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -57,7 +57,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:GaugeChart",
         "title": "Critical load",
         "x": 0,
-        "y": 7,
+        "y": 5,
         "w": 3,
         "h": 6,
         "config": {
@@ -81,7 +81,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:MeterChart",
         "title": "Critical budget",
         "x": 0,
-        "y": 13,
+        "y": 11,
         "w": 3,
         "h": 3,
         "config": {
@@ -105,7 +105,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ShapeIndicator",
         "title": "Major status",
         "x": 3,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -129,7 +129,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:GaugeChart",
         "title": "Major load",
         "x": 3,
-        "y": 7,
+        "y": 5,
         "w": 3,
         "h": 6,
         "config": {
@@ -153,7 +153,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:MeterChart",
         "title": "Major budget",
         "x": 3,
-        "y": 13,
+        "y": 11,
         "w": 3,
         "h": 3,
         "config": {
@@ -177,7 +177,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ShapeIndicator",
         "title": "Minor status",
         "x": 6,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -201,7 +201,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:GaugeChart",
         "title": "Minor load",
         "x": 6,
-        "y": 7,
+        "y": 5,
         "w": 3,
         "h": 6,
         "config": {
@@ -225,7 +225,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:MeterChart",
         "title": "Minor budget",
         "x": 6,
-        "y": 13,
+        "y": 11,
         "w": 3,
         "h": 3,
         "config": {
@@ -249,7 +249,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ShapeIndicator",
         "title": "Warning status",
         "x": 9,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -273,7 +273,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:GaugeChart",
         "title": "Warning load",
         "x": 9,
-        "y": 7,
+        "y": 5,
         "w": 3,
         "h": 6,
         "config": {
@@ -297,7 +297,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:MeterChart",
         "title": "Warning budget",
         "x": 9,
-        "y": 13,
+        "y": 11,
         "w": 3,
         "h": 3,
         "config": {
@@ -321,7 +321,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:AlluvialChart",
         "title": "Severity to team",
         "x": 0,
-        "y": 16,
+        "y": 14,
         "w": 7,
         "h": 9,
         "config": {
@@ -338,7 +338,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:HeatmapChart",
         "title": "Team and severity",
         "x": 7,
-        "y": 16,
+        "y": 14,
         "w": 5,
         "h": 9,
         "config": {

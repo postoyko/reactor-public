@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Tabs",
         "title": "Service review",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 12,
         "h": 22,
         "config": {

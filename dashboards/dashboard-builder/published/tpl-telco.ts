@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Open alerts",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 4,
         "h": 3,
         "config": {
@@ -51,7 +51,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Critical",
         "x": 4,
-        "y": 4,
+        "y": 2,
         "w": 4,
         "h": 3,
         "config": {
@@ -73,7 +73,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Open incidents",
         "x": 8,
-        "y": 4,
+        "y": 2,
         "w": 4,
         "h": 3,
         "config": {
@@ -96,7 +96,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Tabs",
         "title": "Network views",
         "x": 0,
-        "y": 7,
+        "y": 5,
         "w": 12,
         "h": 17,
         "config": {

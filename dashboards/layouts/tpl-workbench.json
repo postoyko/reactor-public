@@ -4,7 +4,7 @@
   "dashboard": {
     "id": "d-tpl-workbench",
     "name": "Triage workbench",
-    "updated": 1792767869943,
+    "updated": 1792866299515,
     "widgets": [
       {
         "id": "w-workbench-1",
@@ -13,7 +13,7 @@
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -29,7 +29,7 @@
         "type": "carbon:SplitPane",
         "title": "Workbench",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 12,
         "h": 24,
         "config": {

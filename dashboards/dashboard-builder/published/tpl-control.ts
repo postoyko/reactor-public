@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Alerts shown",
         "x": 3,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -48,7 +48,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Teams",
         "x": 6,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -64,7 +64,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Resources",
         "x": 9,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -80,7 +80,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:StackedBarChart",
         "title": "Severity by team",
         "x": 3,
-        "y": 7,
+        "y": 5,
         "w": 5,
         "h": 7,
         "config": {
@@ -96,7 +96,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DonutChart",
         "title": "By source",
         "x": 8,
-        "y": 7,
+        "y": 5,
         "w": 4,
         "h": 7,
         "config": {
@@ -112,7 +112,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DataTable",
         "title": "Alerts",
         "x": 3,
-        "y": 14,
+        "y": 12,
         "w": 9,
         "h": 10,
         "config": {
@@ -134,7 +134,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Dropdown",
         "title": "Severity",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 4,
         "config": {
@@ -154,7 +154,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:MultiSelect",
         "title": "Team",
         "x": 0,
-        "y": 8,
+        "y": 6,
         "w": 3,
         "h": 4,
         "config": {
@@ -174,7 +174,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:RadioButtonGroup",
         "title": "State",
         "x": 0,
-        "y": 12,
+        "y": 10,
         "w": 3,
         "h": 4,
         "config": {
@@ -193,7 +193,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ComboBox",
         "title": "Resource",
         "x": 0,
-        "y": 16,
+        "y": 14,
         "w": 3,
         "h": 4,
         "config": {
@@ -213,7 +213,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Search",
         "title": "Search summary",
         "x": 0,
-        "y": 20,
+        "y": 18,
         "w": 3,
         "h": 4,
         "config": {
@@ -244,7 +244,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Slider",
         "title": "Minimum severity",
         "x": 0,
-        "y": 24,
+        "y": 22,
         "w": 3,
         "h": 4,
         "config": {

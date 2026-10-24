@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ShapeIndicator",
         "title": "Worst severity",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -51,7 +51,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:IconIndicator",
         "title": "Critical alerts",
         "x": 3,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -75,7 +75,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:BadgeIndicator",
         "title": "Open alerts",
         "x": 6,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -93,7 +93,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Popover",
         "title": "By team",
         "x": 8,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -113,7 +113,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ComboButton",
         "title": "Quick filters",
         "x": 10,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -135,7 +135,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:GaugeChart",
         "title": "Alert load",
         "x": 0,
-        "y": 7,
+        "y": 5,
         "w": 3,
         "h": 7,
         "config": {
@@ -155,7 +155,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:StackedBarChart",
         "title": "Severity by team",
         "x": 3,
-        "y": 7,
+        "y": 5,
         "w": 5,
         "h": 7,
         "config": {
@@ -172,7 +172,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DonutChart",
         "title": "By source",
         "x": 8,
-        "y": 7,
+        "y": 5,
         "w": 4,
         "h": 7,
         "config": {
@@ -188,7 +188,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:AreaChart",
         "title": "Alerts over time by severity",
         "x": 0,
-        "y": 14,
+        "y": 12,
         "w": 6,
         "h": 8,
         "config": {
@@ -206,7 +206,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:HeatmapChart",
         "title": "Team and severity",
         "x": 6,
-        "y": 14,
+        "y": 12,
         "w": 6,
         "h": 8,
         "config": {
@@ -222,7 +222,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:AlluvialChart",
         "title": "Severity to team",
         "x": 0,
-        "y": 22,
+        "y": 20,
         "w": 7,
         "h": 9,
         "config": {
@@ -239,7 +239,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:TreemapChart",
         "title": "Busiest resources",
         "x": 7,
-        "y": 22,
+        "y": 20,
         "w": 5,
         "h": 9,
         "config": {
@@ -255,7 +255,7 @@ export const LAYOUT: unknown = {
         "type": "table",
         "title": "Alerts",
         "x": 0,
-        "y": 31,
+        "y": 29,
         "w": 12,
         "h": 9,
         "config": {

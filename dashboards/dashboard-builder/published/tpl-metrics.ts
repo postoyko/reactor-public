@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:LineChart",
         "title": "Node CPU (percent of request)",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 6,
         "h": 9,
         "config": {
@@ -55,7 +55,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:LineChart",
         "title": "Node memory (percent of request)",
         "x": 6,
-        "y": 4,
+        "y": 2,
         "w": 6,
         "h": 9,
         "config": {
@@ -77,7 +77,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:LineChart",
         "title": "Node CPU requested",
         "x": 0,
-        "y": 13,
+        "y": 11,
         "w": 6,
         "h": 9,
         "config": {
@@ -99,7 +99,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:LineChart",
         "title": "Node CPU: expected range",
         "x": 6,
-        "y": 13,
+        "y": 11,
         "w": 6,
         "h": 9,
         "config": {
@@ -121,7 +121,7 @@ export const LAYOUT: unknown = {
         "type": "table",
         "title": "Anomalous points",
         "x": 0,
-        "y": 22,
+        "y": 20,
         "w": 12,
         "h": 7,
         "config": {

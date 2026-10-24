@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Tag",
         "title": "Critical",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -56,7 +56,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Tag",
         "title": "Major",
         "x": 2,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -79,7 +79,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Tag",
         "title": "Minor",
         "x": 4,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -102,7 +102,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Tag",
         "title": "Warning",
         "x": 6,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -125,7 +125,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Tag",
         "title": "Information",
         "x": 8,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -148,7 +148,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Tag",
         "title": "Indeterminate",
         "x": 10,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -171,7 +171,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:InlineNotification",
         "title": "Critical alert banner",
         "x": 0,
-        "y": 7,
+        "y": 5,
         "w": 6,
         "h": 4,
         "config": {
@@ -198,7 +198,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:InlineNotification",
         "title": "Major alert banner",
         "x": 6,
-        "y": 7,
+        "y": 5,
         "w": 6,
         "h": 4,
         "config": {
@@ -225,7 +225,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ShapeIndicator",
         "title": "Worst severity",
         "x": 0,
-        "y": 11,
+        "y": 9,
         "w": 3,
         "h": 3,
         "config": {
@@ -243,7 +243,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:IconIndicator",
         "title": "Critical",
         "x": 3,
-        "y": 11,
+        "y": 9,
         "w": 3,
         "h": 3,
         "config": {
@@ -267,7 +267,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:IconIndicator",
         "title": "Major",
         "x": 6,
-        "y": 11,
+        "y": 9,
         "w": 3,
         "h": 3,
         "config": {
@@ -291,7 +291,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:BadgeIndicator",
         "title": "Not acknowledged",
         "x": 9,
-        "y": 11,
+        "y": 9,
         "w": 3,
         "h": 3,
         "config": {
@@ -313,7 +313,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ProgressBar",
         "title": "Critical against target",
         "x": 0,
-        "y": 14,
+        "y": 12,
         "w": 6,
         "h": 4,
         "config": {
@@ -337,7 +337,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ProgressBar",
         "title": "Major against budget",
         "x": 6,
-        "y": 14,
+        "y": 12,
         "w": 6,
         "h": 4,
         "config": {
@@ -361,7 +361,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Popover",
         "title": "By team",
         "x": 0,
-        "y": 18,
+        "y": 16,
         "w": 3,
         "h": 3,
         "config": {
@@ -380,7 +380,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ComboButton",
         "title": "Quick filters",
         "x": 3,
-        "y": 18,
+        "y": 16,
         "w": 4,
         "h": 3,
         "config": {
@@ -401,7 +401,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DataTable",
         "title": "Open alerts",
         "x": 0,
-        "y": 21,
+        "y": 19,
         "w": 8,
         "h": 10,
         "config": {
@@ -425,7 +425,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DonutChart",
         "title": "By severity",
         "x": 8,
-        "y": 18,
+        "y": 16,
         "w": 4,
         "h": 10,
         "config": {

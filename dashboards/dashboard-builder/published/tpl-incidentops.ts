@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Open incidents",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -56,7 +56,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Priority 1 and 2",
         "x": 2,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -86,7 +86,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Critical alerts",
         "x": 4,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -108,7 +108,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Major alerts",
         "x": 6,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -130,7 +130,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Not acknowledged",
         "x": 8,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -150,7 +150,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Resources affected",
         "x": 10,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -169,7 +169,7 @@ export const LAYOUT: unknown = {
         "type": "table",
         "title": "Application health",
         "x": 0,
-        "y": 7,
+        "y": 5,
         "w": 8,
         "h": 7,
         "config": {
@@ -195,7 +195,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:SimpleBarChart",
         "title": "Alerts by application",
         "x": 8,
-        "y": 7,
+        "y": 5,
         "w": 4,
         "h": 7,
         "config": {
@@ -215,7 +215,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DonutChart",
         "title": "Incidents by priority",
         "x": 0,
-        "y": 14,
+        "y": 12,
         "w": 3,
         "h": 8,
         "config": {
@@ -235,7 +235,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:SimpleBarChart",
         "title": "Critical alert categories",
         "x": 3,
-        "y": 14,
+        "y": 12,
         "w": 3,
         "h": 8,
         "config": {
@@ -258,7 +258,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:SimpleBarChart",
         "title": "Major alert categories",
         "x": 6,
-        "y": 14,
+        "y": 12,
         "w": 3,
         "h": 8,
         "config": {
@@ -281,7 +281,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DonutChart",
         "title": "Alert ingestion sources",
         "x": 9,
-        "y": 14,
+        "y": 12,
         "w": 3,
         "h": 8,
         "config": {
@@ -297,7 +297,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:SplitPane",
         "title": "Incidents and intelligence",
         "x": 0,
-        "y": 22,
+        "y": 20,
         "w": 12,
         "h": 17,
         "config": {
@@ -645,7 +645,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Accordion",
         "title": "Alerts",
         "x": 0,
-        "y": 39,
+        "y": 37,
         "w": 12,
         "h": 32,
         "config": {

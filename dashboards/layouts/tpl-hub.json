@@ -4,7 +4,7 @@
   "dashboard": {
     "id": "d-tpl-hub",
     "name": "Operations hub",
-    "updated": 1792767871050,
+    "updated": 1792866293791,
     "widgets": [
       {
         "id": "w-hub-1",
@@ -13,7 +13,7 @@
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -29,7 +29,7 @@
         "type": "carbon:Tabs",
         "title": "Operations hub",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 12,
         "h": 26,
         "config": {

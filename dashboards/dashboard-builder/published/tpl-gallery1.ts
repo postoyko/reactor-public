@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:SimpleBarChart",
         "title": "Alerts by severity",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 4,
         "h": 7,
         "config": {
@@ -48,7 +48,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:GroupedBarChart",
         "title": "Severity by team",
         "x": 4,
-        "y": 4,
+        "y": 2,
         "w": 4,
         "h": 7,
         "config": {
@@ -64,7 +64,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:StackedBarChart",
         "title": "Source by severity",
         "x": 8,
-        "y": 4,
+        "y": 2,
         "w": 4,
         "h": 7,
         "config": {
@@ -84,7 +84,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:LollipopChart",
         "title": "Busiest resources",
         "x": 0,
-        "y": 11,
+        "y": 9,
         "w": 4,
         "h": 7,
         "config": {
@@ -100,7 +100,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:PieChart",
         "title": "Alerts by type",
         "x": 4,
-        "y": 11,
+        "y": 9,
         "w": 4,
         "h": 7,
         "config": {
@@ -116,7 +116,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DonutChart",
         "title": "Alerts by team",
         "x": 8,
-        "y": 11,
+        "y": 9,
         "w": 4,
         "h": 7,
         "config": {
@@ -131,7 +131,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:TreemapChart",
         "title": "Resources by alert count",
         "x": 0,
-        "y": 18,
+        "y": 16,
         "w": 6,
         "h": 8,
         "config": {
@@ -147,7 +147,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:WordCloudChart",
         "title": "Alert types",
         "x": 6,
-        "y": 18,
+        "y": 16,
         "w": 6,
         "h": 8,
         "config": {

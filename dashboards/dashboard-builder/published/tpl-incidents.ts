@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Open incidents",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -56,7 +56,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Priority 1",
         "x": 3,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -85,7 +85,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Priority 2",
         "x": 6,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -114,7 +114,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Alerts in open incidents",
         "x": 9,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -136,7 +136,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:StackedBarChart",
         "title": "Priority by team",
         "x": 0,
-        "y": 7,
+        "y": 5,
         "w": 6,
         "h": 7,
         "config": {
@@ -152,7 +152,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DonutChart",
         "title": "Incidents by state",
         "x": 6,
-        "y": 7,
+        "y": 5,
         "w": 6,
         "h": 7,
         "config": {
@@ -167,7 +167,7 @@ export const LAYOUT: unknown = {
         "type": "table",
         "title": "Incidents",
         "x": 0,
-        "y": 14,
+        "y": 12,
         "w": 12,
         "h": 7,
         "config": {
@@ -196,7 +196,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:IncidentInsights",
         "title": "Incident insights",
         "x": 0,
-        "y": 21,
+        "y": 19,
         "w": 12,
         "h": 13,
         "config": {

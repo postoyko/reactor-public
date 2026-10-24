@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:LineChart",
         "title": "Alerts over time by severity",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 6,
         "h": 8,
         "config": {
@@ -48,7 +48,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:AreaChart",
         "title": "Alerts over time by team",
         "x": 6,
-        "y": 4,
+        "y": 2,
         "w": 6,
         "h": 8,
         "config": {
@@ -63,7 +63,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:StackedAreaChart",
         "title": "Stacked by severity",
         "x": 0,
-        "y": 12,
+        "y": 10,
         "w": 6,
         "h": 8,
         "config": {
@@ -78,7 +78,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ScatterChart",
         "title": "Each alert: when and how severe",
         "x": 6,
-        "y": 12,
+        "y": 10,
         "w": 6,
         "h": 8,
         "config": {
@@ -93,7 +93,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:HeatmapChart",
         "title": "Team and severity",
         "x": 0,
-        "y": 20,
+        "y": 18,
         "w": 6,
         "h": 8,
         "config": {
@@ -109,7 +109,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:RadarChart",
         "title": "Severity profile by team",
         "x": 6,
-        "y": 20,
+        "y": 18,
         "w": 6,
         "h": 8,
         "config": {
@@ -125,7 +125,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:AlluvialChart",
         "title": "Type to team",
         "x": 0,
-        "y": 28,
+        "y": 26,
         "w": 8,
         "h": 9,
         "config": {
@@ -142,7 +142,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:GaugeChart",
         "title": "Alert load",
         "x": 8,
-        "y": 28,
+        "y": 26,
         "w": 4,
         "h": 6,
         "config": {
@@ -161,7 +161,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:MeterChart",
         "title": "Critical budget",
         "x": 8,
-        "y": 34,
+        "y": 32,
         "w": 4,
         "h": 3,
         "config": {

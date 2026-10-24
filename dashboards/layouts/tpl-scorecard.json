@@ -4,7 +4,7 @@
   "dashboard": {
     "id": "d-tpl-scorecard",
     "name": "Severity scorecard",
-    "updated": 1792767874426,
+    "updated": 1792866297549,
     "widgets": [
       {
         "id": "w-scorecard-15",
@@ -13,7 +13,7 @@
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -29,7 +29,7 @@
         "type": "carbon:ShapeIndicator",
         "title": "Critical status",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -53,7 +53,7 @@
         "type": "carbon:GaugeChart",
         "title": "Critical load",
         "x": 0,
-        "y": 7,
+        "y": 5,
         "w": 3,
         "h": 6,
         "config": {
@@ -77,7 +77,7 @@
         "type": "carbon:MeterChart",
         "title": "Critical budget",
         "x": 0,
-        "y": 13,
+        "y": 11,
         "w": 3,
         "h": 3,
         "config": {
@@ -101,7 +101,7 @@
         "type": "carbon:ShapeIndicator",
         "title": "Major status",
         "x": 3,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -125,7 +125,7 @@
         "type": "carbon:GaugeChart",
         "title": "Major load",
         "x": 3,
-        "y": 7,
+        "y": 5,
         "w": 3,
         "h": 6,
         "config": {
@@ -149,7 +149,7 @@
         "type": "carbon:MeterChart",
         "title": "Major budget",
         "x": 3,
-        "y": 13,
+        "y": 11,
         "w": 3,
         "h": 3,
         "config": {
@@ -173,7 +173,7 @@
         "type": "carbon:ShapeIndicator",
         "title": "Minor status",
         "x": 6,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -197,7 +197,7 @@
         "type": "carbon:GaugeChart",
         "title": "Minor load",
         "x": 6,
-        "y": 7,
+        "y": 5,
         "w": 3,
         "h": 6,
         "config": {
@@ -221,7 +221,7 @@
         "type": "carbon:MeterChart",
         "title": "Minor budget",
         "x": 6,
-        "y": 13,
+        "y": 11,
         "w": 3,
         "h": 3,
         "config": {
@@ -245,7 +245,7 @@
         "type": "carbon:ShapeIndicator",
         "title": "Warning status",
         "x": 9,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -269,7 +269,7 @@
         "type": "carbon:GaugeChart",
         "title": "Warning load",
         "x": 9,
-        "y": 7,
+        "y": 5,
         "w": 3,
         "h": 6,
         "config": {
@@ -293,7 +293,7 @@
         "type": "carbon:MeterChart",
         "title": "Warning budget",
         "x": 9,
-        "y": 13,
+        "y": 11,
         "w": 3,
         "h": 3,
         "config": {
@@ -317,7 +317,7 @@
         "type": "carbon:AlluvialChart",
         "title": "Severity to team",
         "x": 0,
-        "y": 16,
+        "y": 14,
         "w": 7,
         "h": 9,
         "config": {
@@ -334,7 +334,7 @@
         "type": "carbon:HeatmapChart",
         "title": "Team and severity",
         "x": 7,
-        "y": 16,
+        "y": 14,
         "w": 5,
         "h": 9,
         "config": {

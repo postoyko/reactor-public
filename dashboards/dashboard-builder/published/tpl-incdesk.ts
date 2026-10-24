@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Tag",
         "title": "Priority 1",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -56,7 +56,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Tag",
         "title": "Priority 2",
         "x": 2,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -79,7 +79,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Tag",
         "title": "Priority 3",
         "x": 4,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -102,7 +102,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Tag",
         "title": "Priority 4",
         "x": 6,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 3,
         "config": {
@@ -125,7 +125,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:BadgeIndicator",
         "title": "Alerts inside incidents",
         "x": 8,
-        "y": 4,
+        "y": 2,
         "w": 4,
         "h": 3,
         "config": {
@@ -145,7 +145,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:InlineNotification",
         "title": "Priority 1 banner",
         "x": 0,
-        "y": 7,
+        "y": 5,
         "w": 8,
         "h": 4,
         "config": {
@@ -172,7 +172,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Popover",
         "title": "By team",
         "x": 8,
-        "y": 7,
+        "y": 5,
         "w": 2,
         "h": 3,
         "config": {
@@ -191,7 +191,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ComboButton",
         "title": "Quick filters",
         "x": 10,
-        "y": 7,
+        "y": 5,
         "w": 2,
         "h": 3,
         "config": {
@@ -212,7 +212,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:StackedBarChart",
         "title": "Priority by team",
         "x": 0,
-        "y": 11,
+        "y": 9,
         "w": 4,
         "h": 7,
         "config": {
@@ -228,7 +228,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:AreaChart",
         "title": "Incidents opened over time",
         "x": 4,
-        "y": 11,
+        "y": 9,
         "w": 4,
         "h": 7,
         "config": {
@@ -243,7 +243,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DonutChart",
         "title": "By state",
         "x": 8,
-        "y": 10,
+        "y": 8,
         "w": 4,
         "h": 7,
         "config": {
@@ -258,7 +258,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:StructuredList",
         "title": "Incident queue",
         "x": 0,
-        "y": 18,
+        "y": 16,
         "w": 5,
         "h": 9,
         "config": {
@@ -279,7 +279,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DataTable",
         "title": "Incidents",
         "x": 5,
-        "y": 18,
+        "y": 16,
         "w": 7,
         "h": 9,
         "config": {
@@ -305,7 +305,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:IncidentInsights",
         "title": "Incident insights",
         "x": 0,
-        "y": 27,
+        "y": 25,
         "w": 12,
         "h": 13,
         "config": {

@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Applications",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -51,7 +51,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Critical alerts",
         "x": 3,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -70,7 +70,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Major alerts",
         "x": 6,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -89,7 +89,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Open incidents",
         "x": 9,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -108,7 +108,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ApplicationCards",
         "title": "Applications",
         "x": 0,
-        "y": 7,
+        "y": 5,
         "w": 12,
         "h": 6,
         "config": {
@@ -122,7 +122,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DonutChart",
         "title": "Applications by worst severity",
         "x": 0,
-        "y": 13,
+        "y": 11,
         "w": 4,
         "h": 8,
         "config": {
@@ -137,7 +137,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:SimpleBarChart",
         "title": "Alerts by application",
         "x": 4,
-        "y": 13,
+        "y": 11,
         "w": 4,
         "h": 8,
         "config": {
@@ -157,7 +157,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:SimpleBarChart",
         "title": "Open incidents by application",
         "x": 8,
-        "y": 13,
+        "y": 11,
         "w": 4,
         "h": 8,
         "config": {
@@ -177,7 +177,7 @@ export const LAYOUT: unknown = {
         "type": "table",
         "title": "Applications",
         "x": 0,
-        "y": 21,
+        "y": 19,
         "w": 8,
         "h": 10,
         "config": {
@@ -206,7 +206,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DonutChart",
         "title": "By business criticality",
         "x": 8,
-        "y": 21,
+        "y": 19,
         "w": 4,
         "h": 10,
         "config": {

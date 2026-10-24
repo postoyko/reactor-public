@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Open alerts",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -51,7 +51,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Critical",
         "x": 3,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -73,7 +73,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Major",
         "x": 6,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -95,7 +95,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Not acknowledged",
         "x": 9,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 3,
         "config": {
@@ -115,7 +115,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:StackedAreaChart",
         "title": "Alert volume by severity",
         "x": 0,
-        "y": 7,
+        "y": 5,
         "w": 8,
         "h": 8,
         "config": {
@@ -134,7 +134,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:StackedBarChart",
         "title": "Severity by team",
         "x": 8,
-        "y": 7,
+        "y": 5,
         "w": 4,
         "h": 8,
         "config": {
@@ -150,7 +150,7 @@ export const LAYOUT: unknown = {
         "type": "table",
         "title": "Needs attention: Critical and Major, not yet acknowledged",
         "x": 0,
-        "y": 15,
+        "y": 13,
         "w": 8,
         "h": 10,
         "config": {
@@ -190,7 +190,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:SimpleBarChart",
         "title": "Noisiest resources",
         "x": 8,
-        "y": 15,
+        "y": 13,
         "w": 4,
         "h": 10,
         "config": {
@@ -209,7 +209,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ApplicationCards",
         "title": "Applications",
         "x": 0,
-        "y": 25,
+        "y": 23,
         "w": 12,
         "h": 6,
         "config": {

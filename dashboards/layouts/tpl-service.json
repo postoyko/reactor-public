@@ -4,7 +4,7 @@
   "dashboard": {
     "id": "d-tpl-service",
     "name": "Service review",
-    "updated": 1792767869481,
+    "updated": 1792866298048,
     "widgets": [
       {
         "id": "w-service-1",
@@ -13,7 +13,7 @@
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -29,7 +29,7 @@
         "type": "carbon:Tabs",
         "title": "Service review",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 12,
         "h": 22,
         "config": {

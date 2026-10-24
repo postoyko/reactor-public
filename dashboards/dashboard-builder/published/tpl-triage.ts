@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Search",
         "title": "Search summary",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 12,
         "h": 3,
         "config": {
@@ -68,7 +68,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "In the queue",
         "x": 0,
-        "y": 7,
+        "y": 5,
         "w": 3,
         "h": 3,
         "config": {
@@ -86,7 +86,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Critical and Major",
         "x": 3,
-        "y": 7,
+        "y": 5,
         "w": 3,
         "h": 3,
         "config": {
@@ -109,7 +109,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Unassigned",
         "x": 6,
-        "y": 7,
+        "y": 5,
         "w": 3,
         "h": 3,
         "config": {
@@ -131,7 +131,7 @@ export const LAYOUT: unknown = {
         "type": "kpi",
         "title": "Not acknowledged",
         "x": 9,
-        "y": 7,
+        "y": 5,
         "w": 3,
         "h": 3,
         "config": {
@@ -151,7 +151,7 @@ export const LAYOUT: unknown = {
         "type": "bar",
         "title": "By severity",
         "x": 0,
-        "y": 10,
+        "y": 8,
         "w": 4,
         "h": 5,
         "config": {
@@ -168,7 +168,7 @@ export const LAYOUT: unknown = {
         "type": "bar",
         "title": "By team",
         "x": 4,
-        "y": 10,
+        "y": 8,
         "w": 4,
         "h": 5,
         "config": {
@@ -185,7 +185,7 @@ export const LAYOUT: unknown = {
         "type": "bar",
         "title": "By monitoring source",
         "x": 8,
-        "y": 10,
+        "y": 8,
         "w": 4,
         "h": 5,
         "config": {
@@ -202,7 +202,7 @@ export const LAYOUT: unknown = {
         "type": "table",
         "title": "Alerts to work through",
         "x": 0,
-        "y": 15,
+        "y": 13,
         "w": 12,
         "h": 13,
         "config": {

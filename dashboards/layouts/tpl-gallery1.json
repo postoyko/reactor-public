@@ -4,7 +4,7 @@
   "dashboard": {
     "id": "d-tpl-gallery1",
     "name": "Chart gallery: compare",
-    "updated": 1792767871927,
+    "updated": 1792866293033,
     "widgets": [
       {
         "id": "w-gallery1-9",
@@ -13,7 +13,7 @@
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -29,7 +29,7 @@
         "type": "carbon:SimpleBarChart",
         "title": "Alerts by severity",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 4,
         "h": 7,
         "config": {
@@ -44,7 +44,7 @@
         "type": "carbon:GroupedBarChart",
         "title": "Severity by team",
         "x": 4,
-        "y": 4,
+        "y": 2,
         "w": 4,
         "h": 7,
         "config": {
@@ -60,7 +60,7 @@
         "type": "carbon:StackedBarChart",
         "title": "Source by severity",
         "x": 8,
-        "y": 4,
+        "y": 2,
         "w": 4,
         "h": 7,
         "config": {
@@ -80,7 +80,7 @@
         "type": "carbon:LollipopChart",
         "title": "Busiest resources",
         "x": 0,
-        "y": 11,
+        "y": 9,
         "w": 4,
         "h": 7,
         "config": {
@@ -96,7 +96,7 @@
         "type": "carbon:PieChart",
         "title": "Alerts by type",
         "x": 4,
-        "y": 11,
+        "y": 9,
         "w": 4,
         "h": 7,
         "config": {
@@ -112,7 +112,7 @@
         "type": "carbon:DonutChart",
         "title": "Alerts by team",
         "x": 8,
-        "y": 11,
+        "y": 9,
         "w": 4,
         "h": 7,
         "config": {
@@ -127,7 +127,7 @@
         "type": "carbon:TreemapChart",
         "title": "Resources by alert count",
         "x": 0,
-        "y": 18,
+        "y": 16,
         "w": 6,
         "h": 8,
         "config": {
@@ -143,7 +143,7 @@
         "type": "carbon:WordCloudChart",
         "title": "Alert types",
         "x": 6,
-        "y": 18,
+        "y": 16,
         "w": 6,
         "h": 8,
         "config": {

@@ -17,7 +17,7 @@ export const LAYOUT: unknown = {
         "x": 0,
         "y": 0,
         "w": 12,
-        "h": 4,
+        "h": 2,
         "config": {
           "query": "getAlerts",
           "emits": false,
@@ -33,7 +33,7 @@ export const LAYOUT: unknown = {
         "type": "text",
         "title": "What is picked",
         "x": 9,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 4,
         "config": {
@@ -48,7 +48,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:ProgressBar",
         "title": "Progress",
         "x": 0,
-        "y": 8,
+        "y": 6,
         "w": 12,
         "h": 4,
         "config": {
@@ -68,7 +68,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:SimpleBarChart",
         "title": "Alerts by severity",
         "x": 0,
-        "y": 12,
+        "y": 10,
         "w": 6,
         "h": 8,
         "config": {
@@ -91,7 +91,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DonutChart",
         "title": "By source",
         "x": 6,
-        "y": 12,
+        "y": 10,
         "w": 6,
         "h": 8,
         "config": {
@@ -107,7 +107,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:DataTable",
         "title": "Alerts",
         "x": 0,
-        "y": 20,
+        "y": 18,
         "w": 12,
         "h": 10,
         "config": {
@@ -130,7 +130,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Toggle",
         "title": "Show the alert table",
         "x": 0,
-        "y": 4,
+        "y": 2,
         "w": 3,
         "h": 4,
         "config": {
@@ -156,7 +156,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Button",
         "title": "Critical only",
         "x": 3,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 4,
         "config": {
@@ -182,7 +182,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Button",
         "title": "Clear",
         "x": 5,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 4,
         "config": {
@@ -207,7 +207,7 @@ export const LAYOUT: unknown = {
         "type": "carbon:Button",
         "title": "Add 10%",
         "x": 7,
-        "y": 4,
+        "y": 2,
         "w": 2,
         "h": 4,
         "config": {
