@@ -5,7 +5,10 @@
 
 export const GRID_COLS = 12;
 
-export type QueryName = 'getAlerts' | 'getStories' | 'getApplications' | 'getMetricSeries';
+export type QueryName =
+  | 'getAlerts' | 'getStories' | 'getApplications' | 'getMetricSeries'
+  | 'getRawAlerts' | 'getStoriesByAlerts' | 'getIncidentAlerts' | 'getStoryAlertsGroups' | 'getRelatedStories' | 'getTopologyResource'
+  | 'getPeople' | 'getGroups' | 'getActions' | 'getTools' | 'getFiltersViews';
 export type Row = Record<string, string | number | undefined>;
 
 export type NativeType = 'kpi' | 'bar' | 'donut' | 'timeseries' | 'table' | 'text' | 'image' | 'group';

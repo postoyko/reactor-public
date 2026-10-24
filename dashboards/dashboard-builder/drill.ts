@@ -6,7 +6,7 @@
  * side panel, or an address opens with the clicked values filled in ("/incidents/{id}").
  */
 
-import { FIELDS } from './rows';
+import { fieldsOf } from './rows';
 import { Filter, QueryName, Row } from './types';
 
 export interface Drill { mode: 'details' | 'link'; url?: string; newTab?: boolean }
@@ -44,7 +44,7 @@ export function urlFilters(search: string): Filter[] {
     const i = pair.indexOf(':');
     if (i < 1) return;
     const field = pair.slice(0, i); const value = pair.slice(i + 1);
-    (['getAlerts', 'getStories'] as const).forEach(q => { if (value && FIELDS[q].some(f => f.key === field)) out.push({ from: '__url__', query: q, field, value }); });
+    (['getAlerts', 'getStories'] as const).forEach(q => { if (value && fieldsOf(q).some(f => f.key === field)) out.push({ from: '__url__', query: q, field, value }); });
   });
   return out;
 }

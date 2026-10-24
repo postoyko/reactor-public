@@ -14,6 +14,7 @@ export function typeLabel(type: string): string {
     const t = TILES.find(x => `tile:${x.id}` === type);
     return t ? t.label : 'Dashboard tile';
   }
+  if (type === 'platform') return 'Calls the platform';
   const c = carbonSpec(type);
   return c ? c.label : type;
 }

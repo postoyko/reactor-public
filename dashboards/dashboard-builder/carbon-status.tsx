@@ -19,6 +19,7 @@ import { cell, fieldLabel, formatNumber, groupMetric, metricValue, PRIORITY_COLO
 import { DEFAULT_GROUP } from './rows';
 import { Note, useDrillAction, WidgetData } from './Widgets';
 import { SemCell } from './Sem';
+import { shapeOf } from './sources';
 
 type Props = Record<string, any>;
 
@@ -69,7 +70,7 @@ function pick(p: Props, w: Widget, d: WidgetData | undefined): Pick & { value?: 
   const c = w.config;
   if (!d || p.source === 'fixed') return { shape: p.kind || 'stable', icon: p.kind || 'succeeded', text: '' };
   if (p.source === 'severity') {
-    if (c.query === 'getAlerts') {
+    if (shapeOf(c.query) === 'alerts') {
       const sev = d.rows.map(r => Number(r.severity)).filter(n => Number.isFinite(n));
       if (sev.length === 0) return { shape: 'stable', icon: 'succeeded', text: 'None' };
       const worst = Math.min(Math.max(Math.max(...sev), 0), 6);

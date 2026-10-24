@@ -10,6 +10,7 @@ import { EXTRA_COLUMNS, TIER1, TIER2 } from './rows';
 import { ALERT_QUERY_PARAMS, INCIDENT_QUERY_PARAMS } from '../constants';
 import { QueryName, Row } from './types';
 import { ALERT_COLUMNS, toRows } from './rows';
+import { shapeOf, sourceDef } from './sources';
 
 export type Fetcher = (query: QueryName, params: Record<string, unknown>) => Promise<any>;
 
@@ -74,9 +75,18 @@ async function fetchMetricSeries(tenantId: string, spec: string): Promise<any> {
 
 export function defaultFetcher(query: QueryName, params: Record<string, unknown>): Promise<any> {
   if (query === 'getMetricSeries') return fetchMetricSeries(String(params.tenantId || ''), String(params.filter || ''));
-  const fn = (window as any).akoraConfig?.baseState?.API?.contentAnalyticsAPI?.[query === 'getApplications' ? 'getImpactedApplications' : query];
-  if (typeof fn !== 'function') return Promise.reject(new Error(`The ${query} query is not available in this environment.`));
+  const def = sourceDef(query);
+  if (params.__missing) return Promise.reject(new Error(`Enter the ${String(params.__missing).toLowerCase()} in this widget's settings (Data tab), or let an action set it.`));
+  const fn = (window as any).akoraConfig?.baseState?.API?.contentAnalyticsAPI?.[def.api];
+  if (typeof fn !== 'function') return Promise.reject(new Error(`The ${def.api} query is not available in this environment.`));
   return fn(params);
+}
+
+/** Calls a Concert Operate function that changes something (create an incident, change a policy). The tenant is added. */
+export function callApi(name: string, params: Record<string, unknown>, tenantId: string = ALERT_QUERY_PARAMS.tenantId): Promise<any> {
+  const fn = contentApi()?.[name];
+  if (typeof fn !== 'function') return Promise.reject(new Error(`${name} is not available in this environment.`));
+  return Promise.resolve().then(() => fn({ tenantId, ...params }));
 }
 
 export interface Directory { users: string[]; groups: string[]; /** Each user's groups (from getUsersAndGroups). */ membership?: Record<string, string[]> }
@@ -124,7 +134,32 @@ export class DataHub {
     }
     if (query === 'getMetricSeries') return { tenantId: this.tenantId, filter };
     if (query === 'getApplications') return { tenantId: this.tenantId, includeCount: true, includeSeverity: true, includeStoryPriority: true, includeBusinessCriticality: true, applicationIds: '' };
-    return { ...INCIDENT_QUERY_PARAMS, tenantId: this.tenantId };
+    if (query === 'getStories') return { ...INCIDENT_QUERY_PARAMS, tenantId: this.tenantId };
+    const t = { tenantId: this.tenantId };
+    const p = (filter || '').trim();
+    const def = sourceDef(query);
+    if (def.param && def.param.required && !p) return { ...t, __missing: def.param.label };
+    const columns = ALERT_COLUMNS.filter(c => !EXTRA_COLUMNS.includes(c));
+    switch (query) {
+      case 'getRawAlerts': return { ...t, filter: p };
+      case 'getStoriesByAlerts': return { ...t, filter: p || ALERT_QUERY_PARAMS.filter };
+      case 'getIncidentAlerts': return { ...t, incidentId: p, columns };
+      case 'getStoryAlertsGroups': return { ...t, storyId: p, columns, format: ALERT_QUERY_PARAMS.format, includeGroups: true };
+      case 'getRelatedStories': {
+        // one incident id, or alert ids separated by commas
+        const ids = p.split(',').map(x => x.trim()).filter(Boolean);
+        return ids.length > 1 || /^alert/i.test(p) ? { ...t, alertIds: ids } : { ...t, storyId: p };
+      }
+      case 'getTopologyResource': return { ...t, resourceId: p };
+      case 'getTools': return p ? { ...t, type: p } : t;
+      case 'getFiltersViews': return p ? { ...t, viewType: p } : t;
+      default: return t;
+    }
+  }
+
+  /** Calls a Concert Operate function that changes something, for this dashboard's tenant. Every source reloads afterwards. */
+  call(name: string, params: Record<string, unknown>): Promise<any> {
+    return callApi(name, params, this.tenantId).then(res => { window.setTimeout(() => this.refresh(), 800); return res; });
   }
 
   snapshot(key: string): SourceState {
@@ -199,7 +234,7 @@ export class DataHub {
   /** An alert or incident with an owner but no team takes the team of the owner's user group (not the catch-all "All Users" when there is a real one). */
   private applyTeams(e: Entry): boolean {
     const m = this.dirNow.membership;
-    if (!m || (e.query !== 'getAlerts' && e.query !== 'getStories')) return false;
+    if (!m || (shapeOf(e.query) !== 'alerts' && shapeOf(e.query) !== 'stories')) return false;
     let changed = false;
     const rows = e.state.rows.map(r => {
       if (r.team || typeof r.owner !== 'string' || !m[r.owner]) return r;
@@ -263,7 +298,7 @@ export class DataHub {
     const e = this.entries.get(key);
     if (!e) return;
     const seq = ++e.seq;
-    if (e.query === 'getAlerts' || e.query === 'getStories') void this.directory(); // who is in which group, so owners can give their rows a team
+    if (shapeOf(e.query) === 'alerts' || shapeOf(e.query) === 'stories') void this.directory(); // who is in which group, so owners can give their rows a team
     e.state = { ...e.state, loading: true };
     this.notify(e);
     let p: Promise<any>;

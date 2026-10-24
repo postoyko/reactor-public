@@ -11,6 +11,7 @@ import { clampBox, fitHeights } from './grid';
 import { compactTree, MAX_DEPTH, slotOwner } from './nesting';
 import { defaultConfig, isKnownType, minSize } from './registry';
 import { isImageSrc } from './image';
+import { isQuery, PLATFORM_ID } from './sources';
 
 export const STORE_KEY = 'dashboard-builder:v1';
 export const FILE_KIND = 'dashboard-builder';
@@ -128,7 +129,7 @@ export function sanitizeSettings(raw: unknown): Record<string, unknown> | undefi
 
 export function sanitizeConfig(raw: unknown, type: Widget['type']): WidgetConfig {
   const r = isObj(raw) ? raw : {};
-  const query: QueryName = r.query === 'getStories' ? 'getStories' : r.query === 'getApplications' ? 'getApplications' : r.query === 'getMetricSeries' ? 'getMetricSeries' : 'getAlerts';
+  const query: QueryName = isQuery(r.query) ? r.query : 'getAlerts';
   const base = defaultConfig(type, query);
   const cfg: WidgetConfig = { ...base, query };
   if (typeof r.filter === 'string') cfg.filter = r.filter.slice(0, 500);
@@ -190,7 +191,7 @@ export function sanitizeConfig(raw: unknown, type: Widget['type']): WidgetConfig
   }
   if (isObj(r.bind) && typeof r.bind.field === 'string' && r.bind.field) {
     const b = r.bind;
-    cfg.bind = { field: b.field.slice(0, 80), op: COND_OPS.includes(b.op) ? (b.op as CondOp) : '=', query: b.query === 'getStories' ? 'getStories' : b.query === 'getApplications' ? 'getApplications' : b.query === 'getMetricSeries' ? 'getMetricSeries' : 'getAlerts' };
+    cfg.bind = { field: b.field.slice(0, 80), op: COND_OPS.includes(b.op) ? (b.op as CondOp) : '=', query: isQuery(b.query) ? b.query : 'getAlerts' };
   }
   const cond = (x: any): Cond | undefined => (isObj(x) && typeof x.field === 'string' && typeof x.value === 'string'
     ? { field: x.field.slice(0, 80), value: x.value.slice(0, 200), ...(COND_OPS.includes(x.op) && x.op !== '=' ? { op: x.op as CondOp } : {}) }
@@ -257,7 +258,7 @@ export function sanitizeDashboard(raw: unknown): { dashboard: Dashboard; dropped
     if (!ok || n >= MAX_DEPTH + 2) delete x.parent;
   });
   widgets.forEach(x => { if (x.config.sendTo) { const s = x.config.sendTo.filter(t => ids.has(t) && t !== x.id); if (s.length) x.config.sendTo = s; else delete x.config.sendTo; } });
-  widgets.forEach(x => { if (x.config.on) { const k = x.config.on.filter(l => ids.has(l.to) && l.to !== x.id); if (k.length) x.config.on = k; else delete x.config.on; } });
+  widgets.forEach(x => { if (x.config.on) { const k = x.config.on.filter(l => (ids.has(l.to) || l.to === PLATFORM_ID) && l.to !== x.id); if (k.length) x.config.on = k; else delete x.config.on; } });
   const rowN = Number(raw.rowH);
   const laid = fitHeights(compactTree(widgets), Number.isFinite(rowN) && rowN > 0 ? Math.min(Math.max(Math.round(rowN), 24), 96) : undefined);
   return {

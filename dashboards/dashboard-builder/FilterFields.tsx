@@ -9,9 +9,10 @@
 import React from 'react';
 import { BAR_CHOICES } from './FilterBar';
 import { fieldLabel } from './rows';
+import { SOURCES } from './sources';
 import { BarField, FilterBarConfig, QueryName } from './types';
 
-export const QNAME: Record<QueryName, string> = { getAlerts: 'Alerts', getStories: 'Incidents', getApplications: 'Applications', getMetricSeries: 'Metrics' };
+export const QNAME = Object.fromEntries(SOURCES.map(x => [x.id, x.id === 'getMetricSeries' ? 'Metrics' : x.label])) as Record<QueryName, string>;
 
 export default function FilterFields({ bar, onChange }: { bar: FilterBarConfig; onChange: (b: FilterBarConfig) => void }) {
   const has = (f: BarField) => bar.fields.some(x => x.query === f.query && x.field === f.field);

@@ -11,10 +11,19 @@
 
 import { carbonSpec, Kind } from './carbon-specs';
 import { ActionLink, Widget } from './types';
+import { ArgPart, defaultParts, PLATFORM_ACTIONS, PlatformAction, ROW_ACTIONS } from './platform-actions';
+import { isAlertSource, PLATFORM_ID } from './sources';
 
 export interface EventSpec { id: string; label: string; /** What the event carries, for "only when the value is" and {value}. */ carries?: string }
-export interface ActionArg { kind: Kind; label: string; options?: string[]; def?: string }
-export interface ActionSpec { id: string; label: string; group: 'Visibility' | 'Content' | 'Component' | 'Value' | 'Data' | 'Settings'; arg?: ActionArg }
+/** `parts`: an action with several fields (kept in the link's arg as JSON, see platform-actions.ts). */
+export interface ActionArg { kind: Kind; label: string; options?: string[]; def?: string; parts?: ArgPart[] }
+export interface ActionSpec { id: string; label: string; group: 'Visibility' | 'Content' | 'Component' | 'Value' | 'Data' | 'Settings' | 'Concert Operate'; arg?: ActionArg }
+
+/** The "Concert Operate" target: actions that call the platform itself rather than change a widget. */
+export const PLATFORM: Widget = { id: PLATFORM_ID, type: 'platform' as Widget['type'], title: 'Concert Operate', x: 0, y: 0, w: 0, h: 0, config: { query: 'getAlerts' } };
+/** A rule's target: a widget of the dashboard, or the platform. */
+export const findTarget = (all: Widget[], id: string): Widget | undefined => (id === PLATFORM_ID ? PLATFORM : all.find(w => w.id === id));
+const apiSpec = (a: PlatformAction): ActionSpec => ({ id: a.id, label: a.label, group: 'Concert Operate', arg: { kind: 'text', label: 'Details', parts: a.parts, def: defaultParts(a.parts) } });
 
 type W = Pick<Widget, 'type' | 'config'>;
 const name = (w: W): string => (w.type.startsWith('carbon:') ? w.type.slice(7) : '');
@@ -61,6 +70,7 @@ const arg = (kind: Kind, label: string, extra?: Partial<ActionArg>): ActionArg =
 
 /** Things that can be done to a widget: for every widget, plus its commands and a "set" for each of its settings. */
 export function actionsOf(w: W): ActionSpec[] {
+  if (w.type === PLATFORM.type) return PLATFORM_ACTIONS.map(apiSpec);
   const n = name(w);
   const out: ActionSpec[] = [
     { id: 'show', label: 'Show it', group: 'Visibility' },
@@ -78,7 +88,8 @@ export function actionsOf(w: W): ActionSpec[] {
   else if (VALUE_TYPES.has(n)) out.push({ id: 'value', label: 'Set its value', group: 'Value', arg: arg('text', 'Value', { def: '{value}' }) }, { id: 'clear', label: 'Clear its value', group: 'Value' });
   if (isPickable(w)) out.push({ id: 'pick', label: 'Pick a value (filters the others)', group: 'Data', arg: arg('text', 'Value to pick', { def: '{value}' }) }, { id: 'clearPick', label: 'Clear its pick', group: 'Data' });
   if (CFG_TYPES.has(w.type) || (carbonSpec(w.type) || { uses: undefined }).uses) {
-    CFG.forEach(c => out.push({ id: `cfg:${c.key}`, label: c.label, group: 'Data', arg: arg(c.kind, c.hint, { options: c.options }) }));
+    CFG.forEach(c => out.push({ id: `cfg:${c.key}`, label: c.label, group: 'Data', arg: arg(c.kind, c.hint, { options: c.options, ...(c.def !== undefined ? { def: c.def } : {}) }) }));
+    if (isAlertSource(w.config.query)) ROW_ACTIONS.forEach(a => out.push(apiSpec(a)));
   }
   const spec = carbonSpec(w.type);
   if (spec) {
@@ -101,7 +112,8 @@ export function actionsOf(w: W): ActionSpec[] {
 
 /** Data settings every data widget has, whatever it is: an action can change what it reads and how it groups. */
 const CFG_TYPES = new Set(['kpi', 'bar', 'donut', 'timeseries', 'table']);
-const CFG: Array<{ key: string; label: string; kind: Kind; hint: string; options?: string[] }> = [
+const CFG: Array<{ key: string; label: string; kind: Kind; hint: string; options?: string[]; def?: string }> = [
+  { key: 'filter', label: 'Change its source parameter', kind: 'text', hint: 'Incident id, resource id or filter ({value} = what was picked)', def: '{value}' },
   { key: 'groupBy', label: 'Change what it groups by', kind: 'text', hint: 'Field name (severityLabel, team, state ...)' },
   { key: 'seriesBy', label: 'Change its second split', kind: 'text', hint: 'Field name' },
   { key: 'metric', label: 'Change its measure', kind: 'enum', hint: 'Measure', options: ['count', 'distinct', 'max', 'avg', 'sum'] },
@@ -115,6 +127,7 @@ const CFG: Array<{ key: string; label: string; kind: Kind; hint: string; options
 
 /** What to preselect when a wire from a widget lands on `target`. */
 export function suggestAction(target: W): string {
+  if (target.type === PLATFORM.type) return 'api:createIncident';
   const n = name(target);
   if (n === 'Modal') return 'cmd:open';
   if (SWITCHES.has(n)) return 'flip';

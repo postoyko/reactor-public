@@ -141,6 +141,26 @@
     },
     runRunbook: function (o) { return later({ tenant: { runRunbook: { ok: true, runbookId: o.runbookId, alertId: o.alertId } } }); },
     getUsersAndGroups: function () { return later({ tenant: { groups: GROUPS.map(function (g) { return { id: 'grp-' + g.toLowerCase(), name: g }; }), users: USERS.map(function (u) { return { id: 'usr-' + u, name: u }; }) } }); },
+    // Detail and configuration queries (Designer data sources). Shapes follow the toolkit's query list; values are invented.
+    getIncidentAlerts: function (o) { var inc = incidents.filter(function (x) { return x.id === o.incidentId; })[0]; var r = alertsResponse({ columns: o.columns }); var ids = inc ? inc.alertIds : []; r.tenant.alerts.rows = r.tenant.alerts.rows.filter(function (row) { return ids.indexOf(row.fields[r.tenant.alerts.columns.findIndex(function (c) { return c.name === 'id'; })]) >= 0; }); return later({ tenant: { incident: r.tenant } }); },
+    getStoryAlertsGroups: function (o) { return api.getIncidentAlerts({ incidentId: o.storyId, columns: o.columns }); },
+    getRawAlerts: function (o) { return later({ tenant: { rawAlerts: alerts.slice(0, 60).map(function (a) { return { id: a.id, severity: a.severity, state: a.state, summary: a.summary, type: { classification: a['type.classification'] }, sender: { name: a['sender.name'] }, resource: { name: a['resource.name'] }, firstOccurrenceTime: a.firstOccurrenceTime, lastOccurrenceTime: a.lastOccurrenceTime }; }) } }); },
+    getStoriesByAlerts: function () { return later({ tenant: { storiesByAlerts: storiesResponse().tenant.stories.stories.slice(0, 5) } }); },
+    getRelatedStories: function (o) { return later({ tenant: { relatedStories: storiesResponse().tenant.stories.stories.filter(function (x) { return x.id !== o.storyId; }).slice(0, 3) } }); },
+    getTopologyResource: function (o) { return later({ tenant: { topologyResource: { uniqueId: o.resourceId, name: String(o.resourceId).split(':')[0], entityTypes: ['pod'], tags: ['prod', 'eu-de'], matchTokens: [o.resourceId], vertexType: 'resource', createTime: new Date(NOW - 40 * H).toISOString() } } }); },
+    getGroups: function () { return later({ tenant: { groups: [{ id: 'g-pay', name: 'Payments services', type: 'application', members: 12 }, { id: 'g-plat', name: 'Platform nodes', type: 'resourceGroup', members: 30 }, { id: 'g-db', name: 'Databases', type: 'resourceGroup', members: 6 }] } }); },
+    getActions: function () { return later({ tenant: { actions: [{ id: 'act-1', name: 'Restart pod', type: 'script', target: 'kubernetes', enabled: true }, { id: 'act-2', name: 'Open ticket', type: 'integration', target: 'ServiceNow', enabled: true }, { id: 'act-3', name: 'Page on-call', type: 'notification', target: 'PagerDuty', enabled: false }] } }); },
+    getTools: function () { return later({ tenant: { tools: [{ id: 't-1', name: 'Grafana', type: 'url', url: 'https://example.invalid/grafana' }, { id: 't-2', name: 'Kibana logs', type: 'url', url: 'https://example.invalid/kibana' }, { id: 't-3', name: 'Ping', type: 'script' }] } }); },
+    getFiltersViews: function () { return later({ tenant: { filtersViews: [{ id: 'v-1', name: 'Critical only', viewType: 'alert', owner: 'alex', shared: true }, { id: 'v-2', name: 'My incidents', viewType: 'story', owner: 'sam', shared: false }] } }); },
+    // Mutations: the preview changes nothing, it only answers.
+    createIncidentMutation: function (o) { return later({ tenant: { createIncident: { id: 'inc-new-' + (o.alertIds || []).length } } }); },
+    updateIncidentMutation: function () { return later({ tenant: { updateIncident: { ok: true } } }); },
+    activatePolicy: function () { return later({ ok: true }); },
+    setPolicyLock: function () { return later({ ok: true }); },
+    setPolicyDeployed: function () { return later({ ok: true }); },
+    rejectPolicy: function () { return later({ ok: true }); },
+    restorePolicy: function () { return later({ ok: true }); },
+    renamePolicy: function () { return later({ ok: true }); },
     getFilters: function () { return later({ tenant: { filters: [{ name: 'Sample: critical only', conditionSet: { operator: 'and', conditions: [] } }, { name: 'Sample: platform', conditionSet: { operator: 'and', conditions: [] } }] } }); }
   };
   window.akoraConfig = window.akoraConfig || {};
