@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.50.1
+- Widget settings: long explanations under Frame, Linking, Actions and Wiring are folded behind an (i) button next to the section heading, so the settings themselves stay in view. "Follows filters from other widgets" is now a checkbox like the other on/off options.
+
 ## v1.50.0
 - Widget settings are now split into tabs instead of one long scrolling panel: **General** (title, placement, the component's own options and content), **Data** (source, row filter, measure, grouping, refresh; only for widgets that show data), **Style** (colours, frame, float on top) and **Interact** (viewer options, what a click does, linking, actions, wiring). The header and tabs stay put while the panel scrolls, the last tab used stays open when another widget is selected, arrow keys move between tabs, and a dot on Data marks a measure that still needs a field.
 

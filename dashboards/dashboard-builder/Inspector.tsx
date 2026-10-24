@@ -8,7 +8,7 @@
 
 import { pivotChoices } from './pivot';
 import React from 'react';
-import { Button, Checkbox, Select, SelectItem, TextInput, Toggle } from '@carbon/react';
+import { Button, Checkbox, Select, SelectItem, TextInput } from '@carbon/react';
 import { Close, ColorPalette, DataBase, Flash, Settings } from '@carbon/icons-react';
 import { Glyph } from './Glyph';
 import { typeLabel } from './meta';
@@ -22,6 +22,7 @@ import DrillEditor from './DrillEditor';
 import MetricPicker from './MetricPicker';
 import { SlotInfo } from './nesting';
 import CarbonSettings from './CarbonSettings';
+import SectionHead from './SectionHead';
 import { carbonDef } from './carbon-catalog';
 import { dataOn } from './carbon-specs';
 import { describeImageError, IMAGE_ACCEPT, IMAGE_MAX_BYTES, imageMimeOk, isImageSrc } from './image';
@@ -374,7 +375,7 @@ export default function Inspector({ widget, onChange, onClose, partsFor, everyon
               </div>
             </div>
 
-            <h3 className="db-section">Frame</h3>
+            <SectionHead title="Frame" hint={<p>“Float on top” lets this widget sit over another one (for example a logo on a dashboard). While viewing it has no frame and clicks pass through.</p>} />
             {cdef && (
               <div className="cds--form-item">
                 <label className="db-check"><input type="checkbox" checked={Boolean(c.chromeless)} onChange={e => setCfg({ chromeless: e.target.checked }, 'chromeless')} />{' '}No frame or title bar while viewing</label>
@@ -386,7 +387,6 @@ export default function Inspector({ widget, onChange, onClose, partsFor, everyon
                 <input type="checkbox" checked={Boolean(c.overlay)} onChange={e => setCfg({ overlay: e.target.checked || undefined }, 'overlay')} />
                 {' '}Float on top of other widgets
               </label>
-              <p className="db-help">Lets this widget sit over another one (for example a logo on a dashboard). While viewing it has no frame and clicks pass through.</p>
             </div>
           </>
         )}
@@ -418,39 +418,39 @@ export default function Inspector({ widget, onChange, onClose, partsFor, everyon
               <>
                 {(grouped || t === 'table' || t === 'kpi' || (cdef && (cdef.uses === 'chart' || cdef.uses === 'measure'))) && <DrillEditor widget={widget} onChange={onChange} />}
 
-                <h3 className="db-section">Linking</h3>
-                <Toggle
-                  id={id('listens')}
-                  size="sm"
-                  labelText="Follows filters from other widgets"
-                  labelA="Off"
-                  labelB="On"
-                  toggled={c.listens !== false}
-                  onToggle={(on: boolean) => setCfg({ listens: on }, 'listens')}
+                <SectionHead
+                  title="Linking"
+                  hint={(
+                    <>
+                      <p>Linking works between widgets that use the same source (alerts with alerts, incidents with incidents).</p>
+                      {cdef && (cdef.uses === 'chart' || cdef.uses === 'measure') && (
+                        <p>
+                          <strong>Where its data comes from:</strong> the source on the Data tab, narrowed by the dashboard filter bar, the condition set there, and the filters other widgets send it (the switch below turns that off).{' '}
+                          <strong>What a click does:</strong> {cdef.emits && c.emits !== false ? 'it sets a filter on every widget that uses the same source (choose which ones under Wiring), or opens the rows when a drill-through is set above.' : 'it opens the rows when a drill-through is set above.'}
+                        </p>
+                      )}
+                    </>
+                  )}
                 />
-                <p className="db-help">Linking works between widgets that use the same source (alerts with alerts, incidents with incidents).</p>
-                {cdef && (cdef.uses === 'chart' || cdef.uses === 'measure') && (
-                  <p className="db-help">
-                    <strong>Where its data comes from:</strong> the source on the Data tab, narrowed by the dashboard filter bar, the condition set there, and the filters other widgets send it (the switch above turns that off).{' '}
-                    <strong>What a click does:</strong> {cdef.emits && c.emits !== false ? 'it sets a filter on every widget that uses the same source (choose which ones under Wiring), or opens the rows when a drill-through is set above.' : 'it opens the rows when a drill-through is set above.'}
-                  </p>
-                )}
+                <div className="cds--form-item">
+                  <label className="db-check"><input type="checkbox" checked={c.listens !== false} onChange={e => setCfg({ listens: e.target.checked }, 'listens')} />{' '}Follows filters from other widgets</label>
+                </div>
               </>
             )}
 
             {everyone && (
               <>
-                <h3 className="db-section">Actions</h3>
-                <p className="db-help">When something happens in this widget, change another one. Wires only run while a dashboard is being used (Preview), never while you design.</p>
+                <SectionHead title="Actions" hint={<p>When something happens in this widget, change another one. Wires only run while a dashboard is being used (Preview), never while you design.</p>} />
                 <ActionRules widget={widget} all={everyone} onChange={onChange} />
-                <label className="db-check"><input type="checkbox" checked={c.hidden === true} onChange={e => { const cfg = { ...c }; if (e.target.checked) cfg.hidden = true; else delete cfg.hidden; onChange({ ...widget, config: cfg }, `${widget.id}:hidden`); }} /> Hidden at start (an action wire can show it)</label>
+                <div className="cds--form-item">
+                  <label className="db-check"><input type="checkbox" checked={c.hidden === true} onChange={e => { const cfg = { ...c }; if (e.target.checked) cfg.hidden = true; else delete cfg.hidden; onChange({ ...widget, config: cfg }, `${widget.id}:hidden`); }} /> Hidden at start (an action wire can show it)</label>
+                </div>
               </>
             )}
 
             {everyone && canSend(widget) && (
               <>
-                <h3 className="db-section">Wiring</h3>
-                <p className="db-help">Where this widget sends what you select in it.</p>
+                <SectionHead title="Wiring" hint={<p>Where this widget sends what you select in it.</p>} />
                 <WireEditor widget={widget} all={everyone} onChange={onChange} />
               </>
             )}
