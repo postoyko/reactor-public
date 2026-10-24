@@ -179,8 +179,10 @@ export async function runApiCheck(hub: DataHub, opt: CheckOptions, onResult: (r:
   // with the first incident and alert. All are reads.
   const firstAlert = alertIds[0] || '';
   const PROBES: Array<[string, string, Record<string, unknown>]> = [
-    ['getIncidentDiagnosis', 'diagnosis of an incident (for Explain this)', { storyId: incidentId, incidentId, id: incidentId }],
-    ['getIncidentDiagnosisStatus', 'diagnosis status (for Explain this)', { storyId: incidentId, incidentId, id: incidentId }],
+    // the server asks for contextId (API check 2026-10-24); the incident is the likely context
+    ['getIncidentDiagnosis', 'diagnosis of an incident (for Explain this)', { contextId: incidentId }],
+    ['getIncidentDiagnosisStatus', 'diagnosis status (for Explain this)', { contextId: incidentId }],
+    ['getSimilarIncidents', 'similar past incidents (for Explain this)', { storyId: incidentId, applicationId: '', applicationGroupId: '', searchText: '' }],
     ['getEventData', 'event history (for time travel)', { id: firstAlert }],
     ['getIncidentAlertDetails', 'one alert in detail (for time travel)', { alertId: firstAlert }]
   ];
@@ -196,6 +198,31 @@ export async function runApiCheck(hub: DataHub, opt: CheckOptions, onResult: (r:
       push({ name: label, api: name, kind: 'probe', status: data === undefined || data === null ? 'empty' : 'ok', ms: Date.now() - t0, params: showParams(params, opt.values), note: `Parameters the server requires: ${needs}`, outline: outline(data, opt.values) });
     } catch (e: any) {
       push({ name: label, api: name, kind: 'probe', status: 'error', ms: Date.now() - t0, params: showParams(params, opt.values), note: `Parameters the server requires: ${needs}\nCalled with the first incident and alert: ${errDetail(e)}` });
+    }
+  }
+
+  // The incident timeline (in getStoryAlertsGroups' answer): which kinds of entry it holds, for time travel. Only the
+  // kinds, their fields and the time span are reported, never the content.
+  if (incidentId && typeof a.getStoryAlertsGroups === 'function') {
+    const params = hub.paramsFor('getStoryAlertsGroups', incidentId);
+    const t0 = Date.now();
+    try {
+      const data: any = await withTimeout(Promise.resolve(a.getStoryAlertsGroups(params)), 25000);
+      const tl: any[] = (data && data.tenant && data.tenant.story && Array.isArray(data.tenant.story.timeline)) ? data.tenant.story.timeline : [];
+      const kinds = new Map<string, { n: number; fields: Set<string> }>();
+      tl.forEach(e => {
+        const k = String((e && e.type) || '(none)');
+        const cur = kinds.get(k) || { n: 0, fields: new Set<string>() };
+        cur.n++;
+        Object.keys((e && e.content) || {}).forEach(f => cur.fields.add(f));
+        kinds.set(k, cur);
+      });
+      const times = tl.map(e => Date.parse(e && e.createdTime)).filter(x => !Number.isNaN(x)).sort((x, y) => x - y);
+      const lines = Array.from(kinds.entries()).map(([k, v]) => `${k}: ${v.n}× · content fields: ${Array.from(v.fields).sort().join(', ') || '(none)'}`);
+      if (times.length) lines.push(`span: ${new Date(times[0]).toISOString()} to ${new Date(times[times.length - 1]).toISOString()}`);
+      push({ name: 'Incident timeline (for time travel)', api: 'getStoryAlertsGroups', kind: 'probe', status: tl.length ? 'ok' : 'empty', ms: Date.now() - t0, note: `${tl.length} entries for the first incident.`, outline: lines.join('\n') || '(no timeline)' });
+    } catch (e: any) {
+      push({ name: 'Incident timeline (for time travel)', api: 'getStoryAlertsGroups', kind: 'probe', status: 'error', ms: Date.now() - t0, note: errDetail(e) });
     }
   }
 

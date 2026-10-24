@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.63.2
+- API check probes, after the first run on the tenant: the incident diagnosis is called with `contextId` (what the server asked for), `getSimilarIncidents` is tried, and the incident timeline found in the alert groups answer is summarised (kinds of entry, their fields, the time span; never the content).
+
 ## v1.63.1
 - API check: new read-only probes for planned features. `getIncidentDiagnosis` and `getIncidentDiagnosisStatus` (for *Explain this*), `getEventData` and `getIncidentAlertDetails` (for time travel) are each asked which parameters they require, then called with the first incident and alert; the report shows what they return.
 
