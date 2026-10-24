@@ -3153,3 +3153,39 @@ body.db-dragging iframe { pointer-events: none; }
     p { margin: 0; color: var(--db-muted); font-size: inherit; line-height: inherit; }
   }
 }
+
+/* Action flows: Concert Operate (platform) actions and multi-field arguments */
+.dashboard-builder-container {
+  .db-af-card--act[data-group='Concert Operate'] .db-af-act-icon { background: rgb(218 30 40 / 10%); color: #a2191f; }
+
+  .db-af-note {
+    margin: 0;
+    padding: 8px 10px;
+    border-left: 3px solid #f1c21b;
+    border-radius: 0 6px 6px 0;
+    background: #fcf4d6;
+    color: #684e00;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .db-af-parts {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .db-af-inrow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .db-af-input { flex: 1; min-width: 0; }
+  }
+
+  .db-af-token--sm {
+    flex: 0 0 auto;
+    align-self: center;
+    padding: 3px 8px;
+  }
+}

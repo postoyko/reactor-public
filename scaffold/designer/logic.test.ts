@@ -366,3 +366,76 @@ describe('chromeless tiles', () => {
     expect([s.dashboard.widgets[0].w, s.dashboard.widgets[0].h]).toEqual([2, 2]);
   });
 });
+
+import { anyAlertRows, fieldsOf, genericRows, peopleRows, toRows } from './rows';
+import { actionsOf, PLATFORM } from './component-api';
+import { partValues, platformAction, ROW_ACTIONS } from './platform-actions';
+import { isQuery, PLATFORM_ID, SOURCES } from './sources';
+
+describe('more data sources', () => {
+  it('every source is a known query and has fields', () => {
+    SOURCES.forEach(s => { expect(isQuery(s.id)).toBe(true); expect(fieldsOf(s.id).length).toBeGreaterThan(0); });
+    expect(isQuery('dropTables')).toBe(false);
+  });
+  it('reads the largest list of records generically and learns its fields', () => {
+    const rows = toRows('getActions', { tenant: { actions: { total: 2, items: [{ id: 1, name: 'Restart', type: 'script', owner: { name: 'sre' }, tags: ['a', 'b'], enabled: true }, { id: 2, name: 'Page', type: 'notify' }] } } });
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toMatchObject({ id: '1', name: 'Restart', type: 'script', 'owner.name': 'sre', tags: 'a, b', tagsCount: 2, enabled: 'Yes' });
+    expect(fieldsOf('getActions').map(f => f.key)).toEqual(expect.arrayContaining(['owner.name', 'tagsCount', 'enabled']));
+    expect(fieldsOf('getActions').find(f => f.key === 'tagsCount')!.kind).toBe('number');
+  });
+  it('reads one record as one row', () => {
+    expect(genericRows({ tenant: { topologyResource: { uniqueId: 'r1', name: 'node-1', entityTypes: ['pod'] } } })).toEqual([{ id: 'r1', uniqueId: 'r1', name: 'node-1', entityTypes: 'pod', entityTypesCount: 1 }]);
+    expect(genericRows(null)).toEqual([]);
+  });
+  it('reads alerts from a table or from records', () => {
+    const table = { tenant: { incident: { alerts: { columns: [{ name: 'id' }, { name: 'severity' }, { name: 'resource.name' }], rows: [{ fields: ['a1', '6', 'db'] }] } } } };
+    expect(anyAlertRows(table)[0]).toMatchObject({ id: 'a1', severity: 6, severityLabel: 'Critical', resource: 'db' });
+    const recs = anyAlertRows({ tenant: { rawAlerts: [{ id: 'a2', severity: 5, summary: 'Disk full', resource: { name: 'nfs' }, state: 'open' }] } });
+    expect(recs[0]).toMatchObject({ id: 'a2', severityLabel: 'Major', resource: 'nfs', service: 'Database & Storage' });
+  });
+  it('people and teams: one row per user and per group', () => {
+    const rows = peopleRows({ tenant: { users: [{ id: 'u1', name: 'alex', groups: [{ name: 'SRE' }] }], groups: [{ id: 'g1', name: 'SRE' }] } });
+    expect(rows).toEqual([{ id: 'u1', kind: 'User', name: 'alex', groups: 'SRE', groupCount: 1 }, { id: 'g1', kind: 'Group', name: 'SRE', members: 1 }]);
+  });
+  it('a source that needs a parameter says so instead of calling the server', async () => {
+    const calls: any[] = [];
+    const hub = new DataHub((q, p) => { calls.push([q, p]); return Promise.resolve({}); }, 't1');
+    expect(hub.paramsFor('getIncidentAlerts', '')).toMatchObject({ __missing: 'Incident id' });
+    expect(hub.paramsFor('getIncidentAlerts', 'inc-1')).toMatchObject({ tenantId: 't1', incidentId: 'inc-1' });
+    expect(hub.paramsFor('getRelatedStories', 'alert-1, alert-2')).toMatchObject({ alertIds: ['alert-1', 'alert-2'] });
+    expect(hub.paramsFor('getRelatedStories', 'inc-9')).toMatchObject({ storyId: 'inc-9' });
+  });
+  it('keeps new sources and platform actions when a dashboard is loaded', () => {
+    const d = sanitizeDashboard({ name: 'x', widgets: [
+      { id: 'w1', type: 'table', title: 'T', x: 0, y: 0, w: 6, h: 4, config: { query: 'getIncidentAlerts', filter: 'inc-1', on: [{ event: 'click', to: PLATFORM_ID, do: 'api:createIncident', arg: '{"alertIds":"{value}"}' }, { event: 'click', to: 'gone', do: 'show' }] } },
+      { id: 'w2', type: 'kpi', title: 'K', x: 6, y: 0, w: 3, h: 3, config: { query: 'nonsense' } }
+    ] })!;
+    const [a, b2] = d.dashboard.widgets;
+    expect(a.config.query).toBe('getIncidentAlerts');
+    expect(a.config.on).toEqual([{ event: 'click', to: PLATFORM_ID, do: 'api:createIncident', arg: '{"alertIds":"{value}"}' }]);
+    expect(b2.config.query).toBe('getAlerts');
+  });
+});
+
+describe('Concert Operate actions', () => {
+  it('the platform target offers the mutations; alert widgets offer the row actions', () => {
+    expect(actionsOf(PLATFORM).map(a => a.id)).toEqual(expect.arrayContaining(['api:createIncident', 'api:addToIncident', 'api:activatePolicy', 'api:lockPolicy']));
+    expect(actionsOf({ type: 'table', config: { query: 'getAlerts' } }).map(a => a.id)).toEqual(expect.arrayContaining(ROW_ACTIONS.map(a => a.id)));
+    expect(actionsOf({ type: 'table', config: { query: 'getStories' } }).some(a => a.id.startsWith('api:'))).toBe(false);
+    expect(actionsOf({ type: 'table', config: { query: 'getStories' } }).some(a => a.id === 'cfg:filter')).toBe(true);
+  });
+  it('builds the API call from the fields', () => {
+    const create = platformAction('api:createIncident')!;
+    const v = partValues(create.parts, JSON.stringify({ alertIds: 'a1, a2 a3', priority: '9', description: 'Disk' }));
+    expect(create.call(v, [])).toEqual({ name: 'createIncidentMutation', params: { alertIds: ['a1', 'a2', 'a3'], priority: 5, description: 'Disk' }, summary: 'Create a P5 incident from 3 alerts' });
+    const rows = platformAction('api:incidentFromRows')!;
+    expect(rows.call(partValues(rows.parts, undefined), ['x']).params).toEqual({ alertIds: ['x'], priority: 3, description: 'Created from the dashboard' });
+    const lock = platformAction('api:unlockPolicy')!;
+    expect(lock.call({ policyIds: 'p1' }, [])).toMatchObject({ name: 'setPolicyLock', params: { policyIds: ['p1'], locked: false }, summary: 'Unlock 1 policy' });
+    expect(platformAction('api:activatePolicy')!.call({ policyIds: 'p1,p2' }, []).summary).toBe('Activate 2 policies');
+  });
+  it('missing or broken fields fall back to the defaults', () => {
+    expect(partValues(platformAction('api:addToIncident')!.parts, 'not json')).toEqual({ alertIds: '{value}', correlationKey: '{value}' });
+  });
+});

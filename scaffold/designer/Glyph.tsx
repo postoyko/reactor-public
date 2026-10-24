@@ -76,6 +76,8 @@ function shape(k: string): React.ReactNode {
       return (<><rect x="2" y="3" width="12" height="10" rx="1.5" /><circle cx="5.75" cy="6.5" r="1" /><path d="M2.5 12l3.5-3 2.5 2 2-1.5 3 2.5" /></>);
     case 'text':
       return (<path d="M3 4.5h10M3 8h10M3 11.5h6" />);
+    case 'platform':
+      return (<><path d="M4.5 12.5a3 3 0 0 1-.3-6 4 4 0 0 1 7.6-1A3.25 3.25 0 0 1 11.75 12.5z" /><path d="M8 7.5v3M6.5 9l1.5-1.5L9.5 9" /></>);
     case 'gauge':
       return (<><path d="M2.5 11.5a5.5 5.5 0 0 1 11 0" /><path d="M8 11.5l3-3.5" /></>);
     case 'scatter':

@@ -1,5 +1,12 @@
 # Dashboard Designer changes
 
+## v1.53.0
+- **Eleven more data sources** (Data tab > Source, now grouped): *Alerts (raw, any filter)* (getRawAlerts), *Incidents of matching alerts* (getStoriesByAlerts), *Alerts of an incident* (getIncidentAlerts), *Alert groups of an incident* (getStoryAlertsGroups), *Related incidents* (getRelatedStories), *Topology resource* (getTopologyResource), *People and teams* (getUsersAndGroups), *Resource groups* (getGroups), *Automation actions* (getActions), *Tools* (getTools) and *Saved filters and views* (getFiltersViews). Sources that need an id or a filter ask for it in the Data tab and say so on the widget until it is given.
+- Alert and incident sources get the same fields, colours, filter bar and drill-down as the main ones. The others are read generically (the largest list of records, flattened one level) and their fields are learnt from the first answer, so they can be grouped, measured and shown as columns.
+- Master and detail: the new action *Change its source parameter* (Data) sets a widget's incident id, resource id or filter, usually to {value}, so picking an incident in one widget shows its alerts in another.
+- **Concert Operate actions** in Action flows: a *Concert Operate* target (offered while dragging and in the On list) with *Create an incident*, *Add alerts to an incident*, and *Activate*, *Lock*, *Unlock*, *Deploy*, *Stop deploying*, *Reject*, *Restore* and *Rename* policies (createIncidentMutation, updateIncidentMutation and the policy mutations). Widgets that show alerts also get *Create an incident from the alerts it shows* and *Add the alerts it shows to an incident*, which use the alerts the widget shows after its filters.
+- Actions with several fields (alert ids, priority, description) are edited field by field, with + value for what the event carried. They always ask the person using the dashboard to confirm before anything is sent, and report the result at the top of the dashboard.
+
 ## v1.52.0
 - **Action flows**: a full-screen visual editor for action wiring (**Flows** in the toolbar, or *Edit in Action flows* in a widget's Interact tab). Three lanes read as a sentence: **When** (the trigger widget and its events), **Then** (one card per action), **On** (the widgets they change), joined by animated connectors that light up on hover and selection.
 - Drag from a trigger's port onto any widget to add an action (every widget is offered as a drop target while dragging); the action that suits the target is preselected. Clicking the port adds one too.

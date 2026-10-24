@@ -7,6 +7,7 @@
  */
 
 import { Metric, QueryName, Row } from './types';
+import { Shape, shapeOf } from './sources';
 
 export const SEVERITY_LABELS = ['Clear', 'Indeterminate', 'Information', 'Warning', 'Minor', 'Major', 'Critical'];
 /** Carbon-ish colours, indexed by severity number 0..6 (same order as SEVERITY_LABELS). */
@@ -82,8 +83,7 @@ export interface FieldInfo {
   kind: 'text' | 'number' | 'time';
 }
 
-export const FIELDS: Record<QueryName, FieldInfo[]> = {
-  getAlerts: [
+const ALERT_FIELDS: FieldInfo[] = [
     { key: 'severityLabel', label: 'Severity', kind: 'text' },
     { key: 'severity', label: 'Severity (number)', kind: 'number' },
     { key: 'state', label: 'State', kind: 'text' },
@@ -115,8 +115,8 @@ export const FIELDS: Record<QueryName, FieldInfo[]> = {
     { key: 'firstOccurrence', label: 'First occurrence', kind: 'time' },
     { key: 'lastOccurrence', label: 'Last occurrence', kind: 'time' },
     { key: 'id', label: 'Alert id', kind: 'text' }
-  ],
-  getStories: [
+];
+const STORY_FIELDS: FieldInfo[] = [
     { key: 'priority', label: 'Priority', kind: 'number' },
     { key: 'state', label: 'State', kind: 'text' },
     { key: 'team', label: 'Team', kind: 'text' },
@@ -128,7 +128,8 @@ export const FIELDS: Record<QueryName, FieldInfo[]> = {
     { key: 'alertCount', label: 'Alert count', kind: 'number' },
     { key: 'created', label: 'Created', kind: 'time' },
     { key: 'id', label: 'Incident id', kind: 'text' }
-  ],
+];
+const BASE_FIELDS: Record<'getApplications' | 'getMetricSeries', FieldInfo[]> = {
   // Business applications and services as Concert Operate sees them (getImpactedApplications).
   getApplications: [
     { key: 'name', label: 'Application', kind: 'text' },
@@ -160,15 +161,62 @@ export const FIELDS: Record<QueryName, FieldInfo[]> = {
   ]
 };
 
-export const DEFAULT_GROUP: Record<QueryName, string> = { getAlerts: 'severityLabel', getStories: 'priority', getApplications: 'severityLabel', getMetricSeries: 'kind' };
-export const DEFAULT_TIME: Record<QueryName, string> = { getAlerts: 'firstOccurrence', getStories: 'created', getApplications: '', getMetricSeries: 'time' };
+const PEOPLE_FIELDS: FieldInfo[] = [
+  { key: 'kind', label: 'User or group', kind: 'text' },
+  { key: 'name', label: 'Name', kind: 'text' },
+  { key: 'groups', label: 'Groups', kind: 'text' },
+  { key: 'groupCount', label: 'Number of groups', kind: 'number' },
+  { key: 'members', label: 'Members', kind: 'number' },
+  { key: 'id', label: 'Id', kind: 'text' }
+];
+/** Generic sources start with these; the rest of their fields are learnt from the first response. */
+const GENERIC_FIELDS: FieldInfo[] = [
+  { key: 'name', label: 'Name', kind: 'text' },
+  { key: 'type', label: 'Type', kind: 'text' },
+  { key: 'id', label: 'Id', kind: 'text' }
+];
+
+const SHAPE_FIELDS: Record<Shape, (q: QueryName) => FieldInfo[]> = {
+  alerts: () => ALERT_FIELDS,
+  stories: () => STORY_FIELDS,
+  apps: () => BASE_FIELDS.getApplications,
+  metric: () => BASE_FIELDS.getMetricSeries,
+  people: () => PEOPLE_FIELDS,
+  generic: () => GENERIC_FIELDS
+};
+
+const learned = new Map<QueryName, FieldInfo[]>();
+const KNOWN_LABELS: Record<string, string> = { name: 'Name', type: 'Type', id: 'Id', description: 'Description', state: 'State', status: 'Status' };
+const pretty = (k: string) => KNOWN_LABELS[k] || k.replace(/\./g, ' · ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, c => c.toUpperCase());
+/** Remembers the fields a generic source returned, so they can be grouped, measured and shown. */
+export function learnFields(query: QueryName, rows: Row[]) {
+  if (!rows.length) return;
+  const base = new Set(GENERIC_FIELDS.map(f => f.key));
+  const keys = new Map<string, FieldInfo['kind']>();
+  rows.slice(0, 200).forEach(r => Object.keys(r).forEach(k => {
+    const v = r[k];
+    if (v === undefined || base.has(k)) return;
+    const kind: FieldInfo['kind'] = typeof v === 'number' ? 'number' : /time|date|created|updated|timestamp/i.test(k) && Number.isFinite(Date.parse(String(v))) ? 'time' : 'text';
+    const was = keys.get(k);
+    keys.set(k, was && was !== kind ? 'text' : kind);
+  }));
+  learned.set(query, Array.from(keys.entries()).slice(0, 60).map(([key, kind]) => ({ key, label: pretty(key), kind })));
+}
+
+export const DEFAULT_GROUP_OF: Record<Shape, string> = { alerts: 'severityLabel', stories: 'priority', apps: 'severityLabel', metric: 'kind', people: 'kind', generic: 'type' };
+export const DEFAULT_TIME_OF: Record<Shape, string> = { alerts: 'firstOccurrence', stories: 'created', apps: '', metric: 'time', people: '', generic: '' };
+export const DEFAULT_GROUP = new Proxy({} as Record<QueryName, string>, { get: (_, q: string) => DEFAULT_GROUP_OF[shapeOf(q as QueryName)] });
+export const DEFAULT_TIME = new Proxy({} as Record<QueryName, string>, { get: (_, q: string) => DEFAULT_TIME_OF[shapeOf(q as QueryName)] });
 
 export function fieldsOf(query: QueryName, kind?: FieldInfo['kind']): FieldInfo[] {
-  return FIELDS[query].filter(f => !kind || f.kind === kind);
+  const shape = shapeOf(query);
+  const base = SHAPE_FIELDS[shape](query);
+  const all = shape === 'generic' ? [...base, ...(learned.get(query) || [])] : base;
+  return all.filter(f => !kind || f.kind === kind);
 }
 
 export function fieldLabel(query: QueryName, key: string): string {
-  const f = FIELDS[query].find(x => x.key === key);
+  const f = fieldsOf(query).find(x => x.key === key);
   return f ? f.label : key;
 }
 
@@ -322,7 +370,125 @@ export function metricRows(data: any): Row[] {
 }
 
 export function toRows(query: QueryName, data: any): Row[] {
-  return query === 'getAlerts' ? alertRows(data) : query === 'getApplications' ? applicationRows(data) : query === 'getMetricSeries' ? metricRows(data) : incidentRows(data);
+  if (query === 'getAlerts') return alertRows(data);
+  if (query === 'getStories') return incidentRows(data);
+  if (query === 'getApplications') return applicationRows(data);
+  if (query === 'getMetricSeries') return metricRows(data);
+  const shape = shapeOf(query);
+  if (shape === 'alerts') return anyAlertRows(data);
+  if (shape === 'stories') return incidentRows({ tenant: { stories: largestList(data, o => 'id' in o) } });
+  if (shape === 'people') return peopleRows(data);
+  const rows = genericRows(data);
+  learnFields(query, rows);
+  return rows;
+}
+
+/* ── tolerant readers for responses whose exact shape is not documented ── */
+
+const isRec = (v: unknown): v is Record<string, any> => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/** The longest list of records anywhere in a response (depth 6), optionally only lists whose records pass `ok`. */
+export function largestList(data: unknown, ok: (o: Record<string, any>) => boolean = () => true): Record<string, any>[] {
+  let best: Record<string, any>[] = [];
+  const walk = (v: unknown, depth: number) => {
+    if (depth > 6 || v === null || typeof v !== 'object') return;
+    if (Array.isArray(v)) {
+      const recs = v.filter(isRec);
+      if (recs.length > best.length && recs.length >= v.length / 2 && recs.some(ok)) best = recs.filter(ok);
+      v.slice(0, 50).forEach(x => walk(x, depth + 1));
+      return;
+    }
+    Object.keys(v as object).forEach(k => walk((v as Record<string, unknown>)[k], depth + 1));
+  };
+  walk(data, 0);
+  return best;
+}
+
+/** A record as one flat row: scalars as they are, nested records one level deep as "parent.child", lists as text and a count. */
+export function flatten(o: Record<string, any>, prefix = '', depth = 0): Row {
+  const row: Row = {};
+  Object.keys(o).slice(0, 80).forEach(k => {
+    const v = o[k];
+    const key = prefix ? `${prefix}.${k}` : k;
+    if (v === null || v === undefined || v === '') return;
+    if (typeof v === 'number') { if (Number.isFinite(v)) row[key] = v; return; }
+    if (typeof v === 'boolean') { row[key] = v ? 'Yes' : 'No'; return; }
+    if (typeof v === 'string') { row[key] = v.length > 500 ? `${v.slice(0, 499)}…` : v; return; }
+    if (Array.isArray(v)) {
+      row[`${key}Count`] = v.length;
+      const names = v.map(x => (isRec(x) ? x.name || x.id || x.label : x)).filter(x => typeof x === 'string' || typeof x === 'number');
+      if (names.length) row[key] = names.slice(0, 20).join(', ');
+      return;
+    }
+    if (isRec(v) && depth < 1) Object.assign(row, flatten(v, key, depth + 1));
+  });
+  return row;
+}
+
+/** Any response: the largest list of records, flattened; a single record becomes one row. */
+export function genericRows(data: any): Row[] {
+  const list = largestList(data);
+  if (list.length) {
+    return list.slice(0, 5000).map((o, i) => {
+      const r = flatten(o);
+      if (r.id === undefined) r.id = String(o.uuid || o._id || o.key || o.name || i + 1);
+      else r.id = String(r.id);
+      return r;
+    });
+  }
+  // one record: the deepest object under tenant that has scalar fields
+  let rec: Record<string, any> | undefined = isRec(data) && isRec(data.tenant) ? data.tenant : isRec(data) ? data : undefined;
+  while (rec && Object.keys(rec).length === 1 && isRec(rec[Object.keys(rec)[0]])) rec = rec[Object.keys(rec)[0]];
+  if (!rec) return [];
+  const r = flatten(rec);
+  if (!Object.keys(r).length) return [];
+  r.id = String(r.id || r.uniqueId || r.name || 'resource');
+  return [r];
+}
+
+/** Alerts from any response: a columns-and-rows table like getAlerts', or a list of alert records. */
+export function anyAlertRows(data: any): Row[] {
+  let table: any;
+  const find = (v: unknown, depth: number) => {
+    if (table || depth > 6 || !isRec(v)) return;
+    if (Array.isArray(v.columns) && Array.isArray(v.rows)) { table = v; return; }
+    Object.keys(v).forEach(k => find(v[k], depth + 1));
+  };
+  find(data, 0);
+  if (table) return alertRows({ tenant: { alerts: table } });
+  return largestList(data, o => 'id' in o).map(o => {
+    const flat = flatten(o);
+    const row: Row = {};
+    ALERT_FIELD_MAP.forEach(([col, key]) => {
+      const v = flat[col] !== undefined ? flat[col] : flat[key];
+      if (v !== undefined && !(v === '-' && (key === 'team' || key === 'owner'))) row[key] = key === 'severity' ? Number(v) : v;
+    });
+    row.id = String(flat.id);
+    if (typeof row.severity === 'number' && !Number.isFinite(row.severity)) delete row.severity;
+    if (typeof row.severity === 'number') row.severityLabel = SEVERITY_LABELS[row.severity] || `Severity ${row.severity}`;
+    row.service = serviceOf(`${row.resource || ''} ${row.summary || ''}`);
+    return row;
+  });
+}
+
+/** getUsersAndGroups: one row per user and per group. */
+export function peopleRows(data: any): Row[] {
+  const t = isRec(data) && isRec(data.tenant) ? data.tenant : data;
+  const name = (x: any) => (isRec(x) ? String(x.name || x.displayName || x.username || x.userName || x.email || x.id || '') : String(x || ''));
+  const users: any[] = isRec(t) && Array.isArray(t.users) ? t.users : [];
+  const groups: any[] = isRec(t) && Array.isArray(t.groups) ? t.groups : [];
+  const members = new Map<string, number>();
+  const out: Row[] = [];
+  users.forEach((u, i) => {
+    const gs: string[] = isRec(u) && Array.isArray(u.groups) ? u.groups.map(name).filter(Boolean) : [];
+    gs.forEach(g => members.set(g, (members.get(g) || 0) + 1));
+    out.push({ id: String((isRec(u) && u.id) || `user-${i}`), kind: 'User', name: name(u), groups: gs.join(', ') || undefined, groupCount: gs.length });
+  });
+  groups.forEach((g, i) => {
+    const n = name(g);
+    out.push({ id: String((isRec(g) && g.id) || `group-${i}`), kind: 'Group', name: n, members: members.get(n) || (isRec(g) && Array.isArray(g.users) ? g.users.length : 0) });
+  });
+  return out.filter(r => r.name);
 }
 
 export const NONE = '(none)';
@@ -340,7 +506,7 @@ export function ago(ms: number, now = Date.now()): string {
 export function displayCell(query: QueryName, key: string, row: Row): string {
   const v = row[key];
   if (v === undefined) return NONE;
-  const kind = (FIELDS[query].find(f => f.key === key) || { kind: 'text' }).kind;
+  const kind = (fieldsOf(query).find(f => f.key === key) || { kind: 'text' }).kind;
   if (kind === 'time') {
     const t = typeof v === 'number' ? v : Date.parse(String(v));
     if (!Number.isFinite(t)) return String(v);

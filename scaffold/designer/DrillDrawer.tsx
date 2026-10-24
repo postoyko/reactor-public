@@ -15,6 +15,7 @@ import { SemCell } from './Sem';
 import IncidentInsights from './IncidentInsights';
 import IncidentTimeline from './IncidentTimeline';
 import RunbookPanel from './RunbookPanel';
+import { shapeOf } from './sources';
 
 export default function DrillDrawer({ req, onClose }: { req: DrillRequest; onClose: () => void }) {
   const [q, setQ] = useState('');
@@ -30,7 +31,8 @@ export default function DrillDrawer({ req, onClose }: { req: DrillRequest; onClo
     const n = q.trim().toLowerCase();
     return n ? req.rows.filter(r => all.some(f => cell(r, f.key).toLowerCase().includes(n))) : req.rows;
   }, [req.rows, q, all]);
-  const noun = req.query === 'getAlerts' ? 'alert' : req.query === 'getApplications' ? 'application' : req.query === 'getMetricSeries' ? 'data point' : 'incident';
+  const shape = shapeOf(req.query);
+  const noun = shape === 'alerts' ? 'alert' : shape === 'apps' ? 'application' : shape === 'metric' ? 'data point' : shape === 'stories' ? 'incident' : shape === 'people' ? 'entry' : 'record';
   const shown = rows.slice(0, 200);
   const rec = (r: Row) => r as Record<string, unknown>;
   return (
@@ -60,9 +62,9 @@ export default function DrillDrawer({ req, onClose }: { req: DrillRequest; onClo
                 {all.map(f => (r[f.key] === undefined ? null : <div key={f.key}><dt>{f.label}</dt><dd><SemCell field={f.key} value={r[f.key]} shown={cell(r, f.key)} /></dd></div>))}
               </dl>
             )}
-            {open === i && req.query === 'getStories' && <IncidentTimeline row={r} />}
-            {open === i && req.query === 'getAlerts' && <RunbookPanel row={r} />}
-            {open === i && req.query === 'getStories' && <IncidentInsights storyId={String(r.id)} title={String(r.title || '')} />}
+            {open === i && shape === 'stories' && <IncidentTimeline row={r} />}
+            {open === i && shape === 'alerts' && <RunbookPanel row={r} />}
+            {open === i && shape === 'stories' && <IncidentInsights storyId={String(r.id)} title={String(r.title || '')} />}
             {req.url && (
               <button type="button" className="db-drow-open" onClick={() => openAddress(req.url as string, rec(r), req.newTab !== false)}>Open <Launch size={14} aria-hidden="true" /></button>
             )}

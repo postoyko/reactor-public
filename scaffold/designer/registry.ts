@@ -4,7 +4,8 @@
  */
 
 import { NativeType, QueryName, WidgetConfig, WidgetType } from './types';
-import { DEFAULT_GROUP, DEFAULT_TIME } from './rows';
+import { DEFAULT_GROUP, DEFAULT_TIME, fieldsOf } from './rows';
+import { shapeOf } from './sources';
 import { EXTRA_TILES } from './tiles-extra';
 import { carbonSpec as carbonDef } from './carbon-specs';
 
@@ -88,18 +89,26 @@ export function minSize(type: WidgetType): { minW: number; minH: number } {
   return c ? { minW: c.minW || 2, minH: c.minH || 2 } : { minW: 2, minH: 2 };
 }
 
+/** The first columns of a new table for a source. */
+export function defaultColumns(query: QueryName): string[] {
+  const shape = shapeOf(query);
+  if (shape === 'alerts') return ['severityLabel', 'resource', 'summary', 'state'];
+  if (shape === 'stories') return ['priority', 'title', 'state', 'team'];
+  return fieldsOf(query).slice(0, 4).map(f => f.key);
+}
+
 export function defaultConfig(type: WidgetType, query: QueryName = 'getAlerts'): WidgetConfig {
   const base: WidgetConfig = { query, emits: true, listens: true };
   switch (type) {
     case 'kpi': return { ...base, metric: 'count' };
     case 'bar': return { ...base, groupBy: DEFAULT_GROUP[query], metric: 'count', limit: 8 };
-    case 'donut': return { ...base, groupBy: query === 'getAlerts' ? 'state' : 'state', metric: 'count', limit: 6 };
+    case 'donut': return { ...base, groupBy: shapeOf(query) === 'alerts' || shapeOf(query) === 'stories' ? 'state' : DEFAULT_GROUP[query], metric: 'count', limit: 6 };
     case 'timeseries': return { ...base, timeField: DEFAULT_TIME[query], emits: false };
     case 'table': return {
       ...base,
       emits: false,
       limit: 50,
-      columns: query === 'getAlerts' ? ['severityLabel', 'resource', 'summary', 'state'] : ['priority', 'title', 'state', 'team']
+      columns: defaultColumns(query)
     };
     case 'text': return { ...base, text: 'Notes', emits: false, listens: false };
     case 'image': return { ...base, emits: false, listens: false, fit: 'contain' };

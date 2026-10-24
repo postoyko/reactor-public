@@ -17,10 +17,12 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   Add, Application, ArrowRight, Checkmark, ChevronDown, ChevronRight, Close, Copy, Cursor_1, DataBase, Edit, Flow, Hashtag,
-  Keyboard, MagicWand, Maximize, Search, Settings, TextCreation, Touch_1, TrashCan, View, WarningAlt
+  Keyboard, MagicWand, Maximize, Search, Settings, TextCreation, Touch_1, TrashCan, View, WarningAlt, CloudServices
 } from '@carbon/icons-react';
 import { ActionLink, Widget } from './types';
-import { ActionSpec, actionLabel, actionsOf, EventSpec, eventsOf, isPickable, newLink, suggestAction, VALUE_TYPES } from './component-api';
+import { ActionArg, ActionSpec, actionLabel, actionsOf, EventSpec, eventsOf, isPickable, newLink, PLATFORM, suggestAction, VALUE_TYPES } from './component-api';
+import { encodeParts, partValues } from './platform-actions';
+import { isAlertSource } from './sources';
 import { treeOrder } from './nesting';
 import { Glyph } from './Glyph';
 import { typeLabel } from './meta';
@@ -39,8 +41,8 @@ interface Rule { rid: string; from: Widget; i: number; link: ActionLink; target?
 interface Edge { id: string; d: string; kind: 'in' | 'out'; rid: string; hot: boolean }
 interface Suggestion { key: string; from: Widget; link: ActionLink; title: string; why: string }
 
-const GROUP_ORDER: ActionSpec['group'][] = ['Component', 'Visibility', 'Value', 'Data', 'Content', 'Settings'];
-const GROUP_ICON: Record<ActionSpec['group'], Icon> = { Component: Application, Visibility: View, Value: Hashtag, Data: DataBase, Content: TextCreation, Settings: Settings };
+const GROUP_ORDER: ActionSpec['group'][] = ['Concert Operate', 'Component', 'Visibility', 'Value', 'Data', 'Content', 'Settings'];
+const GROUP_ICON: Record<ActionSpec['group'], Icon> = { 'Concert Operate': CloudServices, Component: Application, Visibility: View, Value: Hashtag, Data: DataBase, Content: TextCreation, Settings: Settings };
 const EVENT_ICON: Record<string, Icon> = {
   change: Edit, select: Touch_1, tab: Application, toggle: ChevronDown, open: Maximize, close: Close, submit: Checkmark, page: Hashtag,
   click: Touch_1, dblclick: Touch_1, hover: Cursor_1, leave: Cursor_1, input: Keyboard, enter: Keyboard, focus: Keyboard, blur: Keyboard
@@ -55,6 +57,13 @@ const eventLabel = (w: Widget, id: string) => (eventsOf(w).find(e => e.id === id
 /** A short, readable form of an action's argument for the card ("= {value}", "tab 2"). */
 function argText(link: ActionLink): string {
   if (link.arg === undefined || link.arg === '') return '';
+  if (link.do.startsWith('api:')) {
+    try {
+      const o = JSON.parse(link.arg);
+      const t = Object.keys(o).map(k => (k === 'priority' ? `P${o[k]}` : String(o[k]))).filter(Boolean).join(' · ');
+      return t.length > 28 ? `${t.slice(0, 27)}…` : t;
+    } catch (e) { return ''; }
+  }
   const a = link.arg.length > 28 ? `${link.arg.slice(0, 27)}…` : link.arg;
   return a;
 }
@@ -80,6 +89,9 @@ function suggest(widgets: Widget[]): Suggestion[] {
       const sw = widgets.find(w => /ContentSwitcher|Dropdown|Select|RadioButtonGroup/.test(cname(w)));
       if (sw) push(sw, t, 'change', 'cmd:select', `“${sw.title}” chooses the tab in “${t.title}”`, 'A chooser and tabs');
     }
+    if (isAlertSource(t.config.query) && (t.type === 'table' || /DataTable/.test(t.type)) && buttons.length) {
+      push(buttons[0], t, 'click', 'api:incidentFromRows', `“${buttons[0].title}” creates an incident from the alerts in “${t.title}”`, 'Concert Operate');
+    }
     if (t.type === 'text') {
       const pick = widgets.find(w => isPickable(w));
       if (pick) push(pick, t, 'select', 'set:text', `“${t.title}” shows what is picked in “${pick.title}”`, 'A chart people click');
@@ -93,7 +105,7 @@ function suggest(widgets: Widget[]): Suggestion[] {
 
 export default function ActionStudio({ widgets, focus, onWidgets, onClose }: Props) {
   const ordered = useMemo(() => treeOrder(widgets), [widgets]);
-  const byId = useMemo(() => new Map(widgets.map(w => [w.id, w])), [widgets]);
+  const byId = useMemo(() => new Map([...widgets, PLATFORM].map(w => [w.id, w])), [widgets]);
   const [staged, setStaged] = useState<string[]>([]);
   const [sel, setSel] = useState<string | null>(() => {
     if (!focus) return null;
@@ -122,7 +134,7 @@ export default function ActionStudio({ widgets, focus, onWidgets, onClose }: Pro
     rules.forEach((r, k) => { if (r.target) pos.set(r.target.id, [...(pos.get(r.target.id) || []), k]); });
     return Array.from(pos.entries()).map(([id, ks]) => ({ w: byId.get(id)!, at: ks.reduce((a, b) => a + b, 0) / ks.length, n: ks.length })).sort((a, b) => a.at - b.at);
   }, [rules, byId]);
-  const spare = drag ? ordered.filter(w => w.id !== drag.from && !targets.some(t => t.w.id === w.id)) : [];
+  const spare = drag ? [PLATFORM, ...ordered].filter(w => w.id !== drag.from && !targets.some(t => t.w.id === w.id)) : [];
   const selected = rules.find(r => r.rid === sel) || null;
   const suggestions = useMemo(() => suggest(widgets), [widgets]);
 
@@ -524,7 +536,7 @@ function RulePanel({ rule, widgets, onChange, onSource, onRemove, onDuplicate, o
     onChange(next, 'do');
   };
   const retarget = (id: string) => {
-    const t = widgets.find(x => x.id === id);
+    const t = id === PLATFORM.id ? PLATFORM : widgets.find(x => x.id === id);
     if (!t) return;
     const keep = actionsOf(t).some(a => a.id === link.do);
     const d = keep ? link.do : suggestAction(t);
@@ -542,7 +554,9 @@ function RulePanel({ rule, widgets, onChange, onSource, onRemove, onDuplicate, o
   };
 
   const groups = GROUP_ORDER.map(g => ({ g, list: acts.filter(a => a.group === g && (!query || a.label.toLowerCase().includes(query))) })).filter(x => x.list.length);
-  const argEl = act && act.arg ? (() => {
+  const argEl = act && act.arg && act.arg.parts ? (
+    <PartsEditor arg={act.arg} value={link.arg} carries={ev.carries} onChange={x => onChange({ ...link, arg: x }, 'arg')} />
+  ) : act && act.arg ? (() => {
     const a = act.arg;
     const v = link.arg === undefined ? '' : link.arg;
     const set = (x: string) => onChange({ ...link, arg: x }, 'arg');
@@ -607,7 +621,8 @@ function RulePanel({ rule, widgets, onChange, onSource, onRemove, onDuplicate, o
 
       <div className="db-af-step-block">
         <h4><span className="db-af-step db-af-step--dot db-af-step--on" />On</h4>
-        <WidgetSelect id="db-af-tgt" label="Target" widgets={widgets.filter(w => w.id !== from.id)} value={link.to} onChange={retarget} missing={!target} />
+        <WidgetSelect id="db-af-tgt" label="Target" widgets={[PLATFORM, ...widgets.filter(w => w.id !== from.id)]} value={link.to} onChange={retarget} missing={!target} />
+        {target && target.id === PLATFORM.id && <p className="db-af-note">Calls Concert Operate itself. It runs only after the person using the dashboard confirms.</p>}
       </div>
 
       <div className="db-af-step-block">
@@ -649,7 +664,8 @@ function RulePanel({ rule, widgets, onChange, onSource, onRemove, onDuplicate, o
           <div className="db-af-field">
             <span>{act && act.arg ? act.arg.label : 'Value'}</span>
             {argEl}
-            {ev.carries && act && act.arg && act.arg.kind !== 'bool' && act.arg.kind !== 'enum' && (
+            {act && act.group === 'Concert Operate' && <p className="db-af-note">Changes data in Concert Operate. When the dashboard is used, it asks the person to confirm first.</p>}
+            {ev.carries && act && act.arg && !act.arg.parts && act.arg.kind !== 'bool' && act.arg.kind !== 'enum' && (
               <button type="button" className="db-af-token" onClick={insertValue} title={`Insert what the event carries: ${ev.carries}`}>+ <b>value</b><span>{ev.carries}</span></button>
             )}
           </div>
@@ -675,5 +691,31 @@ function WidgetSelect({ id, label, widgets, value, onChange, missing }: { id: st
       </select>
       <ChevronDown size={16} />
     </label>
+  );
+}
+
+/** The fields of an action that has several (create an incident: alert ids, priority, description). */
+function PartsEditor({ arg, value, carries, onChange }: { arg: ActionArg; value?: string; carries?: string; onChange: (json: string) => void }) {
+  const parts = arg.parts || [];
+  const v = partValues(parts, value);
+  const set = (k: string, x: string) => onChange(encodeParts({ ...v, [k]: x }));
+  return (
+    <div className="db-af-parts">
+      {parts.map(p => (
+        <label key={p.key} className="db-af-field">
+          <span>{p.label}</span>
+          {p.kind === 'enum' && p.options ? (
+            <span className="db-af-opts">
+              {p.options.map(o => <button key={o} type="button" className={`db-af-opt${o === v[p.key] ? ' on' : ''}`} onClick={() => set(p.key, o)}>{p.key === 'priority' ? `P${o}` : o}</button>)}
+            </span>
+          ) : (
+            <span className="db-af-inrow">
+              <input className="db-af-input" type="text" value={v[p.key]} placeholder={p.label} onChange={e => set(p.key, e.target.value)} />
+              {carries && !v[p.key].includes('{value}') && <button type="button" className="db-af-token db-af-token--sm" title={`Insert what the event carries: ${carries}`} onClick={() => set(p.key, `${v[p.key]}{value}`)}>+ <b>value</b></button>}
+            </span>
+          )}
+        </label>
+      ))}
+    </div>
   );
 }

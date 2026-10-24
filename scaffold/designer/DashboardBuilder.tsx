@@ -13,18 +13,20 @@ import './dashboard-builder.scss';
 import { ActionLink, Dashboard, Filter, FilterBarConfig, QueryName, Row, Widget } from './types';
 import { ActionApi, ActionCtx, coerce } from './actions';
 import { argKind, fill } from './component-api';
+import { partValues, platformAction } from './platform-actions';
+import { PLATFORM_ID } from './sources';
 import { carbonSpec, carbonDefaults } from './carbon-specs';
 import Library, { DockTab, LibSection } from './Library';
 import Menu from './Menu';
 import { Glyph } from './Glyph';
 import { typeLabel } from './meta';
-import { DataHub } from './datahub';
+import { DataHub, sourceKey } from './datahub';
 import { BuilderCtx, BuilderContext } from './context';
 import { findSpot, fitHeights, moveItem } from './grid';
 import { defaultConfig, defaultTitle, minSize, NATIVE, TILES } from './registry';
 import { CARBON, GROUPS } from './carbon-catalog';
 import { cloneDashboard, exportJson, importJson, loadState, newId, saveState, sharedDashboard, StoreState } from './store';
-import { DEFAULT_GROUP, fieldLabel } from './rows';
+import { applyFilters, DEFAULT_GROUP, fieldLabel } from './rows';
 import GridCanvas from './GridCanvas';
 import { NestApi, NestCtx } from './nest';
 import { MAX_DEPTH, cloneSubtree, isContainer, isContainerType, slotOwner, slotsOf, subtreeIds } from './nesting';
@@ -46,7 +48,7 @@ import { DrillRequest, urlFilters } from './drill';
 import { inputDefault } from './bindings';
 import Inspector from './Inspector';
 import ActionStudio from './ActionStudio';
-import { WidgetBody } from './Widgets';
+import { matches, WidgetBody } from './Widgets';
 import { VERSION } from './version';
 import { DEFAULT_LAYOUT } from './default-layout';
 
@@ -300,9 +302,36 @@ export default function DashboardBuilder(props: Props) {
   valuesRef.current = values;
   const viewingRef = useRef(viewing);
   viewingRef.current = viewing;
+  const actRef = useRef(act);
+  actRef.current = act;
+  /** Calls Concert Operate (create an incident, change policies), only after the person using the dashboard confirms. */
+  const runPlatform = (l: ActionLink, value: string, t?: Widget) => {
+    const spec = platformAction(l.do);
+    if (!spec) return;
+    const v = partValues(spec.parts, l.arg);
+    Object.keys(v).forEach(k => { v[k] = fill(v[k], value); });
+    let alertIds: string[] = [];
+    if (spec.fromRows && t) {
+      // the alerts the widget shows: its source, its own condition, and what other widgets filter it by
+      const cfg = { ...t.config, ...((actRef.current[t.id] || {}).cfg || {}) };
+      let rows = hub.snapshot(sourceKey(cfg.query, cfg.filter)).rows;
+      if (cfg.where && cfg.where.field) rows = rows.filter(r => matches(r, cfg.where!));
+      if (cfg.listens !== false) rows = applyFilters(rows, filtersRef.current.filter(f => f.from !== t.id && f.query === cfg.query));
+      alertIds = rows.map(r => String(r.id)).filter(Boolean).slice(0, 1000);
+      if (!alertIds.length) { setNotice({ kind: 'warning', text: `“${t.title}” shows no alerts, so nothing was sent.` }); return; }
+    }
+    const c = spec.call(v, alertIds);
+    if (!window.confirm(`${c.summary}?\n\nThis changes data in Concert Operate.`)) return;
+    hub.call(c.name, c.params).then(
+      () => setNotice({ kind: 'info', text: `${c.summary}: done.` }),
+      (err: any) => setNotice({ kind: 'error', text: `${c.summary} failed: ${err && err.message ? err.message : 'the server refused it'}` })
+    );
+  };
   const runAction = useCallback((l: ActionLink, value: string) => {
+    if (l.to === PLATFORM_ID) { runPlatform(l, value); return; }
     const t = widgetsRef.current.find(x => x.id === l.to);
     if (!t) return;
+    if (l.do.startsWith('api:')) { runPlatform(l, value, t); return; }
     const arg = fill(l.arg, value);
     const d = l.do, id = t.id;
     const patch = (fn: (cur: ActState[string]) => ActState[string]) => setAct(a => ({ ...a, [id]: fn(a[id] || {}) }));

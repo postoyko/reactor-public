@@ -19,6 +19,7 @@ import { useBuilder } from './context';
 import { cell, DEFAULT_GROUP, DEFAULT_TIME, fieldLabel, formatNumber, groupMetric, metricValue, orderSeverity, semanticColor, SEVERITY_COLORS, SEVERITY_LABELS } from './rows';
 import { Note, Status, useDrillAction, WidgetData } from './Widgets';
 import { levelOf, Thresholds } from './carbon-status';
+import { shapeOf } from './sources';
 
 type Props = Record<string, any>;
 
@@ -188,7 +189,7 @@ function build(name: string, p: Props, w: Widget, d: WidgetData, selected: Set<s
     }
     case 'ScatterChart': {
       const field = c.timeField || DEFAULT_TIME[c.query];
-      const yf = c.valueField || (c.query === 'getAlerts' ? 'severity' : 'alertCount');
+      const yf = c.valueField || (shapeOf(c.query) === 'alerts' ? 'severity' : 'alertCount');
       const pts: any[] = [];
       rows.forEach(r => {
         const t = toTime(r[field]); const y = Number(r[yf]);

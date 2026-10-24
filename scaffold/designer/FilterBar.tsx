@@ -10,7 +10,8 @@ import React, { useEffect, useMemo, useReducer } from 'react';
 import { MultiSelect } from '@carbon/react';
 import { Close } from '@carbon/icons-react';
 import { DataHub, sourceKey } from './datahub';
-import { fieldLabel, FIELDS } from './rows';
+import { fieldLabel, fieldsOf } from './rows';
+import { shapeOf } from './sources';
 import { BarField, FilterBarConfig, QueryName, Row, TIME_PRESETS, TimePreset } from './types';
 
 export const selKey = (f: BarField) => `${f.query}|${f.field}`;
@@ -18,7 +19,7 @@ export interface Range { preset: TimePreset; from?: string; to?: string }
 export const REFRESHES = [{ s: 0, label: 'Off' }, { s: 15, label: '15 s' }, { s: 30, label: '30 s' }, { s: 60, label: '1 min' }, { s: 300, label: '5 min' }];
 
 /** The alert time a bar filters on; incidents always use their created time. */
-export const barTimeField = (bar: FilterBarConfig, query: QueryName): string => (query === 'getStories' ? 'created' : bar.timeField || 'firstOccurrence');
+export const barTimeField = (bar: FilterBarConfig, query: QueryName): string => (shapeOf(query) === 'stories' ? 'created' : bar.timeField || 'firstOccurrence');
 
 /** Resolves a range to [from, to] in milliseconds (null = open end). */
 export function rangeBounds(r: Range, now: number): [number | null, number | null] {
@@ -34,11 +35,11 @@ export function rangeBounds(r: Range, now: number): [number | null, number | nul
 /** Does this row pass the bar's selections and time range? */
 export function passes(bar: FilterBarConfig, sel: Record<string, string[]>, range: Range, now: number, query: QueryName, row: Row): boolean {
   for (const f of bar.fields) {
-    if (f.query !== query) continue;
+    if (f.query !== query && !(shapeOf(f.query) === shapeOf(query) && (shapeOf(query) === 'alerts' || shapeOf(query) === 'stories'))) continue;
     const v = sel[selKey(f)];
     if (v && v.length && !v.includes(String(row[f.field] ?? ''))) return false;
   }
-  if (bar.time && query !== 'getApplications' && query !== 'getMetricSeries') {
+  if (bar.time && (shapeOf(query) === 'alerts' || shapeOf(query) === 'stories')) {
     const [a, b] = rangeBounds(range, now);
     if (a !== null || b !== null) {
       const t = Date.parse(String(row[barTimeField(bar, query)] ?? ''));
@@ -50,7 +51,7 @@ export function passes(bar: FilterBarConfig, sel: Record<string, string[]>, rang
 
 /** Fields worth filtering on (text fields with few distinct values), for the settings list. */
 export const BAR_CHOICES: BarField[] = (['getAlerts', 'getStories', 'getApplications'] as QueryName[]).flatMap(q =>
-  FIELDS[q].filter(f => f.kind !== 'time' && !['id', 'summary', 'description', 'title', 'alertCount', 'severity', 'signature', 'causalGroup', 'runbookIds'].includes(f.key)).map(f => ({ query: q, field: f.key })));
+  fieldsOf(q).filter(f => f.kind !== 'time' && !['id', 'summary', 'description', 'title', 'alertCount', 'severity', 'signature', 'causalGroup', 'runbookIds'].includes(f.key)).map(f => ({ query: q, field: f.key })));
 
 interface Props {
   bar: FilterBarConfig;

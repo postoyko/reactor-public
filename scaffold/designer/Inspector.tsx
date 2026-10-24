@@ -8,16 +8,17 @@
 
 import { pivotChoices } from './pivot';
 import React from 'react';
-import { Button, Checkbox, Select, SelectItem, TextInput } from '@carbon/react';
+import { Button, Checkbox, Select, SelectItem, SelectItemGroup, TextInput } from '@carbon/react';
+import { sourceDef, SOURCES } from './sources';
 import { ArrowRight, Close, ColorPalette, DataBase, Flash, Flow, Settings } from '@carbon/icons-react';
 import { Glyph } from './Glyph';
 import { typeLabel } from './meta';
 import { COND_OPS, CondOp, Cond, Metric, QueryName, Widget, WidgetConfig } from './types';
 import { DEFAULT_GROUP, DEFAULT_TIME, fieldLabel, fieldsOf } from './rows';
-import { isNative, tileDef } from './registry';
+import { defaultColumns, isNative, tileDef } from './registry';
 import TileSettings from './TileSettings';
 import { canSend, WireEditor } from './Wiring';
-import { actionLabel, eventsOf } from './component-api';
+import { actionLabel, eventsOf, findTarget } from './component-api';
 import DrillEditor from './DrillEditor';
 import MetricPicker from './MetricPicker';
 import { SlotInfo } from './nesting';
@@ -53,6 +54,7 @@ const REFRESH = [
 ];
 
 type Tab = 'general' | 'data' | 'style' | 'interact';
+const SOURCE_GROUPS = Array.from(new Set(SOURCES.map(x => x.group)));
 /** The last tab used, so selecting another widget (or reselecting) opens the same one. */
 let lastTab: Tab = 'general';
 
@@ -83,8 +85,8 @@ export default function Inspector({ widget, onChange, onClose, partsFor, everyon
       timeField: DEFAULT_TIME[q],
       valueField: undefined,
       sortBy: undefined,
-      filter: q === 'getAlerts' ? c.filter : q === 'getMetricSeries' ? 'kubernetesNode|required_cpu_percentage|' : undefined,
-      columns: fieldsOf(q).slice(0, 4).map(f => f.key)
+      filter: q === 'getAlerts' ? c.filter : q === 'getMetricSeries' ? 'kubernetesNode|required_cpu_percentage|' : sourceDef(q).param && sourceDef(c.query).param && sourceDef(q).param!.label === sourceDef(c.query).param!.label ? c.filter : undefined,
+      columns: defaultColumns(q)
     }, 'query');
   };
 
@@ -249,11 +251,13 @@ export default function Inspector({ widget, onChange, onClose, partsFor, everyon
         {current === 'data' && hasData && (
           <>
             <Select id={id('query')} labelText="Source" value={c.query} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setQuery(e.target.value as QueryName)}>
-              <SelectItem value="getAlerts" text="Alerts (getAlerts)" />
-              <SelectItem value="getStories" text="Incidents (getStories)" />
-              <SelectItem value="getApplications" text="Applications (getImpactedApplications)" />
-              <SelectItem value="getMetricSeries" text="Metric over time (getMetricManagerData)" />
+              {SOURCE_GROUPS.map(g => (
+                <SelectItemGroup key={g} label={g}>
+                  {SOURCES.filter(x => x.group === g).map(x => <SelectItem key={x.id} value={x.id} text={`${x.label} (${x.api})`} />)}
+                </SelectItemGroup>
+              ))}
             </Select>
+            <p className="db-help">{sourceDef(c.query).description}</p>
 
             {c.query === 'getMetricSeries' && <MetricPicker id={id('metric')} spec={c.filter || ''} onChange={spec => setCfg({ filter: spec }, 'filter')} />}
 
@@ -266,6 +270,22 @@ export default function Inspector({ widget, onChange, onClose, partsFor, everyon
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCfg({ filter: e.target.value }, 'filter')}
               />
             )}
+
+            {sourceDef(c.query).param && (() => {
+              const prm = sourceDef(c.query).param!;
+              return (
+                <TextInput
+                  id={id('param')}
+                  labelText={prm.label}
+                  helperText={prm.help}
+                  placeholder={prm.placeholder}
+                  invalid={Boolean(prm.required && !(c.filter || '').trim())}
+                  invalidText={`Needed: ${prm.help}`}
+                  value={c.filter || ''}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCfg({ filter: e.target.value }, 'filter')}
+                />
+              );
+            })()}
 
             <div className="db-row2">
               <Select
@@ -446,7 +466,7 @@ export default function Inspector({ widget, onChange, onClose, partsFor, everyon
                 {(c.on || []).length > 0 && (
                   <ul className="db-act-sum">
                     {(c.on || []).map((l, i) => {
-                      const to = everyone.find(x => x.id === l.to);
+                      const to = findTarget(everyone, l.to);
                       const ev = eventsOf(widget).find(e => e.id === l.event);
                       return (
                         <li key={i}>
