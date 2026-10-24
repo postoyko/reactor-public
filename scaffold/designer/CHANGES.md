@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.58.0
+- API check: new opt-in *Ask the server which parameters each incident and policy action needs*. Concert Operate does not allow GraphQL introspection (checked 2026-10-24), but it names every missing required parameter when it refuses a request. The check sends each change action a request with an invalid tenant id, which the server refuses while checking variables, before anything runs, and reports the parameters it named. If a server ever accepted such a request, the check says so in capitals.
+
 ## v1.57.0
 From the second API check against a real Concert Operate (every source now reads correctly):
 - New sources: **Policies** (getPoliciesMetadata: id and name of every policy, so the policy actions get real ids), **Open alert count** and **Open incident count** (getStandingAlertCount / getStandingStoryCount: one number straight from Concert, much faster than counting rows; show it with Sum of Quantity).

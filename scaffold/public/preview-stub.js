@@ -170,6 +170,18 @@
     renamePolicy: function () { return later({ ok: true }); },
     getFilters: function () { return later({ tenant: { filters: [{ name: 'Sample: critical only', conditionSet: { operator: 'and', conditions: [] } }, { name: 'Sample: platform', conditionSet: { operator: 'and', conditions: [] } }] } }); }
   };
+  // Like the real server: a request whose tenant id is not an id is refused before it runs, naming what is missing.
+  var REQUIRED = { createIncidentMutation: ['alertIds: [String]!', 'priority: Int!'], updateIncidentMutation: ['alertIds: [String]!'], activatePolicy: ['policyIds: [ID!]!'], setPolicyLock: ['policyIds: [ID!]!'], setPolicyDeployed: ['policyId: ID!', 'deployed: Boolean!'], rejectPolicy: ['policyIds: [ID!]!'], restorePolicy: ['policyIds: [ID!]!'], renamePolicy: ['policyId: ID!', 'name: String!'] };
+  Object.keys(REQUIRED).forEach(function (k) {
+    var real = api[k];
+    api[k] = function (o) {
+      if (o && typeof o.tenantId === 'object') {
+        var errors = [{ message: 'Variable "$tenantId" got invalid value; ID cannot represent value' }].concat(REQUIRED[k].filter(function (r) { return !(r.split(':')[0] in o); }).map(function (r) { var p = r.split(': '); return { message: 'Variable "$' + p[0] + '" of required type "' + p[1] + '" was not provided.' }; }));
+        return Promise.reject(Object.assign(new Error('Response not successful: Received status code 400'), { networkError: { result: { errors: errors } } }));
+      }
+      return real(o);
+    };
+  });
   window.akoraConfig = window.akoraConfig || {};
   window.akoraConfig.baseState = window.akoraConfig.baseState || {};
   window.akoraConfig.baseState.API = window.akoraConfig.baseState.API || {};

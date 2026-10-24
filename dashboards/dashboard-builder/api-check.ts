@@ -39,6 +39,8 @@ export interface CheckOptions {
   code: boolean;
   incidentId?: string;
   resourceId?: string;
+  /** Ask the server which parameters each change action requires, with a request it must refuse (see probeMutation). */
+  probe?: boolean;
 }
 
 /** Functions the Designer calls besides the data sources (metric pickers, runbooks, insights, people). */
@@ -177,7 +179,11 @@ export async function runApiCheck(hub: DataHub, opt: CheckOptions, onResult: (r:
   HELPERS.forEach(name => push({ name, api: name, kind: 'helper', status: typeof a[name] === 'function' ? 'ok' : 'missing', note: 'Looked up only.', ...(opt.code && a[name] ? { code: codeOf(a[name]) } : {}) }));
 
   const mutations = Array.from(new Set([...ROW_ACTIONS, ...PLATFORM_ACTIONS].map(x => x.call({}, []).name)));
-  mutations.forEach(name => push({ name, api: name, kind: 'mutation', status: typeof a[name] === 'function' ? 'ok' : 'missing', note: 'Looked up only: never called by the check.', ...(opt.code && a[name] ? { code: codeOf(a[name]) } : {}) }));
+  for (const name of mutations) {
+    if (typeof a[name] !== 'function') { push({ name, api: name, kind: 'mutation', status: 'missing' }); continue; }
+    if (!opt.probe) { push({ name, api: name, kind: 'mutation', status: 'ok', note: 'Looked up only: never called by the check.' }); continue; }
+    push(await probeMutation(name, a[name]));
+  }
   return out;
 }
 
@@ -264,4 +270,35 @@ function errDetail(e: any): string {
   if (Array.isArray(errs)) errs.slice(0, 3).forEach((x: any) => parts.push(`server: ${x && x.message ? x.message : JSON.stringify(x)}`));
   if (typeof body === 'string') parts.push(`server: ${body.slice(0, 300)}`);
   return parts.join(' | ').slice(0, 600) || String(e);
+}
+
+/** A tenant id no server accepts: GraphQL rejects the whole request while checking its variables, before running anything. */
+const INVALID_TENANT = { invalid: 'on purpose: the Designer asks which parameters this needs' };
+
+/**
+ * Learns what a change action needs without changing anything. GraphQL checks every variable of a request before it
+ * runs it; a request whose tenant id is an object can never pass that check, so the server refuses it and lists
+ * each problem, including every required parameter that was not given ('Variable "$alertIds" of required type
+ * "[String]!" was not provided.').
+ */
+export async function probeMutation(name: string, fn: (p: unknown) => unknown): Promise<CheckResult> {
+  const base: CheckResult = { name, api: name, kind: 'mutation', status: 'ok' };
+  const t0 = Date.now();
+  try {
+    const res = await withTimeout(Promise.resolve(fn({ tenantId: INVALID_TENANT })), 25000);
+    // never expected: report it loudly
+    return { ...base, status: 'error', ms: Date.now() - t0, note: `WARNING: the server accepted a request with an invalid tenant id. Answer: ${outline(res, false).replace(/\s+/g, ' ').slice(0, 300)}` };
+  } catch (e: any) {
+    const text = errDetail(e);
+    const required = Array.from(text.matchAll(/Variable "\$(\w+)" of required type "([^"]+)" was not provided/g)).map(m => `${m[1]}: ${m[2]}`);
+    const typed = Array.from(text.matchAll(/Variable "\$(\w+)" got invalid value[^;|]*;?\s*([^|]*)/g)).map(m => `${m[1]}: ${m[2].trim().slice(0, 120)}`);
+    const params = Array.from(new Set([...required, ...typed]));
+    return {
+      ...base,
+      status: params.length ? 'ok' : 'error',
+      ms: Date.now() - t0,
+      note: params.length ? 'Refused before running, as intended. Nothing was changed.' : `Refused, but the reason does not list parameters: ${text}`,
+      ...(params.length ? { outline: `required: ${required.map(x => x).join(', ') || '(none listed)'}\nchecked: ${typed.join(', ') || '(none)'}\n\nserver said: ${text}` } : {})
+    };
+  }
 }

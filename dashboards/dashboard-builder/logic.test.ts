@@ -500,3 +500,22 @@ describe('policies, counts and related incidents (second real check)', () => {
     expect(toRows('getRelatedStories', data, 'a1, a2').map(r => r.id)).toEqual(['s1', 's2']);
   });
 });
+
+import { probeMutation } from './api-check';
+describe('API check: mutation parameter probe', () => {
+  it('reads the required parameters from the refusal, as Apollo words it', async () => {
+    const refuse = () => Promise.reject(Object.assign(new Error('Response not successful: Received status code 400'), { networkError: { result: { errors: [
+      { message: 'Variable "$tenantId" got invalid value { invalid: "x" }; ID cannot represent value: { invalid: "x" }' },
+      { message: 'Variable "$alertIds" of required type "[String]!" was not provided.' },
+      { message: 'Variable "$priority" of required type "Int!" was not provided.' }
+    ] } } }));
+    const r = await probeMutation('createIncidentMutation', refuse);
+    expect(r.status).toBe('ok');
+    expect(r.outline).toContain('required: alertIds: [String]!, priority: Int!');
+  });
+  it('shouts if a server ever accepts the invalid request', async () => {
+    const r = await probeMutation('activatePolicy', () => Promise.resolve({ ok: true }));
+    expect(r.status).toBe('error');
+    expect(r.note).toMatch(/^WARNING/);
+  });
+});
