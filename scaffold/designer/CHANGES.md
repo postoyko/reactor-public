@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.50.0
+- Widget settings are now split into tabs instead of one long scrolling panel: **General** (title, placement, the component's own options and content), **Data** (source, row filter, measure, grouping, refresh; only for widgets that show data), **Style** (colours, frame, float on top) and **Interact** (viewer options, what a click does, linking, actions, wiring). The header and tabs stay put while the panel scrolls, the last tab used stays open when another widget is selected, arrow keys move between tabs, and a dot on Data marks a measure that still needs a field.
+
 ## v1.49.2
 - Starter templates now build with stable widget ids (w-<template>-<n>), so building one twice gives identical output. Combined with Studio writing generated files only when their content changed, "Publish all starter templates" run twice changes no file. The first run after upgrading rewrites the template files once.
 
