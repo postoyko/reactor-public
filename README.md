@@ -10,6 +10,7 @@ Custom dashboards and the Dashboard Designer for IBM Concert Operate / Cloud Pak
 | `scaffold/designer/` | The Dashboard Designer's master copy |
 | `deploy-dashboards.sh` | Builds and deploys everything to the cluster |
 | `sync-designer.sh` | Keeps `scaffold/designer/` and `dashboards/dashboard-builder/` identical |
+| `docs/dashboard-designer-tutorial.html` | The Designer tutorial, one file to open or share. Source in `docs/tutorial/`: edit `tutorial.md`, then `python3 docs/tutorial/build.py` |
 
 ## Deploy
 
