@@ -627,3 +627,26 @@ describe('View as (chart type switching)', () => {
     expect(d.dashboard.widgets[0].config.viewAs).toBe(false);
   });
 });
+
+import { PICKS, applyPick, currentTerm, matchOptions } from './pickers';
+describe('Pickers (values offered while typing)', () => {
+  const opts = [{ value: 'Close incidents when all alerts clear', label: 'Close incidents when all alerts clear' }, { value: 'Promote critical alerts', label: 'Promote critical alerts' }, { value: 'Restart pod runbook policy', label: 'Restart pod runbook policy' }];
+  it('a list field works on the term after the last comma, and keeps what was typed before it', () => {
+    expect(currentTerm('Promote critical alerts, rest', true)).toBe('rest');
+    expect(applyPick('Promote critical alerts, rest', 'Restart pod runbook policy', true)).toBe('Promote critical alerts, Restart pod runbook policy');
+    expect(applyPick('anything', 'inc-1', false)).toBe('inc-1');
+  });
+  it('matches the start first, then anywhere, and leaves out values already in the list', () => {
+    expect(matchOptions(opts, 'alerts').map(o => o.value)).toEqual(['Close incidents when all alerts clear', 'Promote critical alerts']);
+    expect(matchOptions(opts, 'pro').map(o => o.value)).toEqual(['Promote critical alerts']);
+    expect(matchOptions(opts, 'Promote critical alerts, ', true).map(o => o.value)).not.toContain('Promote critical alerts');
+    expect(matchOptions(opts, '', false, 2)).toHaveLength(2);
+  });
+  it('incidents are offered by title with their id, policies by name', () => {
+    const inc = PICKS.incident.options([{ id: 'inc-1', title: 'orders: 5xx', priority: 2, state: 'open' }, { id: '' }]);
+    expect(inc).toEqual([{ value: 'inc-1', label: 'orders: 5xx', sub: 'inc-1 · P2 · open' }]);
+    expect(PICKS.policy.options([{ id: 'pol-1', name: 'Promote critical alerts' }]).map(o => o.value)).toEqual(['Promote critical alerts']);
+    expect(PICKS.policy.multi).toBe(true);
+  });
+});
+

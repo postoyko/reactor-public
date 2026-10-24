@@ -14,8 +14,9 @@
  */
 
 import type { Kind } from './carbon-specs';
+import type { PickKind } from './pickers';
 
-export interface ArgPart { key: string; kind: Kind; label: string; options?: string[]; def?: string }
+export interface ArgPart { key: string; kind: Kind; label: string; options?: string[]; def?: string; /** Offer values from live data while typing. */ pick?: PickKind }
 
 export interface PlatformAction {
   id: string;
@@ -38,8 +39,8 @@ const ALERT_IDS: ArgPart = { key: 'alertIds', kind: 'text', label: 'Alert ids (s
 const PRIORITY: ArgPart = { key: 'priority', kind: 'enum', label: 'Priority', options: ['1', '2', '3', '4', '5'], def: '3' };
 const DESCRIPTION: ArgPart = { key: 'description', kind: 'text', label: 'Description', def: 'Created from the dashboard' };
 const INCIDENT: ArgPart = { key: 'correlationKey', kind: 'text', label: 'Incident (its correlation key)', def: '{value}' };
-const POLICY_IDS: ArgPart = { key: 'policyIds', kind: 'text', label: 'Policies: names or ids, separated by commas', def: '{value}' };
-const POLICY_ID: ArgPart = { key: 'policyId', kind: 'text', label: 'Policy: name or id', def: '{value}' };
+const POLICY_IDS: ArgPart = { key: 'policyIds', kind: 'text', label: 'Policies: names or ids, separated by commas', def: '{value}', pick: 'policy' };
+const POLICY_ID: ArgPart = { key: 'policyId', kind: 'text', label: 'Policy: name or id', def: '{value}', pick: 'policy' };
 const COMMENT: ArgPart = { key: 'commentText', kind: 'text', label: 'Comment (optional)', def: '' };
 
 const n = (list: string[], what: string) => `${list.length} ${what}${list.length === 1 ? '' : 's'}`;

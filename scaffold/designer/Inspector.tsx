@@ -28,6 +28,7 @@ import SectionHead from './SectionHead';
 import { carbonDef } from './carbon-catalog';
 import { dataOn } from './carbon-specs';
 import { describeImageError, IMAGE_ACCEPT, IMAGE_MAX_BYTES, imageMimeOk, isImageSrc } from './image';
+import PickInput from './PickInput';
 
 interface Props {
   /** Every widget on the dashboard (for wiring and for choosing a container). */
@@ -274,6 +275,17 @@ export default function Inspector({ widget, onChange, onClose, partsFor, everyon
 
             {sourceDef(c.query).param && (() => {
               const prm = sourceDef(c.query).param!;
+              const missing = Boolean(prm.required && !(c.filter || '').trim());
+              if (prm.pick) {
+                return (
+                  <div className="cds--form-item cds--text-input-wrapper">
+                    <label id={id('param-label')} htmlFor={id('param')} className="cds--label">{prm.label}</label>
+                    <PickInput id={id('param')} kind={prm.pick} labelledBy={id('param-label')} className="cds--text-input" invalid={missing} placeholder={prm.placeholder}
+                      value={c.filter || ''} onChange={x => setCfg({ filter: x }, 'filter')} />
+                    {missing ? <div className="cds--form-requirement" style={{ display: 'block' }}>{`Needed: ${prm.help}`}</div> : <div className="cds--form__helper-text">{prm.help} Start typing or pick from the list.</div>}
+                  </div>
+                );
+              }
               return (
                 <TextInput
                   id={id('param')}

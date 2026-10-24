@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.62.0
+**Pick instead of typing ids.** Fields that need an id offer values from live data as you type: the incident id of *Alerts of an incident*, *Alert groups of an incident* and *Related incidents* (open incidents by title, with id, priority and state), the policy fields of the policy actions in Action flows (policy names; a list adds to what is there), and the filter type of *Saved filters*. Typing stays free ({value}, any id). A list loads only when its field is first used, so thousands of policies cost nothing until then. Arrow keys, Enter and Escape work in the list.
+
 ## v1.61.1
 - View as: *heatmap* is offered only when the chart has a second split (Data > Series by). Without one it had nothing to compare and asked for Series by.
 

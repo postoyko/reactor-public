@@ -13,6 +13,7 @@
  */
 
 import { QueryName } from './types';
+import type { PickKind } from './pickers';
 
 export type Shape = 'alerts' | 'stories' | 'apps' | 'metric' | 'people' | 'generic';
 
@@ -22,6 +23,8 @@ export interface SourceParam {
   placeholder?: string;
   /** Without it the query cannot run, and the widget says what to enter. */
   required?: boolean;
+  /** Offer values from live data while typing (PickInput). */
+  pick?: PickKind;
 }
 
 export interface SourceDef {
@@ -54,17 +57,17 @@ export const SOURCES: SourceDef[] = [
     // getIncidentAlerts itself fails inside Concert Operate (checked 2026-10-24); getAlerts takes the incident as storyId
     id: 'getIncidentAlerts', label: 'Alerts of an incident', api: 'getAlerts', group: 'Incident details', shape: 'alerts',
     description: 'Every alert in one incident, cleared ones included.',
-    param: { label: 'Incident id', help: 'Type an id, or let an action set it: "Change its source parameter" to {value} when an incident is picked.', placeholder: 'incident id', required: true }
+    param: { label: 'Incident id', help: 'Type an id, or let an action set it: "Change its source parameter" to {value} when an incident is picked.', placeholder: 'incident id', required: true, pick: 'incident' }
   },
   {
     id: 'getStoryAlertsGroups', label: 'Alert groups of an incident', api: 'getStoryAlertsGroups', group: 'Incident details', shape: 'alerts',
     description: 'The alerts of one incident with the groups they were correlated into.',
-    param: { label: 'Incident id', help: 'Type an id, or let an action set it from a picked incident.', placeholder: 'incident id', required: true }
+    param: { label: 'Incident id', help: 'Type an id, or let an action set it from a picked incident.', placeholder: 'incident id', required: true, pick: 'incident' }
   },
   {
     id: 'getRelatedStories', label: 'Related incidents', api: 'getRelatedStories', group: 'Incident details', shape: 'stories',
     description: 'Incidents related to one incident, or to a list of alerts.',
-    param: { label: 'Incident id or alert ids', help: 'One incident id, or alert ids separated by commas.', placeholder: 'incident id, or alert-1, alert-2', required: true }
+    param: { label: 'Incident id or alert ids', help: 'One incident id, or alert ids separated by commas.', placeholder: 'incident id, or alert-1, alert-2', required: true, pick: 'incident' }
   },
   {
     id: 'getTopologyResource', label: 'Topology resource', api: 'getTopologyResource', group: 'Incident details', shape: 'generic',
@@ -85,7 +88,7 @@ export const SOURCES: SourceDef[] = [
     // getFiltersViews without a type fails on tenants with inventory filters; getFilters with a type condition is what
     // the toolkit's own Monitor Box uses
     id: 'getFiltersViews', label: 'Saved filters', api: 'getFilters', group: 'People and configuration', shape: 'generic', description: 'The filters people have saved, of one type.',
-    param: { label: 'Filter type', help: 'alert (the default) or incident filters.', placeholder: 'alert' }
+    param: { label: 'Filter type', help: 'alert (the default) or incident filters.', placeholder: 'alert', pick: 'filterType' }
   }
 ];
 

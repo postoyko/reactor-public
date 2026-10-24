@@ -26,6 +26,7 @@ import { isAlertSource } from './sources';
 import { treeOrder } from './nesting';
 import { Glyph } from './Glyph';
 import { typeLabel } from './meta';
+import PickInput from './PickInput';
 
 type Icon = typeof Add;
 
@@ -803,7 +804,9 @@ function PartsEditor({ arg, value, carries, onChange }: { arg: ActionArg; value?
             </span>
           ) : (
             <span className="db-af-inrow">
-              <input className="db-af-input" type="text" value={v[p.key]} placeholder={p.label} onChange={e => set(p.key, e.target.value)} />
+              {p.pick
+                ? <PickInput id={`af-part-${p.key}`} kind={p.pick} label={p.label} value={v[p.key]} placeholder={p.label} onChange={x => set(p.key, x)} />
+                : <input className="db-af-input" type="text" value={v[p.key]} placeholder={p.label} onChange={e => set(p.key, e.target.value)} />}
               {carries && !v[p.key].includes('{value}') && <button type="button" className="db-af-token db-af-token--sm" title={`Insert what the event carries: ${carries}`} onClick={() => set(p.key, `${v[p.key]}{value}`)}>+ <b>value</b></button>}
             </span>
           )}
