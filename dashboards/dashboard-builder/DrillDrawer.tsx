@@ -6,7 +6,7 @@
  * click away and an Open button when the widget has an address for it.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Close, Launch, Search } from '@carbon/icons-react';
 import { DrillRequest, openAddress } from './drill';
 import { cell, fieldLabel, fieldsOf } from './rows';
@@ -18,7 +18,66 @@ import IncidentTimeline from './IncidentTimeline';
 import RunbookPanel from './RunbookPanel';
 import { shapeOf } from './sources';
 
+const WIDTH_KEY = 'db-drawer-width';
+const MIN_W = 360;
+const readWidth = (): number => { try { const n = Number(window.localStorage.getItem(WIDTH_KEY)); return n >= MIN_W ? n : 520; } catch (e) { return 520; } };
+interface Float { x: number; y: number; h: number }
+
+/**
+ * Where the panel may go: below whatever sits above the dashboard (Concert Operate's own header), so its title and
+ * Close button are never hidden. Measured from the dashboard's container, as it is on screen now.
+ */
+function topLimit(el: HTMLElement | null): number {
+  const host = el && el.closest('.dashboard-builder-container');
+  const t = host ? host.getBoundingClientRect().top : 0;
+  return Math.max(0, Math.min(t, window.innerHeight - 200));
+}
+
 export default function DrillDrawer({ req, onClose }: { req: DrillRequest; onClose: () => void }) {
+  const ref = useRef<HTMLElement>(null);
+  const [top, setTop] = useState(0);
+  const [width, setWidth] = useState(readWidth);
+  // docked on the right (null), or floating where its title bar was dragged
+  const [float, setFloat] = useState<Float | null>(null);
+  useLayoutEffect(() => {
+    const measure = () => setTop(topLimit(ref.current));
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('scroll', measure, true);
+    return () => { window.removeEventListener('resize', measure); window.removeEventListener('scroll', measure, true); };
+  }, []);
+  const keepWidth = (w: number): number => { const v = Math.round(Math.min(Math.max(w, MIN_W), window.innerWidth - 16)); setWidth(v); try { window.localStorage.setItem(WIDTH_KEY, String(v)); } catch (e) { /* no storage */ } return v; };
+  const clampFloat = (f: Float): Float => {
+    const y = Math.min(Math.max(f.y, top), Math.max(top, window.innerHeight - 120));
+    return { x: Math.min(Math.max(f.x, 0), Math.max(0, window.innerWidth - Math.min(width, window.innerWidth))), y, h: Math.max(160, Math.min(f.h, window.innerHeight - y - 8)) };
+  };
+  const dragHead = (e: React.PointerEvent) => {
+    if (e.button !== 0 || (e.target as HTMLElement).closest('button')) return;
+    const box = ref.current ? ref.current.getBoundingClientRect() : null;
+    if (!box) return;
+    e.preventDefault();
+    const dx = e.clientX - box.left, dy = e.clientY - box.top;
+    const h = box.height;
+    const move = (m: PointerEvent) => setFloat(clampFloat({ x: m.clientX - dx, y: m.clientY - dy, h }));
+    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); document.body.classList.remove('db-dragging'); };
+    document.body.classList.add('db-dragging');
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+  const dragEdge = (e: React.PointerEvent) => {
+    if (e.button !== 0 || !ref.current) return;
+    e.preventDefault();
+    const right = ref.current.getBoundingClientRect().right;
+    // the right edge stays put; a floating panel grows to the left
+    const move = (m: PointerEvent) => { const w = keepWidth(right - m.clientX); setFloat(f => (f ? { ...f, x: Math.max(0, right - w) } : f)); };
+    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); document.body.classList.remove('db-dragging'); };
+    document.body.classList.add('db-dragging');
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+  const place: React.CSSProperties = float
+    ? { top: float.y, left: float.x, right: 'auto', bottom: 'auto', height: float.h, width, maxWidth: '100%' }
+    : { top, width, maxWidth: '100%' };
   const [q, setQ] = useState('');
   const [open, setOpen] = useState<number | null>(req.rows.length === 1 && !req.explain ? 0 : null);
   const [explain, setExplain] = useState(Boolean(req.explain));
@@ -38,8 +97,10 @@ export default function DrillDrawer({ req, onClose }: { req: DrillRequest; onClo
   const shown = rows.slice(0, 200);
   const rec = (r: Row) => r as Record<string, unknown>;
   return (
-    <aside className="db-drawer" role="dialog" aria-label={req.title}>
-      <header className="db-drawer-head">
+    <aside ref={ref} className={`db-drawer${float ? ' is-float' : ''}`} role="dialog" aria-label={req.title} style={place}>
+      <div className="db-drawer-edge" role="separator" aria-orientation="vertical" aria-label="Resize the panel" aria-valuenow={width} tabIndex={0} title="Drag to resize"
+        onPointerDown={dragEdge} onKeyDown={e => { if (e.key === 'ArrowLeft') { e.preventDefault(); keepWidth(width + 40); } if (e.key === 'ArrowRight') { e.preventDefault(); keepWidth(width - 40); } }} />
+      <header className="db-drawer-head" onPointerDown={dragHead} onDoubleClick={() => setFloat(null)} title={float ? 'Drag to move · double-click to dock on the right' : 'Drag to move'}>
         <div>
           <h2>{req.title}</h2>
           <span>{req.rows.length} {noun}{req.rows.length === 1 ? '' : 's'}</span>

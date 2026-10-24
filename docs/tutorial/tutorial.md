@@ -362,6 +362,8 @@ Inside Concert Operate the Designer saves automatically, in that person's browse
 
 Nothing is guessed: everything is counted from the rows, and the probable cause is Concert's own analysis. The same explanation is at the top of every *Show the rows behind it* panel. Shift+right-click keeps the browser's own menu.
 
+The panel can be **moved** (drag its title bar; double-click it to dock on the right again) and **resized** (drag its left edge). It always opens below Concert Operate's header.
+
 ![Explain: 12 critical alerts, where they are, the incidents they belong to and their probable causes](img/explain.png)
 
 **Incident replay.** Open an incident in that panel and its timeline shows how it grew: when it was created, each alert at the moment Concert added it (with its severity then, and now if it changed), and every runbook run. **Play**, or drag the slider, to replay it step by step; later events are dimmed.

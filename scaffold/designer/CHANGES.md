@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.64.1
+- The side panel (rows behind a click, Explain) opens below whatever sits above the dashboard, so Concert Operate's header no longer hides its title and Close button. Drag its title bar to move it, double-click the title bar to dock it on the right again, drag its left edge (or arrow keys on it) to resize; the width is remembered.
+
 ## v1.64.0
 **Explain this.** Right-click any widget that shows alerts or incidents (Shift+right-click keeps the browser's menu), or open the rows behind a click: the panel starts with an explanation of those rows.
 - *What*: how many, by severity or priority, since when; for alerts, how many started in the last hour against the usual hourly rate of the day before.
