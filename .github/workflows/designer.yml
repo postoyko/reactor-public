@@ -1,0 +1,32 @@
+# Checks the Dashboard Designer on every push and pull request: the two copies match, and its unit tests, type check
+# and lint pass (dashboard-extension/scripts/check-designer.mjs). Run the same locally with:
+#   ./sync-designer.sh --check && (cd dashboard-extension && npm run test:designer)
+name: Designer checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  designer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dashboard-extension/package-lock.json
+
+      - name: The two Designer copies match
+        run: ./sync-designer.sh --check
+
+      - name: Install the toolkit's packages
+        working-directory: dashboard-extension
+        run: npm ci --no-audit --no-fund
+
+      - name: Unit tests, type check and lint
+        working-directory: dashboard-extension
+        run: npm run test:designer

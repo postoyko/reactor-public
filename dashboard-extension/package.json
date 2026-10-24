@@ -17,6 +17,7 @@
     "upload": "node ./deploy.mjs",
     "start": "webpack serve --config webpack.config.js",
     "test": "cross-env TZ=utc jest --colors",
+    "test:designer": "node scripts/check-designer.mjs",
     "lint": "npm-run-all lint:ts lint:js lint:css",
     "lint:ts": "eslint src/**/*.{ts,tsx}",
     "lint:js": "eslint *.{js,mjs}",

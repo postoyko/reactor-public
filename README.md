@@ -25,3 +25,12 @@ The dashboards appear in Concert Operate's sidebar under **Reactor**.
 Edit `scaffold/designer/`, then run `./sync-designer.sh`. The deploy stops if the two copies differ
 (`./sync-designer.sh --back` keeps edits made in `dashboards/dashboard-builder/` instead).
 Its changes are listed in `scaffold/designer/CHANGES.md`.
+
+## Checks
+
+```bash
+./sync-designer.sh --check                         # the two Designer copies match
+cd dashboard-extension && npm run test:designer    # unit tests, type check and lint
+```
+
+GitHub runs both on every push and pull request (`.github/workflows/designer.yml`).
