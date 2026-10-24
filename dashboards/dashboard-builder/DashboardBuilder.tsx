@@ -10,7 +10,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { InlineNotification } from '@carbon/react';
 import { Add, Checkmark, ChevronDown, Connect, Copy, Download, Flow, Help, Template, OverflowMenuVertical, Redo, Renew, TrashCan, Undo, Upload } from '@carbon/icons-react';
 import './dashboard-builder.scss';
-import { ActionLink, Dashboard, Filter, FilterBarConfig, QueryName, Row, Widget } from './types';
+import { ActionLink, Cond, Dashboard, Filter, FilterBarConfig, QueryName, Row, Widget } from './types';
 import { ActionApi, ActionCtx, coerce } from './actions';
 import { argKind, fill } from './component-api';
 import { partValues, platformAction } from './platform-actions';
@@ -304,6 +304,7 @@ export default function DashboardBuilder(props: Props) {
   viewingRef.current = viewing;
   const actRef = useRef(act);
   actRef.current = act;
+  const barRef = useRef<{ pass: (q: QueryName, r: Row) => boolean } | undefined>(undefined);
   /** Calls Concert Operate (create an incident, change policies), only after the person using the dashboard confirms. */
   const runPlatform = (l: ActionLink, value: string, t?: Widget) => {
     const spec = platformAction(l.do);
@@ -315,7 +316,9 @@ export default function DashboardBuilder(props: Props) {
       // the alerts the widget shows: its source, its own condition, and what other widgets filter it by
       const cfg = { ...t.config, ...((actRef.current[t.id] || {}).cfg || {}) };
       let rows = hub.snapshot(sourceKey(cfg.query, cfg.filter)).rows;
-      if (cfg.where && cfg.where.field) rows = rows.filter(r => matches(r, cfg.where!));
+      const conds = [cfg.where, ...(cfg.also || [])].filter((x): x is Cond => !!x && !!x.field && x.value !== '');
+      const gate = cfg.followBar !== false ? barRef.current : undefined;
+      rows = rows.filter(r => conds.every(x => matches(r, x)) && (!gate || gate.pass(cfg.query, r)));
       if (cfg.listens !== false) rows = applyFilters(rows, filtersRef.current.filter(f => f.from !== t.id && f.query === cfg.query));
       alertIds = rows.map(r => String(r.id)).filter(Boolean).slice(0, 1000);
       if (!alertIds.length) { setNotice({ kind: 'warning', text: `“${t.title}” shows no alerts, so nothing was sent.` }); return; }
@@ -422,6 +425,7 @@ export default function DashboardBuilder(props: Props) {
     return () => window.clearInterval(id);
   }, [bar, refreshS, hub]);
   const barGate = useMemo(() => (bar ? { key: JSON.stringify([barSel, range, bar.fields, bar.time, bar.timeField, range.preset === 'all' ? 0 : now]), pass: (q: QueryName, r: Row) => passes(bar, barSel, range, now, q, r) } : undefined), [bar, barSel, range, now]);
+  barRef.current = barGate;
   const setBar = (next: FilterBarConfig | undefined) => setStore(st => ({ ...st, dashboards: st.dashboards.map(d => { if (d.id !== st.activeId) return d; const { bar: _old, ...rest } = d; return { ...rest, updated: Date.now(), ...(next ? { bar: next } : {}) }; }) }));
 
   const ctx: BuilderContext = useMemo(() => ({ hub, filters, links, values, setValue, binds, bar: barGate, drill: setDrillReq, toggleFilter, setSelection }), [hub, filters, links, values, setValue, binds, barGate, toggleFilter, setSelection]);

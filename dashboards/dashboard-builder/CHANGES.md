@@ -1,5 +1,14 @@
 # Dashboard Designer changes
 
+## v1.54.0
+- Four new templates that show the v1.53 sources and actions at work:
+  - **Incident drill-down**: a dropdown of incident ids drives *Alerts of an incident*, *Alert groups of an incident* and *Related incidents* through *Change its source parameter* (master and detail).
+  - **Incident and policy actions**: a button creates a P2 incident from the alerts a table shows; boxes add them to an incident, create one from alert ids, and lock, unlock or activate policies. Each asks for confirmation.
+  - **Alert filter lab**: one alert filter, typed once, drives figures, charts and tables on raw alerts and on the incidents that contain them.
+  - **Tenant configuration**: people and teams, automation actions, tools, saved views, resource groups, and a topology resource looked up by id.
+- A widget whose source still needs an incident id or filter now says *Waiting for a value* instead of *Query failed*.
+- *Create an incident from the alerts it shows* now uses exactly the rows the widget shows: its extra conditions and the filter bar are applied too.
+
 ## v1.53.0
 - **Eleven more data sources** (Data tab > Source, now grouped): *Alerts (raw, any filter)* (getRawAlerts), *Incidents of matching alerts* (getStoriesByAlerts), *Alerts of an incident* (getIncidentAlerts), *Alert groups of an incident* (getStoryAlertsGroups), *Related incidents* (getRelatedStories), *Topology resource* (getTopologyResource), *People and teams* (getUsersAndGroups), *Resource groups* (getGroups), *Automation actions* (getActions), *Tools* (getTools) and *Saved filters and views* (getFiltersViews). Sources that need an id or a filter ask for it in the Data tab and say so on the widget until it is given.
 - Alert and incident sources get the same fields, colours, filter bar and drill-down as the main ones. The others are read generically (the largest list of records, flattened one level) and their fields are learnt from the first answer, so they can be grouped, measured and shown as columns.

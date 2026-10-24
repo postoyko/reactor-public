@@ -96,6 +96,8 @@ export function useDrillAction(w: Widget) {
 export function Status({ d, children }: { d: WidgetData; children: React.ReactNode }) {
   const { state } = d;
   if (state.error && state.rows.length === 0) {
+    // a source still waiting for its incident id or filter is not a failure: say what it needs
+    if (/^Enter the /.test(state.error)) return <div className="db-empty"><strong>Waiting for a value</strong><span>{state.error}</span></div>;
     return <div className="db-empty" role="alert"><strong>Query failed</strong><span>{state.error}</span></div>;
   }
   // Until the first answer arrives there is nothing true to show yet, not even a zero.

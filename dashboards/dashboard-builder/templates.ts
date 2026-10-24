@@ -8,6 +8,7 @@
 
 import { defaultConfig, tileDef } from './registry';
 import { newId } from './store';
+import { PLATFORM_ID } from './sources';
 import { Cond, FilterBarConfig, Widget, WidgetConfig, WidgetType } from './types';
 
 export interface Template {
@@ -554,6 +555,85 @@ const plus = (build: () => Widget[], more: (s: Sheet, y: number) => void) => ():
 const appCards = (s: Sheet, y: number) => s.add(cc0('ApplicationCards'), 'Applications', 0, y, 12, 6, { query: 'getApplications' });
 const incInsights = (s: Sheet, y: number) => s.add(cc0('IncidentInsights'), 'Incident insights', 0, y, 12, 13, { query: 'getStories', where: OPEN_INC });
 
+/* ── Showcases for the detail sources and the Concert Operate actions (v1.53) ── */
+
+const NOTE = { emits: false, listens: false, bg: '#f4f4f4', fg: '#161616' };
+/** "Change its source parameter" to what the event carried, on each of `targets`. */
+const setParam = (targets: Widget[]) => targets.map(t => ({ event: 'select', to: t.id, do: 'cfg:filter', arg: '{value}' }));
+
+/** Master and detail: choose an incident, and its alerts, alert groups and related incidents follow. */
+const incidentDrill = (): Widget[] => {
+  const s = new Sheet();
+  const inc = { query: 'getStories' as const };
+  s.add(cc('DataTable'), 'Open incidents', 0, 0, 5, 12, { ...inc, where: OPEN_INC, columns: ['id', 'priority', 'title', 'state'], sortBy: 'priority', limit: 100, props: { size: 'sm', pageSize: 10 } });
+  const pick = s.add(cc('Dropdown'), 'Incident', 5, 0, 4, 3, { ...inc, groupBy: 'id', where: OPEN_INC, listens: false, props: { source: 'field', titleText: 'Incident to inspect', placeholder: 'Choose an incident id' } });
+  const says = s.add('text', 'Showing', 9, 0, 3, 3, { ...NOTE, text: 'Choose an incident: everything on the right follows it.' });
+  const alerts = s.add(cc('DataTable'), 'Alerts of this incident', 5, 3, 7, 9, { query: 'getIncidentAlerts', columns: ['severityLabel', 'resource', 'summary', 'state'], sortBy: 'severity', sortDesc: true, limit: 200, props: { size: 'sm', pageSize: 8 } });
+  const sev = s.add(cc('SimpleBarChart'), 'Its alerts by severity', 0, 12, 4, 8, { query: 'getIncidentAlerts', groupBy: 'severityLabel', props: { horizontal: true } });
+  const groups = s.add(cc('DonutChart'), 'Alert groups by resource', 4, 12, 4, 8, { query: 'getStoryAlertsGroups', groupBy: 'resource', limit: 6 });
+  const related = s.add(cc('DataTable'), 'Related incidents', 8, 12, 4, 8, { query: 'getRelatedStories', columns: ['priority', 'title', 'state'], limit: 50, props: { size: 'sm', pageSize: 5, search: false } });
+  pick.config.on = [...setParam([alerts, sev, groups, related]), { event: 'select', to: says.id, do: 'set:text', arg: 'Showing incident {value}: its alerts, alert groups and related incidents.' }];
+  return s.list;
+};
+
+/** Concert Operate actions: buttons and boxes that create incidents and change policies, always after a confirmation. */
+const incidentActions = (): Widget[] => {
+  const s = new Sheet();
+  fig(s, 'Need attention', 'Major or worse, not acknowledged', 0, 0, 3, { ...attention(), ...ORANGE });
+  fig(s, 'Critical', 'Severity 6, open', 3, 0, 3, { where: where('severity', '6'), ...RED });
+  s.add('text', 'How these work', 6, 0, 6, 3, { ...NOTE, text: 'Every button and box here changes data in Concert Operate. Each asks you to confirm first and reports the result at the top. Open Flows to see or change them.' });
+  const table = s.add(cc('DataTable'), 'Alerts that need attention', 0, 3, 8, 12, attention({ columns: ['severityLabel', 'resource', 'summary', 'team', 'id'], limit: 200, props: { size: 'sm', pageSize: 10 } }));
+  s.add(cc('Button'), 'Create an incident from the alerts on the left', 8, 3, 4, 2, { props: { text: 'Create a P2 incident', kind: 'danger' },
+    on: [{ event: 'click', to: table.id, do: 'api:incidentFromRows', arg: JSON.stringify({ priority: '2', description: 'Raised from the Incident actions dashboard' }) }] });
+  s.add(cc('TextInput'), 'Add to incident', 8, 5, 4, 3, { props: { labelText: 'Add these alerts to an incident', placeholder: 'Incident correlation key, then Enter' },
+    on: [{ event: 'enter', to: table.id, do: 'api:rowsToIncident', arg: JSON.stringify({ correlationKey: '{value}' }) }] });
+  s.add(cc('TextInput'), 'Incident from ids', 8, 8, 4, 3, { props: { labelText: 'Create an incident from alert ids', placeholder: 'alert-1, alert-2, then Enter' },
+    on: [{ event: 'enter', to: PLATFORM_ID, do: 'api:createIncident', arg: JSON.stringify({ alertIds: '{value}', priority: '3', description: 'Created from alert ids' }) }] });
+  s.add('text', 'Policies', 8, 11, 4, 4, { ...NOTE, text: 'Policies: type one or more policy ids (separated by commas) in a box below and press Enter.' });
+  s.add(cc('TextInput'), 'Lock policies', 0, 15, 4, 3, { props: { labelText: 'Lock policies', placeholder: 'policy ids, then Enter' }, on: [{ event: 'enter', to: PLATFORM_ID, do: 'api:lockPolicy', arg: JSON.stringify({ policyIds: '{value}' }) }] });
+  s.add(cc('TextInput'), 'Unlock policies', 4, 15, 4, 3, { props: { labelText: 'Unlock policies', placeholder: 'policy ids, then Enter' }, on: [{ event: 'enter', to: PLATFORM_ID, do: 'api:unlockPolicy', arg: JSON.stringify({ policyIds: '{value}' }) }] });
+  s.add(cc('TextInput'), 'Activate policies', 8, 15, 4, 3, { props: { labelText: 'Activate policies', placeholder: 'policy ids, then Enter' }, on: [{ event: 'enter', to: PLATFORM_ID, do: 'api:activatePolicy', arg: JSON.stringify({ policyIds: '{value}' }) }] });
+  return s.list;
+};
+
+/** Any alert filter, typed in once, drives raw alerts and the incidents that contain them. */
+const filterLab = (): Widget[] => {
+  const s = new Sheet();
+  const box = s.add(cc('TextInput'), 'Alert filter', 0, 0, 8, 3, { props: { labelText: 'Alert filter (sent to the server as-is)', placeholder: "severity >= 5 and state != 'clear', then Enter" } });
+  s.add('text', 'Examples', 8, 0, 4, 3, { ...NOTE, text: "Try severity = 6, state = 'clear' or sender.name = 'Instana'." });
+  const raw = { query: 'getRawAlerts' as const, filter: "state != 'clear'" };
+  const byInc = { query: 'getStoriesByAlerts' as const };
+  const k1 = kpi(s, 'Matching alerts', 0, 3, 3, { ...raw, ...NAVY });
+  const k2 = kpi(s, 'Incidents they are in', 3, 3, 3, { ...byInc, ...PURPLE });
+  const sev = s.add(cc('DonutChart'), 'Matching alerts by severity', 6, 3, 6, 8, { ...raw, groupBy: 'severityLabel' });
+  const src = s.add(cc('SimpleBarChart'), 'By source', 0, 6, 6, 5, { ...raw, groupBy: 'sender', props: { horizontal: true } });
+  const list = s.add(cc('DataTable'), 'Matching alerts', 0, 11, 7, 10, { ...raw, columns: ['severityLabel', 'resource', 'summary', 'state'], sortBy: 'severity', sortDesc: true, limit: 200, props: { size: 'sm' } });
+  const incs = s.add(cc('DataTable'), 'Incidents of those alerts', 7, 11, 5, 10, { ...byInc, columns: ['priority', 'title', 'state'], sortBy: 'priority', limit: 100, props: { size: 'sm', search: false } });
+  box.config.on = [k1, k2, sev, src, list, incs].map(t => ({ event: 'enter', to: t.id, do: 'cfg:filter', arg: '{value}' }));
+  return s.list;
+};
+
+/** The tenant itself: people and teams, groups, automation actions, tools, saved views, and a topology lookup. */
+const tenantConfig = (): Widget[] => {
+  const s = new Sheet();
+  const people = { query: 'getPeople' as const };
+  kpi(s, 'Users', 0, 0, 3, { ...people, where: where('kind', 'User'), ...NAVY });
+  kpi(s, 'Teams', 3, 0, 3, { ...people, where: where('kind', 'Group'), ...PURPLE });
+  kpi(s, 'Automation actions', 6, 0, 3, { query: 'getActions', ...GREEN });
+  kpi(s, 'Saved views', 9, 0, 3, { query: 'getFiltersViews', ...NAVY });
+  s.add(cc('DataTable'), 'People and teams', 0, 3, 6, 9, { ...people, columns: ['kind', 'name', 'groups', 'members'], limit: 500, props: { size: 'sm', pageSize: 8 } });
+  s.add(cc('DonutChart'), 'Users and teams', 6, 3, 3, 9, { ...people, groupBy: 'kind' });
+  s.add(cc('SimpleBarChart'), 'Actions by type', 9, 3, 3, 9, { query: 'getActions', groupBy: 'type' });
+  s.add(cc('DataTable'), 'Automation actions', 0, 12, 6, 8, { query: 'getActions', limit: 200, props: { size: 'sm', pageSize: 6 } });
+  s.add(cc('DataTable'), 'Tools', 6, 12, 6, 8, { query: 'getTools', limit: 200, props: { size: 'sm', pageSize: 6 } });
+  s.add(cc('DataTable'), 'Saved filters and views', 0, 20, 6, 8, { query: 'getFiltersViews', limit: 200, props: { size: 'sm', pageSize: 6 } });
+  s.add(cc('DataTable'), 'Resource groups', 6, 20, 6, 8, { query: 'getGroups', limit: 200, props: { size: 'sm', pageSize: 6 } });
+  const res = s.add(cc('DataTable'), 'Topology resource', 4, 28, 8, 6, { query: 'getTopologyResource', limit: 1, props: { size: 'sm', search: false, pagination: false } });
+  s.add(cc('TextInput'), 'Resource lookup', 0, 28, 4, 3, { props: { labelText: 'Look up a topology resource', placeholder: 'resource id, then Enter' }, on: [{ event: 'enter', to: res.id, do: 'cfg:filter', arg: '{value}' }] });
+  s.add('text', 'Fields', 0, 31, 4, 3, { ...NOTE, text: 'These sources are read as they come: their columns appear once the first answer arrives. Choose more under Data > Columns.' });
+  return s.list;
+};
+
 /** The title band is about 100px tall whatever the row height: taller in rows on compact dashboards, so the text is not clipped. */
 const fitBand = (list: Widget[], rowH?: number): Widget[] => {
   const row = rowH || 48, h = Math.max(2, Math.ceil(106 / (row + 6)));
@@ -611,6 +691,18 @@ export const TEMPLATES: Template[] = [
     detail: 'Action wiring in use: a toggle shows a hidden table, buttons pick a severity on the chart, a button adds 10% to a progress bar each press, and picking a bar rewrites a text widget. Open Wire mode, choose Actions, and see (or change) every wire.', build: headed('Interactive controls', 'Wires between widgets: a toggle shows the table, buttons pick a severity, a chart click updates the text.', actionsDemo) },
   { id: 'incdesk', rowH: 28, bar: bar(S('team', 'state'), { }), name: 'Incident desk', tagline: 'The same components on incidents',
     detail: 'Priority tags, a banner for priority 1, charts by team, priority and time, a structured list queue and a data table, all on live incidents.', build: plus(headed('Incident desk', 'The same components on incidents: priorities, teams, trend and the queue.', incidentDesk), incInsights) },
+  { id: 'drill', rowH: 28, name: 'Incident drill-down', tagline: 'Pick an incident; its alerts, groups and related incidents follow',
+    detail: 'Master and detail with the incident sources: a dropdown of incident ids sets the source parameter of four widgets (Alerts of an incident, Alert groups of an incident, Related incidents) through "Change its source parameter" actions. Open Flows to see the wiring.',
+    build: headed('Incident drill-down', 'Choose an incident: its alerts, alert groups and related incidents follow. Built with Change its source parameter.', incidentDrill) },
+  { id: 'opsactions', rowH: 28, bar: bar(A('severityLabel', 'team')), name: 'Incident and policy actions', tagline: 'Create incidents and change policies from the dashboard',
+    detail: 'The Concert Operate actions: a button creates a P2 incident from the alerts the table shows, a box adds them to an incident, others create an incident from alert ids or lock, unlock and activate policies. Each one asks for confirmation before anything is sent.',
+    build: headed('Incident and policy actions', 'Buttons and boxes that change Concert Operate. Each asks you to confirm first.', incidentActions) },
+  { id: 'filterlab', rowH: 28, name: 'Alert filter lab', tagline: 'One server filter driving raw alerts and their incidents',
+    detail: 'Type any alert filter and press Enter: figures, charts and tables on raw alerts (getRawAlerts) and on the incidents that contain them (getStoriesByAlerts) all switch to it.',
+    build: headed('Alert filter lab', 'Type an alert filter and press Enter. Raw alerts and the incidents that contain them follow.', filterLab) },
+  { id: 'tenant', rowH: 28, name: 'Tenant configuration', tagline: 'People, teams, actions, tools, saved views and topology',
+    detail: 'The configuration sources: people and teams, automation actions, tools, saved filters and views, resource groups, and a topology resource looked up by id. Their columns are learnt from the first answer.',
+    build: headed('Tenant configuration', 'Who is in the tenant and what it is set up with. Look up any topology resource at the bottom.', tenantConfig) },
   { id: 'scorecard', rowH: 28, bar: bar(A('team', 'type')), name: 'Severity scorecard', tagline: 'Gauge, meter and status per severity',
     detail: 'For each of Critical, Major, Minor and Warning: a status shape, a gauge and a meter with warning and critical thresholds, then a flow chart and heatmap.', build: headed('Severity scorecard', 'Each severity against its own warning and critical thresholds.', scorecard) }
 ];
