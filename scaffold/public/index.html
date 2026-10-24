@@ -253,7 +253,7 @@
     <div class="brand">
       <div class="brand-icon">W</div>
       <div>
-        <div class="brand-title">Concert Workbench — Dashboard &amp; API Composer <span style="font-weight:400;font-size:.75rem;opacity:.7">v1.76.0</span></div>
+        <div class="brand-title">Concert Workbench — Dashboard &amp; API Composer <span style="font-weight:400;font-size:.75rem;opacity:.7">v1.77.0</span></div>
         <div class="brand-sub">Visual Component Builder for IBM Concert Operate / Cloud Pak for AIOps</div>
       </div>
     </div>
@@ -522,6 +522,17 @@
           </div>
         </div>
 
+        <div class="card" id="snap-card">
+          <div class="card-title"><span>Real data for Design</span><span id="snap-state" style="font-size:.8rem; color: var(--text-muted);"></span></div>
+          <div class="card-desc">Design shows sample data until you load a <b>data snapshot</b> of your tenant. To make one, in Concert Operate open the Dashboard Designer, then <b>⋮ › Check the Concert Operate API › Record and download</b>, and upload the file here. Design then shows your real alerts, incidents, applications and policies, as they were when the snapshot was taken. Nothing is ever sent to Concert Operate. The file holds real data: it is kept in <code>.studio/</code> on this computer, which git ignores.</div>
+          <table><tbody id="snap-info"></tbody></table>
+          <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:center;">
+            <label class="btn btn-primary btn-sm" style="cursor:pointer">Upload snapshot<input type="file" id="snap-file" accept=".json,application/json" hidden onchange="uploadSnapshot(this)"></label>
+            <button class="btn btn-secondary btn-sm" id="snap-remove" onclick="removeSnapshot()">Use sample data again</button>
+            <span id="snap-msg" style="font-size:.8rem;"></span>
+          </div>
+        </div>
+
         <div class="card" id="topo-card">
           <div class="card-title"><span>Topology proxy</span><span id="topo-state" style="font-size:.8rem; color: var(--text-muted);"></span></div>
           <div class="card-desc">Lets dashboards in Concert Operate read the ASM topology service (Raw JSON tab, real neighbours). The service has its own address and login, so Studio holds them and forwards read-only requests. The password stays in <code>.studio/topology.json</code> on this computer and is never sent to a page.</div>
@@ -595,7 +606,7 @@ Define UI components &amp; API filters on the left, then click "Generate Dashboa
       const tb = Array.from(document.querySelectorAll('.tab-btn')).find(b => (b.getAttribute('onclick') || '').includes("'" + nav + "'"));
       if (tb) tb.classList.add('active');
       TAB_IDS.forEach(id => { const el = document.getElementById('tab-' + id); if (el) el.style.display = (id === tab || (tab === 'sync' && id === 'designer') ? 'block' : 'none'); });
-      if (tab === 'designer' || tab === 'sync') { refreshDesigner(); loadSplit(); loadGit(); }
+      if (tab === 'designer' || tab === 'sync') { refreshDesigner(); loadSplit(); loadGit(); loadSnapshot(); }
       if (tab === 'layouts' && window.LayoutEditor) window.LayoutEditor.open();
       if (tab === 'switchboard') { fetchDashboards(); setPane('pages'); }
       // Design's Publish already deploys, so the header button would be a second way to do the same thing there.
@@ -668,6 +679,34 @@ Define UI components &amp; API filters on the left, then click "Generate Dashboa
       fetchDashboards();
     }
 
+    function snapMsg(t, bad) { const m = document.getElementById('snap-msg'); m.textContent = t; m.style.color = bad ? '#da1e28' : '#198038'; }
+    async function loadSnapshot() {
+      let s;
+      try { s = await (await fetch('/api/snapshot')).json(); } catch (e) { return; }
+      const info = document.getElementById('snap-info');
+      document.getElementById('snap-state').textContent = s.present ? 'Real data loaded' : 'Sample data';
+      document.getElementById('snap-remove').style.display = s.present ? '' : 'none';
+      if (!s.present) { info.innerHTML = ''; return; }
+      const row = (k, v) => `<tr><td style="color:var(--text-muted);width:180px">${k}</td><td>${v}</td></tr>`;
+      const when = s.taken ? new Date(s.taken).toLocaleString() : 'unknown';
+      const fns = Object.entries(s.functions).map(([f, n]) => n > 1 ? `${f} (${n})` : f).join(', ');
+      info.innerHTML = row('Taken', when) + row('Answers', `${s.answers} · ${(s.bytes / 1048576).toFixed(1)} MB`) + row('Functions', fns.replace(/[<>&]/g, ''));
+    }
+    async function uploadSnapshot(input) {
+      const f = input.files && input.files[0]; input.value = '';
+      if (!f) return;
+      snapMsg('Uploading…');
+      try {
+        const r = await fetch('/api/snapshot', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: await f.text() });
+        const d = await r.json();
+        if (!r.ok || d.error) throw new Error(d.error || ('Server answered ' + r.status));
+        snapMsg(`Loaded: ${d.answers} answers. Design now shows this data.`); loadSnapshot();
+      } catch (e) { snapMsg(e.message, true); }
+    }
+    async function removeSnapshot() {
+      if (!confirm('Remove the data snapshot from this computer and go back to sample data?')) return;
+      try { await api('/api/snapshot/delete', {}); snapMsg('Removed. Design shows sample data again.'); loadSnapshot(); } catch (e) { snapMsg(e.message, true); }
+    }
     function gitMsg(t, bad) { const m = document.getElementById('git-msg'); m.textContent = t; m.style.color = bad ? '#da1e28' : '#198038'; }
     async function loadGit() {
       let g;

@@ -18,6 +18,7 @@ import { analyze as splitAnalyze, transform as splitTransform, loadTS, setCatalo
 import { readCatalog } from './catalog.mjs';
 import { createTopology } from './topology.mjs';
 import { createGit } from './git.mjs';
+import { createSnapshotStore, MAX_SNAPSHOT_BYTES } from './snapshot.mjs';
 import { generateCustomComposedDashboard, generateCustomSCSS, generatePanelTS } from './templates.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -43,6 +44,7 @@ const DASHBOARDS_DIR = path.join(ROOT_DIR, 'dashboards');
 const PORT = process.env.PORT || 4000;
 let deploying = false;
 const git = createGit({ rootDir: ROOT_DIR });
+const snapshots = createSnapshotStore({ rootDir: ROOT_DIR });
 const topology = createTopology({ rootDir: ROOT_DIR, runTool: (c, a) => runTool(c, a) });
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -103,13 +105,24 @@ const server = http.createServer(async (req, res) => {
 
   // 1c. Live preview of a dashboard tile (real component, sample data; see preview.mjs)
   if (url.pathname === '/api/preview/status' && req.method === 'GET') return sendJSON(res, 200, previewStatus(EXT_DIR));
+  // Real data for Design (Setup): a data snapshot recorded in Concert Operate, served to the preview instead of sample data
+  if (url.pathname === '/preview-snapshot.js' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
+    return res.end(snapshots.script());
+  }
+  if (url.pathname === '/api/snapshot' && req.method === 'GET') return sendJSON(res, 200, snapshots.info());
+  if (url.pathname === '/api/snapshot' && req.method === 'POST') {
+    const body = await readJSONBody(req, MAX_SNAPSHOT_BYTES);
+    try { return sendJSON(res, 200, snapshots.save(body)); } catch (e) { return sendJSON(res, 400, { error: e.message }); }
+  }
+  if (url.pathname === '/api/snapshot/delete' && req.method === 'POST') return sendJSON(res, 200, snapshots.remove());
   const pvw = req.method === 'GET' && /^\/preview\/(_widget|_designer|[A-Za-z0-9][A-Za-z0-9._-]*)\.(html|js|css)$/.exec(url.pathname);
   if (pvw) {
     const fail = (code, msg) => { res.writeHead(code, { 'Content-Type': 'text/plain; charset=utf-8' }); return res.end(msg); };
     try {
       if (pvw[2] === 'html') {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
-        return res.end(`<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/preview/${pvw[1]}.css"><style>html,body{margin:0;height:100%;overflow:hidden;background:var(--cds-background,#f4f4f4)}#root{height:100%;overflow:auto}</style></head><body><div id="root"></div><script src="/preview-stub.js"></script><script src="/preview/${pvw[1]}.js" onerror="parent.postMessage({type:\'fail\'},\'*\')"></script></body></html>`);
+        return res.end(`<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/preview/${pvw[1]}.css"><style>html,body{margin:0;height:100%;overflow:hidden;background:var(--cds-background,#f4f4f4)}#root{height:100%;overflow:auto}</style></head><body><div id="root"></div><script src="/preview-snapshot.js"></script><script src="/preview-stub.js"></script><script src="/preview/${pvw[1]}.js" onerror="parent.postMessage({type:\'fail\'},\'*\')"></script></body></html>`);
       }
       const out = pvw[1] === '_designer'
         ? await buildPreview({ extDir: EXT_DIR, dashboardsDir: DASHBOARDS_DIR, dir: DESIGNER_ID, file: 'DashboardBuilder.tsx', designer: true })

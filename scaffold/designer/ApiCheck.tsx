@@ -11,6 +11,7 @@ import { CheckmarkFilled, Close, Copy, Download, ErrorFilled, Play, SubtractAlt,
 import { DataHub } from './datahub';
 import { CheckResult, reportText, runApiCheck } from './api-check';
 import { VERSION } from './version';
+import { INCIDENTS_RECORDED, recordSnapshot } from './snapshot';
 
 const ICON = { ok: CheckmarkFilled, empty: WarningAltFilled, error: ErrorFilled, missing: ErrorFilled, skipped: SubtractAlt };
 const WORD = { ok: 'OK', empty: 'Empty', error: 'Error', missing: 'Missing', skipped: 'Skipped' };
@@ -25,6 +26,8 @@ export default function ApiCheck({ hub, onClose }: { hub: DataHub; onClose: () =
   const [results, setResults] = useState<CheckResult[]>([]);
   const [copied, setCopied] = useState('');
   const [open, setOpen] = useState<string | null>(null);
+  const [snapping, setSnapping] = useState(false);
+  const [snapNote, setSnapNote] = useState('');
   const areaRef = useRef<HTMLTextAreaElement>(null);
   const report = results.length ? reportText(results, { version: VERSION, values }) : '';
 
@@ -46,6 +49,18 @@ export default function ApiCheck({ hub, onClose }: { hub: DataHub; onClose: () =
     else { selectAll(); setCopied('Select all is done: press Ctrl+C.'); }
   };
   const selectAll = () => { if (areaRef.current) { areaRef.current.hidden = false; areaRef.current.select(); } };
+  const snap = () => {
+    setSnapping(true);
+    setSnapNote('');
+    recordSnapshot(hub, VERSION, line => setSnapNote(`Recording: ${line}…`)).then(({ snapshot, failed }) => {
+      const url = URL.createObjectURL(new Blob([JSON.stringify(snapshot)], { type: 'application/json' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = `concert-data-snapshot-${snapshot.taken.slice(0, 10)}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setSnapNote(`Downloaded: ${snapshot.calls.length} answers recorded${failed.length ? `, ${failed.length} failed (${failed.slice(0, 3).join(', ')}${failed.length > 3 ? '…' : ''})` : ''}.`);
+    }, (e: any) => setSnapNote(`Not recorded: ${e && e.message ? e.message : e}`)).finally(() => setSnapping(false));
+  };
   const download = () => {
     const url = URL.createObjectURL(new Blob([report], { type: 'text/markdown' }));
     const a = document.createElement('a');
@@ -76,6 +91,14 @@ export default function ApiCheck({ hub, onClose }: { hub: DataHub; onClose: () =
             <button type="button" className="db-af-btn" disabled={!report || running} onClick={copy}><Copy size={16} />Copy report</button>
             <button type="button" className="db-af-btn" disabled={!report || running} onClick={download}><Download size={16} />Download</button>
             {copied && <span className="db-ac-copied">{copied}</span>}
+          </div>
+          <div className="db-ac-snap">
+            <strong>Data snapshot for the Workbench</strong>
+            <span>Records the answers of the data sources, and of the first {INCIDENTS_RECORDED} incidents for drill-downs, into a file. Upload it in the Workbench (Setup › Real data for Design) to design on this tenant's real data. Read-only. The file holds real data: keep it on your computer.</span>
+            <div className="db-ac-actions">
+              <button type="button" className="db-af-btn" disabled={running || snapping} onClick={snap}><Download size={16} />{snapping ? 'Recording…' : 'Record and download'}</button>
+              {snapNote && <span className="db-ac-copied">{snapNote}</span>}
+            </div>
           </div>
         </div>
 

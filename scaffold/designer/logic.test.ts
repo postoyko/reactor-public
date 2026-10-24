@@ -650,3 +650,13 @@ describe('Pickers (values offered while typing)', () => {
   });
 });
 
+
+import { callKey } from './snapshot';
+describe('Data snapshot keys', () => {
+  it('ignore the tenant, Apollo options and columns, and sort the rest', () => {
+    expect(callKey({ tenantId: 't1', fetchPolicy: 'network-only', columns: ['a'], storyId: 'inc-1', format: 'AIOPS' })).toBe('[["storyId","inc-1"]]');
+    expect(callKey({ b: 2, a: 1 })).toBe(callKey({ a: 1, b: 2 }));
+    expect(callKey(undefined)).toBe('[]');
+    expect(callKey({ storyId: 'inc-1' })).not.toBe(callKey({ storyId: 'inc-2' }));
+  });
+});

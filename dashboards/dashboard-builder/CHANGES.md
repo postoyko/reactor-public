@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.63.0
+**Data snapshot for the Workbench.** The API check (⋮ › Check the Concert Operate API) has *Record and download*: it records the answers of the data sources, plus the alerts, alert groups and related incidents of the first 10 incidents, into a file. Uploaded in the Workbench (Setup › Real data for Design), it replaces the sample data in Design, so dashboards are designed on the tenant's real data. Read-only; answers are matched by their parameters (snapshot.ts, `callKey`).
+
 ## v1.62.0
 **Pick instead of typing ids.** Fields that need an id offer values from live data as you type: the incident id of *Alerts of an incident*, *Alert groups of an incident* and *Related incidents* (open incidents by title, with id, priority and state), the policy fields of the policy actions in Action flows (policy names; a list adds to what is there), and the filter type of *Saved filters*. Typing stays free ({value}, any id). A list loads only when its field is first used, so thousands of policies cost nothing until then. Arrow keys, Enter and Escape work in the list.
 

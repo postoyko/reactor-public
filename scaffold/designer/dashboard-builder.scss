@@ -3433,6 +3433,19 @@ body.db-dragging iframe { pointer-events: none; }
   }
 
   .db-ac-copied { color: #198038; font-size: 13px; font-weight: 600; }
+  .db-ac-snap {
+    display: flex;
+    flex-direction: column;
+    grid-column: 1 / -1;
+    gap: 6px;
+    margin-top: 6px;
+    padding-top: 12px;
+    border-top: 1px solid var(--db-line);
+    font-size: 13px;
+    color: var(--db-muted);
+
+    strong { color: var(--db-text); }
+  }
 
   .db-ac-list {
     flex: 1;

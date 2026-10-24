@@ -743,6 +743,7 @@ const CSS = `
 .le-mlabel{padding:6px 10px 2px;font-size:.72rem;color:var(--text-muted)}
 .le-mrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 10px;font-size:.85rem}
 .le-mrow input{width:80px}
+.le-real{color:var(--green)}
 .le-badge{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;border-radius:9px;background:var(--primary);color:#fff;font-size:.7rem;line-height:18px;text-align:center}
 .le-dlg{margin:auto;width:min(860px,calc(100vw - 32px));max-height:80vh;border:1px solid var(--border);background:var(--surface);color:var(--text);padding:16px}
 .le-dlg::backdrop{background:rgba(0,0,0,.4)}
@@ -756,7 +757,7 @@ function build(container) {
   root = h('div', { id: 'le-root' },
     h('div', { class: 'card' },
       h('div', { class: 'card-title' }, h('span', {}, 'Design'), h('span', { id: 'le-status' })),
-      h('div', { class: 'card-desc' }, 'This is the Dashboard Designer your users get in Concert Operate, with sample data. Pick a dashboard, edit it, then Publish to put it in the sidebar. Embedded dashboards and sections work here too.'),
+      h('div', { class: 'card-desc', id: 'le-desc' }, 'This is the Dashboard Designer your users get in Concert Operate, with sample data. Pick a dashboard, edit it, then Publish to put it in the sidebar. Embedded dashboards and sections work here too.'),
       h('div', { class: 'le-bar', id: 'le-bar' }),
       h('div', { id: 'le-actions' }),
       h('div', { id: 'le-none', class: 'le-hint' }, 'Open a saved dashboard from Dashboards, or start a new one.'),
@@ -769,8 +770,26 @@ function build(container) {
   });
 }
 
+/** Which data the preview shows: sample data, or a snapshot of the tenant (Setup › Real data for Design). A new snapshot reloads the preview. */
+async function refreshDataSource() {
+  let info = { present: false };
+  try { info = await api('/api/snapshot'); } catch (e) { /* sample data */ }
+  const stamp = info.present ? info.taken || 'yes' : '';
+  const desc = root.querySelector('#le-desc');
+  if (desc) {
+    desc.replaceChildren(
+      'This is the Dashboard Designer your users get in Concert Operate, with ',
+      info.present ? h('b', { class: 'le-real' }, `real data from your tenant (snapshot of ${info.taken ? new Date(info.taken).toLocaleString() : 'unknown date'})`) : 'sample data',
+      info.present ? '. Changes are never sent to Concert Operate. ' : ' (load real data under Setup › Real data for Design). ',
+      'Pick a dashboard, edit it, then Publish to put it in the sidebar.');
+  }
+  if (S.dataStamp !== undefined && S.dataStamp !== stamp) reloadFrame();
+  S.dataStamp = stamp;
+}
+
 async function open() {
   if (!root) build(document.getElementById('tab-layouts'));
+  await refreshDataSource();
   try { await refreshList(); } catch (e) { say('Could not load dashboards: ' + e.message, false); }
   await refreshGit();
   try {

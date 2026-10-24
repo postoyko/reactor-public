@@ -4,7 +4,7 @@
  * It stands in for Concert Operate: window.akoraConfig.baseState.API.contentAnalyticsAPI (getAlerts, getStories,
  * getFilters, ...) and the REST paths /aiops/api/v2/alerts and /incidents. The answers are built from the columns the
  * dashboard asks for, so a dashboard that adds a column gets a value for it. Everything here is invented, and the
- * preview says so.
+ * preview says so, unless a data snapshot is loaded (see the end of this file).
  */
 (function () {
   var seed = 7;
@@ -182,6 +182,30 @@
       return real(o);
     };
   });
+  // Real data for Design: a snapshot recorded in Concert Operate (Setup in the Workbench). Each read the snapshot holds
+  // is answered from it for the same parameters (same rule as callKey in designer/snapshot.ts); a read it holds for
+  // other parameters (another incident) is refused with a reason; reads it does not hold, and every change, stay sample.
+  var SNAP = window.__reactorSnapshot;
+  if (SNAP && SNAP.calls && SNAP.calls.length) {
+    var IGNORED = ['tenantId', 'fetchPolicy', 'nextFetchPolicy', 'notifyOnNetworkStatusChange', 'pollInterval', 'columns', 'format'];
+    var callKey = function (p) {
+      p = p || {};
+      var keys = Object.keys(p).filter(function (k) { return IGNORED.indexOf(k) < 0 && p[k] !== undefined; }).sort();
+      return JSON.stringify(keys.map(function (k) { return [k, p[k]]; }));
+    };
+    var byFn = {};
+    SNAP.calls.forEach(function (c) { (byFn[c.fn] = byFn[c.fn] || []).push(c); });
+    var copy = function (v) { return typeof structuredClone === 'function' ? structuredClone(v) : JSON.parse(JSON.stringify(v)); };
+    Object.keys(byFn).forEach(function (fn) {
+      api[fn] = function (o) {
+        var key = callKey(o);
+        var hit = byFn[fn].filter(function (c) { return c.key === key; })[0];
+        if (hit) return later(copy(hit.data));
+        return Promise.reject(new Error('Not in the data snapshot (it holds ' + fn + ' for other values, e.g. the first incidents only). Record a new snapshot in Concert Operate, or pick another value.'));
+      };
+    });
+    window.__previewSnapshot = { taken: SNAP.taken, answers: SNAP.calls.length };
+  }
   window.akoraConfig = window.akoraConfig || {};
   window.akoraConfig.baseState = window.akoraConfig.baseState || {};
   window.akoraConfig.baseState.API = window.akoraConfig.baseState.API || {};
