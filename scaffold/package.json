@@ -1,0 +1,9 @@
+{
+  "name": "concert-workbench",
+  "version": "1.75.2",
+  "description": "Visual Dashboard Control Center & Code Scaffolder for IBM Concert Operate",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  }
+}

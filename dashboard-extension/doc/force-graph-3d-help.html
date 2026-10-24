@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3D Force Graph Help</title>
+<style>
+:root{
+  --bg:#ffffff;--bg-2:#f4f4f4;--bg-3:#e8e8e8;--text:#161616;--text-2:#525252;--line:#e0e0e0;
+  --link:#0f62fe;--note-bg:#edf5ff;--note-line:#0f62fe;--warn-bg:#fcf4d6;--warn-line:#f1c21b;
+  --err-bg:#fff1f1;--err-line:#da1e28;--code-bg:#f4f4f4;--hdr:#161616;--hdr-text:#f4f4f4;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#161616;--bg-2:#262626;--bg-3:#393939;--text:#f4f4f4;--text-2:#c6c6c6;--line:#393939;
+    --link:#78a9ff;--note-bg:#001d6c;--note-line:#4589ff;--warn-bg:#3e3200;--warn-line:#f1c21b;
+    --err-bg:#520408;--err-line:#fa4d56;--code-bg:#262626;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#161616;--bg-2:#262626;--bg-3:#393939;--text:#f4f4f4;--text-2:#c6c6c6;--line:#393939;
+  --link:#78a9ff;--note-bg:#001d6c;--note-line:#4589ff;--warn-bg:#3e3200;--warn-line:#f1c21b;
+  --err-bg:#520408;--err-line:#fa4d56;--code-bg:#262626;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:4.5rem}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "IBM Plex Sans",-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+a{color:var(--link)}
+header.top{background:var(--hdr);color:var(--hdr-text);padding:0 16px;height:3rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:5}
+header.top strong{font-weight:600}
+header.top span{color:#c6c6c6;font-size:.875rem}
+.layout{display:grid;grid-template-columns:18rem minmax(0,1fr);max-width:84rem;margin:0 auto}
+nav.toc{position:sticky;top:3rem;align-self:start;max-height:calc(100vh - 3rem);overflow:auto;padding:1.5rem 1rem 2rem 16px;border-right:1px solid var(--line);font-size:.875rem}
+nav.toc h2{font-size:.75rem;letter-spacing:.32px;text-transform:uppercase;color:var(--text-2);margin:1.25rem 0 .5rem;font-weight:400}
+nav.toc h2:first-child{margin-top:0}
+nav.toc a{display:block;padding:.3rem .5rem;color:var(--text);text-decoration:none;border-left:3px solid transparent}
+nav.toc a:hover{background:var(--bg-2)}
+nav.toc a.active{border-left-color:var(--link);background:var(--bg-2);font-weight:600}
+main{padding:2rem 16px 5rem 2.5rem;max-width:56rem}
+.crumbs{font-size:.875rem;color:var(--text-2);margin-bottom:.5rem}
+h1{font-size:2.25rem;font-weight:300;line-height:1.2;margin:0 0 .5rem}
+.lede{color:var(--text-2);margin:0 0 2rem;max-width:42rem}
+article.topic{padding:2rem 0;border-top:1px solid var(--line)}
+article.topic>h2{font-size:1.75rem;font-weight:400;line-height:1.25;margin:.25rem 0 1rem}
+h3{font-size:1.25rem;font-weight:600;margin:1.75rem 0 .5rem}
+h4{font-size:1rem;font-weight:600;margin:1.25rem 0 .25rem}
+.kind{display:inline-block;font-size:.75rem;line-height:1;padding:.3rem .5rem;border-radius:1rem;background:var(--bg-3);color:var(--text-2);letter-spacing:.32px}
+p{margin:.5rem 0 1rem;max-width:46rem}
+ul,ol{padding-left:1.5rem;margin:.5rem 0 1rem;max-width:46rem}
+li{margin:.35rem 0}
+code{font-family:"IBM Plex Mono",Menlo,Consolas,monospace;font-size:.875em;background:var(--code-bg);padding:.1em .35em;border-radius:2px}
+pre{background:var(--code-bg);padding:1rem;overflow:auto;font:.8125rem/1.5 "IBM Plex Mono",Menlo,Consolas,monospace;border-left:3px solid var(--line);margin:.75rem 0 1.25rem;max-width:46rem}
+pre code{background:none;padding:0}
+.ui{font-weight:600}
+.note,.important,.restriction{padding:.75rem 1rem;margin:1rem 0;border-left:3px solid var(--note-line);background:var(--note-bg);max-width:46rem}
+.note>p,.important>p,.restriction>p{margin:0}
+.important{border-color:var(--warn-line);background:var(--warn-bg)}
+.restriction{border-color:var(--err-line);background:var(--err-bg)}
+.note b,.important b,.restriction b{display:block;margin-bottom:.15rem}
+.tablewrap{overflow-x:auto;margin:.75rem 0 1.5rem}
+table{border-collapse:collapse;width:100%;min-width:34rem;font-size:.875rem}
+caption{text-align:left;font-weight:600;padding:.25rem 0 .5rem}
+th{background:var(--bg-3);text-align:left;font-weight:600}
+th,td{padding:.6rem .75rem;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:nth-child(even){background:var(--bg-2)}
+.sw{display:inline-block;width:.8rem;height:.8rem;border-radius:50%;margin-right:.45rem;vertical-align:-1px}
+dl{margin:.5rem 0 1rem;max-width:46rem}
+dt{font-weight:600;margin-top:.75rem}
+dd{margin:.15rem 0 0 0;color:var(--text)}
+.steps>li{margin:.9rem 0}
+.steps .info{display:block;color:var(--text-2);font-size:.875rem;margin-top:.25rem}
+.sec-label{font-size:.875rem;font-weight:600;margin:1.25rem 0 .25rem;color:var(--text-2)}
+.related{font-size:.875rem;margin-top:1.5rem}
+footer{border-top:1px solid var(--line);padding:1.5rem 0;color:var(--text-2);font-size:.8125rem;max-width:46rem}
+.themebtn{margin-left:auto;background:transparent;border:1px solid #6f6f6f;color:var(--hdr-text);padding:.25rem .75rem;font:inherit;font-size:.8125rem;cursor:pointer}
+.themebtn:focus-visible,a:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+@media (max-width:900px){
+  .layout{display:block}
+  nav.toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding:1rem 16px}
+  main{padding:1.5rem 16px 4rem}
+  h1{font-size:1.75rem}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <strong>Cloud Pak for AIOps</strong><span>Dashboard extension toolkit · Help</span>
+  <button class="themebtn" id="themebtn" type="button" aria-label="Toggle light and dark theme">Theme</button>
+</header>
+<div class="layout">
+<nav class="toc" aria-label="Topics">
+  <h2>Get started</h2>
+  <a href="#about">About the 3D force graph</a>
+  <a href="#what-you-see">What the graph shows</a>
+  <a href="#requirements">Requirements</a>
+  <h2>Tasks</h2>
+  <a href="#install">Installing the panel</a>
+  <a href="#open">Opening the panel</a>
+  <a href="#navigate">Exploring the graph</a>
+  <a href="#filter">Filtering the graph</a>
+  <a href="#alert-list">Filtering the alert list from the graph</a>
+  <a href="#configure">Configuring a route</a>
+  <a href="#uninstall">Removing the panel</a>
+  <h2>Reference</h2>
+  <a href="#controls">Controls</a>
+  <a href="#route-state">Route properties</a>
+  <a href="#performance">Performance and GPU behavior</a>
+  <a href="#messages">Messages and states</a>
+  <a href="#data">Data used by the graph</a>
+  <h2>Help</h2>
+  <a href="#troubleshooting">Troubleshooting</a>
+  <a href="#limitations">Limitations</a>
+</nav>
+<main>
+  <div class="crumbs">Dashboard extension toolkit &gt; Example dashboards &gt; 3D force graph</div>
+  <h1>3D force graph panel</h1>
+  <p class="lede">Explore open alerts as a three-dimensional network, drawn by your graphics processor (GPU), and use any node to filter the alert list.</p>
+
+  <article class="topic" id="about">
+    <span class="kind">Concept</span>
+    <h2>About the 3D force graph</h2>
+    <p>The 3D force graph is a custom panel for the dashboard extension toolkit. It draws your open alerts as a network of nodes and links in three dimensions. A physics simulation pulls related items together and pushes unrelated items apart, so resources that share an alert source, a team, or an alert type form visible clusters.</p>
+    <p>Use the graph to answer questions that a flat list cannot answer quickly:</p>
+    <ul>
+      <li>Which alert sources or teams are connected to the most affected resources?</li>
+      <li>Do several critical resources share one source, which suggests a common cause?</li>
+      <li>Which resources are isolated, and which sit at the center of a cluster?</li>
+    </ul>
+    <p>The graph is drawn with WebGL, which uses the GPU of the computer that runs your browser. Nothing is rendered on the server.</p>
+    <div class="note"><p><b>Note</b>The panel reads the same alert data as the other toolkit example panels. It does not change alerts. The only thing it changes is the filter that is applied to the alert list on the same page.</p></div>
+  </article>
+
+  <article class="topic" id="what-you-see">
+    <span class="kind">Concept</span>
+    <h2>What the graph shows</h2>
+    <p>The graph has two kinds of nodes.</p>
+    <dl>
+      <dt>Resource nodes</dt>
+      <dd>One node for each resource name in your open alerts. The node color is the highest severity of the alerts on that resource. The node size grows with the number of open alerts on the resource.</dd>
+      <dt>Group nodes</dt>
+      <dd>One node for each distinct value of the dimensions you choose in <span class="ui">Group by</span>: alert source, team, or alert type. A group node is larger when more resources are linked to it. Group nodes have their own colors, so you can tell them apart from resource nodes.</dd>
+    </dl>
+    <p>A link joins a resource to each group node that it shares. When you point at or select a node, particles can travel along its links to make its connections easier to follow (see the <span class="ui">Flow</span> control).</p>
+    <div class="tablewrap">
+    <table>
+      <caption>Severity colors on resource nodes and in the legend</caption>
+      <thead><tr><th>Severity</th><th>Color</th></tr></thead>
+      <tbody>
+        <tr><td>Indeterminate</td><td><span class="sw" style="background:#8a3ffc"></span>Purple</td></tr>
+        <tr><td>Information</td><td><span class="sw" style="background:#0f62fe"></span>Blue</td></tr>
+        <tr><td>Warning</td><td><span class="sw" style="background:#4589ff"></span>Light blue</td></tr>
+        <tr><td>Minor</td><td><span class="sw" style="background:#f1c21b"></span>Yellow</td></tr>
+        <tr><td>Major</td><td><span class="sw" style="background:#ff832b"></span>Orange</td></tr>
+        <tr><td>Critical</td><td><span class="sw" style="background:#da1e28"></span>Red</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>A selected node is drawn in white. Items that are not related to the node you point at or select are dimmed.</p>
+  </article>
+
+  <article class="topic" id="requirements">
+    <span class="kind">Reference</span>
+    <h2>Requirements</h2>
+    <h3>To view the graph</h3>
+    <ul>
+      <li>A current desktop browser with WebGL enabled. WebGL 2 is used when available, and WebGL 1 is used otherwise.</li>
+      <li>Hardware graphics acceleration turned on in the browser. Without it the panel falls back to a ranked list (see <a href="#messages">Messages and states</a>).</li>
+      <li>A pointing device. The 3D canvas is operated with the mouse or a trackpad.</li>
+    </ul>
+    <h3>To install the panel</h3>
+    <ul>
+      <li>A Cloud Pak for AIOps cluster with the dashboard extension feature enabled.</li>
+      <li>Node.js v18 and the OpenShift CLI (<code>oc</code>) on the computer that you deploy from.</li>
+      <li>An API key for your user, and cluster-administrator access for the one-time enablement step.</li>
+      <li>A fork of the toolkit that contains this panel. The upstream toolkit repository is archived and read-only, so you cannot add the panel to it.</li>
+    </ul>
+  </article>
+
+  <article class="topic" id="install">
+    <span class="kind">Task</span>
+    <h2>Installing the panel</h2>
+    <p>You install the panel the same way as the other toolkit examples: build the bundle, upload it, and register the routes.</p>
+    <div class="sec-label">Before you begin</div>
+    <ul>
+      <li>Apply the 3D force graph changes to your fork of the toolkit.</li>
+      <li>Create an API key from your profile page in the console (<code>/zen/#/settings/profile/list</code>).</li>
+      <li>Find the namespace where Cloud Pak for AIOps is installed.</li>
+    </ul>
+    <div class="sec-label">Procedure</div>
+    <ol class="steps">
+      <li>Install the dependencies, including the three new graph libraries.
+<pre><code>npm install</code></pre>
+        <span class="info">Run this in your fork so that <code>package-lock.json</code> is regenerated for the new dependencies.</span></li>
+      <li>Log in to the cluster as an administrator.
+<pre><code>oc login --token=&lt;admin user token&gt; --server=&lt;your cluster&gt;</code></pre></li>
+      <li>Enable the dashboard extension feature. You do this once for each cluster.
+<pre><code>npm run enable -- -n &lt;AIOps namespace&gt;</code></pre></li>
+      <li>Open <code>target.json</code> and set the console URL, your user name, your API key, your tenant ID, and the bundle name.</li>
+      <li>Build, upload, and register the example dashboards.
+<pre><code>npm run deploy -- -n &lt;AIOps namespace&gt;</code></pre></li>
+      <li>Wait a few minutes, then log out of the console and log in again to refresh the menus.</li>
+    </ol>
+    <div class="sec-label">Results</div>
+    <p>The <span class="ui">Alerts 3D force graph</span> and <span class="ui">3D force graph (full page)</span> entries are added under <span class="ui">Example dashboards</span>.</p>
+    <div class="important"><p><b>Important</b>The alert query in the toolkit samples uses the toolkit's own sample tenant ID. Replace it with the tenant ID of your cluster before you expect to see your alerts, as you would for the other example panels.</p></div>
+    <div class="sec-label">What to do next</div>
+    <p><a href="#open">Open the panel</a>.</p>
+  </article>
+
+  <article class="topic" id="open">
+    <span class="kind">Task</span>
+    <h2>Opening the panel</h2>
+    <ol class="steps">
+      <li>Log in to the console.</li>
+      <li>In the navigation menu, expand <span class="ui">Example dashboards</span>.</li>
+      <li>Click one of the two entries:
+        <ul>
+          <li><span class="ui">Alerts 3D force graph</span> shows the graph in the upper part of the page and the alert list below it. Use this page when you want clicks in the graph to filter the list.</li>
+          <li><span class="ui">3D force graph (full page)</span> gives the whole page to the graph. It has no alert list.</li>
+        </ul>
+      </li>
+    </ol>
+    <p>On first load, a placeholder shows while alerts are retrieved. The graph then settles for a few seconds as the layout is calculated.</p>
+  </article>
+
+  <article class="topic" id="navigate">
+    <span class="kind">Task</span>
+    <h2>Exploring the graph</h2>
+    <ol class="steps">
+      <li>Rotate the view by dragging the background with the primary mouse button.</li>
+      <li>Zoom with the scroll wheel or a trackpad pinch.</li>
+      <li>Pan by dragging the background with the secondary mouse button.</li>
+      <li>Point at a node to see a tooltip with its name, its type, and the number of open alerts (with the highest severity) for a resource or the number of linked resources for a group. The node and its direct neighbors stay bright and everything else is dimmed.</li>
+      <li>Drag a node to move it. Dragging is available for graphs of fewer than 4,000 nodes.</li>
+      <li>Click <span class="ui">Fit view</span> to bring the whole graph back into view.</li>
+    </ol>
+    <div class="note"><p><b>Note</b>Moved nodes keep their positions when the data refreshes. Only new nodes are placed by the layout.</p></div>
+  </article>
+
+  <article class="topic" id="filter">
+    <span class="kind">Task</span>
+    <h2>Filtering the graph</h2>
+    <p>Use the controls above the graph to reduce what is drawn. The status line under the controls updates to match.</p>
+    <ol class="steps">
+      <li>To change how resources are connected, open <span class="ui">Group by</span> and select one or more of <span class="ui">Alert source</span>, <span class="ui">Team</span>, and <span class="ui">Alert type</span>. If you clear every choice, the default of <span class="ui">Alert source</span> and <span class="ui">Alert type</span> is restored.</li>
+      <li>To hide lower-severity alerts, choose a value in the severity list, for example <span class="ui">Major and above</span>. Resources whose alerts are all below the chosen severity disappear.</li>
+      <li>To find a resource, type in <span class="ui">Search resources</span>. The search is not case-sensitive and matches resource names and the alert source, team, or alert type values of the dimensions selected in <span class="ui">Group by</span>.</li>
+    </ol>
+    <p>If your filters hide the selected node, the selection is cleared and the alert list is released at the same time.</p>
+  </article>
+
+  <article class="topic" id="alert-list">
+    <span class="kind">Task</span>
+    <h2>Filtering the alert list from the graph</h2>
+    <div class="sec-label">Before you begin</div>
+    <p>Open <span class="ui">Alerts 3D force graph</span>. The full-page route has no alert list to filter.</p>
+    <div class="sec-label">Procedure</div>
+    <ol class="steps">
+      <li>Click a node in the graph.</li>
+      <li>Read the <span class="ui">Selected node</span> card at the upper right. It shows the node name and type, its alert or resource count, and its number of direct connections.</li>
+      <li>Look at the alert list below the graph. It is filtered to the alerts that the node represents:
+        <ul>
+          <li>For a resource node, the alerts on that resource.</li>
+          <li>For a group node, the alerts that have that alert source, team, or alert type.</li>
+        </ul>
+      </li>
+      <li>To remove the filter, click the same node again, click the empty background of the graph, or click <span class="ui">Clear selection</span>.</li>
+    </ol>
+    <div class="note"><p><b>Note</b>The panel sets the alert list filter through the page address, the same mechanism that the Top N example panels use.</p></div>
+  </article>
+
+  <article class="topic" id="configure">
+    <span class="kind">Task</span>
+    <h2>Configuring a route</h2>
+    <p>Defaults for grouping, graph size, and refresh are set in the route's <code>state</code> in <code>config/routes.json</code>. Users can still change grouping, severity, and search in the page; those choices are not saved between visits.</p>
+    <ol class="steps">
+      <li>Open <code>config/routes.json</code> and find the route for the graph, <code>/alerts-force-graph-3d</code>.</li>
+      <li>In the graph region's <code>state</code>, edit <code>linkBy</code>, <code>maxNodes</code>, or <code>refreshSeconds</code>. See <a href="#route-state">Route properties</a> for the values.</li>
+      <li>Run <code>npm run deploy -- -n &lt;AIOps namespace&gt;</code> again.</li>
+      <li>Log out of the console and log in again.</li>
+    </ol>
+    <p>To use the graph on another page, give a region of any route the same bundle path as the existing graph route and the panel ID <code>force-graph-3d</code>. To give the graph the whole page, set the bundle path and panel ID at the root of the route, as the <code>/force-graph-3d</code> route does, instead of inside a region.</p>
+  </article>
+
+  <article class="topic" id="uninstall">
+    <span class="kind">Task</span>
+    <h2>Removing the panel</h2>
+    <p>To remove only this panel, delete its two routes and the two menu entries from <code>config/routes.json</code>, then run <code>npm run deploy -- -n &lt;AIOps namespace&gt;</code>.</p>
+    <div class="important"><p><b>Important</b><code>npm run remove</code> deletes the <code>AIOpsUIExtension</code> custom resource that registers all of the example dashboards, not only this panel. Use it only when you want all of them removed.</p></div>
+  </article>
+
+  <article class="topic" id="controls">
+    <span class="kind">Reference</span>
+    <h2>Controls</h2>
+    <div class="tablewrap">
+    <table>
+      <caption>Controls above the graph</caption>
+      <thead><tr><th>Control</th><th>Choices</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ui">Group by</span></td><td>Alert source, Team, Alert type</td><td>Chooses which shared values create group nodes. Default: Alert source and Alert type.</td></tr>
+        <tr><td>Severity list</td><td>All severities, Indeterminate and above, Information and above, Warning and above, Minor and above, Major and above, Critical and above</td><td>Leaves out alerts below the chosen severity. Default: All severities.</td></tr>
+        <tr><td><span class="ui">Search resources</span></td><td>Free text</td><td>Keeps resources whose name, or whose value in a selected <span class="ui">Group by</span> dimension, contains the text. Not case-sensitive.</td></tr>
+        <tr><td><span class="ui">Flow</span></td><td>Off, On</td><td>Shows particles moving along the links of the highlighted node. Default: On. See <a href="#performance">Performance</a> for when particles are unavailable.</td></tr>
+        <tr><td><span class="ui">Layout</span></td><td>Live, Frozen</td><td>Frozen stops the physics so nodes stay where they are. You can still rotate, zoom, and select. Switching back to Live restarts the layout.</td></tr>
+        <tr><td><span class="ui">Fit view</span></td><td>Button</td><td>Animates the camera so the whole graph is visible.</td></tr>
+        <tr><td><span class="ui">Clear selection</span></td><td>Button</td><td>Deselects the node and removes the alert list filter. Unavailable when nothing is selected.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <h3>Status line</h3>
+    <p>The line under the controls reads, for example, <code>120 resources · 9 groups · 340 alerts · 410 links · WebGL 2</code>. When the graph is limited by <code>maxNodes</code>, it also reports how many lower-priority resources are hidden and what the limit is. The counts reflect the current filters.</p>
+  </article>
+
+  <article class="topic" id="route-state">
+    <span class="kind">Reference</span>
+    <h2>Route properties</h2>
+    <p>Set these in the <code>state</code> object of the graph region.</p>
+    <div class="tablewrap">
+    <table>
+      <caption>Properties of the 3D force graph panel</caption>
+      <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>linkBy</code></td><td>Array of strings, or a comma-separated string</td><td><code>["sender.name", "type.classification"]</code></td><td>The group dimensions that are selected when the page opens. Valid values are <code>sender.name</code> (alert source), <code>team</code>, and <code>type.classification</code> (alert type). Other values are ignored. If none are valid, the default is used.</td></tr>
+        <tr><td><code>maxNodes</code></td><td>Positive number</td><td><code>1500</code></td><td>The most resource nodes to draw. When there are more, the most severe resources are kept first, then the resources with the most alerts. Values that are not positive numbers fall back to the default.</td></tr>
+        <tr><td><code>refreshSeconds</code></td><td>Number</td><td><code>0</code></td><td>How often to reload the alerts, in seconds. Zero or less turns timed reloading off.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Regardless of this setting, the graph reloads when the console asks all panels to refresh alerts. Only requests that come from the console's own address are accepted.</p>
+  </article>
+
+  <article class="topic" id="performance">
+    <span class="kind">Reference</span>
+    <h2>Performance and GPU behavior</h2>
+    <p>The panel adjusts its drawing detail to the size of the graph so that large estates stay responsive on laptops with integrated graphics. The tier is chosen from the number of nodes plus half the number of links.</p>
+    <div class="tablewrap">
+    <table>
+      <caption>Quality tiers</caption>
+      <thead><tr><th>Tier</th><th>Load</th><th>Node detail</th><th>Flow particles</th></tr></thead>
+      <tbody>
+        <tr><td>High</td><td>1,500 or fewer</td><td>Smooth spheres</td><td>Available</td></tr>
+        <tr><td>Balanced</td><td>More than 1,500</td><td>Reduced</td><td>Not available</td></tr>
+        <tr><td>Performance</td><td>More than 6,000</td><td>Lowest, and a shorter layout run</td><td>Not available</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <ul>
+      <li>When the tier does not allow particles, the <span class="ui">Flow</span> switch has no visible effect.</li>
+      <li>Edge smoothing (antialiasing) is turned off for graphs of 4,000 or more nodes, and node dragging is turned off at the same size.</li>
+      <li>The display resolution is capped at twice the standard pixel density, even on very dense screens.</li>
+      <li>Drawing stops while the browser tab is in the background and resumes when you return.</li>
+      <li>The high-performance GPU is requested when the computer has more than one. The browser can still choose differently.</li>
+    </ul>
+    <h3>GPU context loss</h3>
+    <p>Drivers, sleep and wake, and browser memory pressure can take the GPU away from a page. When this happens the panel shows a warning, waits for the browser to give the GPU back, and then rebuilds the graph from scratch. Node positions are kept in memory, so the layout looks the same afterward.</p>
+  </article>
+
+  <article class="topic" id="messages">
+    <span class="kind">Reference</span>
+    <h2>Messages and states</h2>
+    <div class="tablewrap">
+    <table>
+      <caption>What you can see in the panel</caption>
+      <thead><tr><th>You see</th><th>Meaning</th><th>What to do</th></tr></thead>
+      <tbody>
+        <tr><td>Placeholder lines</td><td>The first alert query is still running.</td><td>Wait.</td></tr>
+        <tr><td><span class="ui">Unable to load alerts</span> and a message</td><td>The alert query failed. The message comes from the service.</td><td>See <a href="#troubleshooting">Troubleshooting</a>.</td></tr>
+        <tr><td><span class="ui">No open alerts to graph.</span></td><td>The query returned no alerts.</td><td>Check the tenant ID and that alerts exist.</td></tr>
+        <tr><td><span class="ui">No resources match the current filters.</span></td><td>Severity or search removed every resource.</td><td>Relax the filters.</td></tr>
+        <tr><td><span class="ui">3D view unavailable</span> followed by a reason and "Showing a ranked list instead."</td><td>The browser could not create a WebGL context. A table titled <em>Top nodes by connections</em> lists up to 25 nodes with their name, type, alert or resource count, and highest severity.</td><td>Turn on hardware acceleration or use another browser. The list still works with the filters.</td></tr>
+        <tr><td><span class="ui">GPU context lost — recovering</span></td><td>The browser took the GPU away from the page.</td><td>Wait. The graph rebuilds when the GPU returns.</td></tr>
+        <tr><td><em>The GPU context was lost. Waiting for the browser to restore it…</em> over the graph</td><td>Same event, shown on the canvas.</td><td>Wait, or reload the page if it does not return.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </article>
+
+  <article class="topic" id="data">
+    <span class="kind">Reference</span>
+    <h2>Data used by the graph</h2>
+    <p>The panel uses the toolkit's alert query and these alert fields.</p>
+    <div class="tablewrap">
+    <table>
+      <caption>Alert fields</caption>
+      <thead><tr><th>Field</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td><code>resource.name</code></td><td>Identifies the resource node. Alerts that have no resource name are not graphed.</td></tr>
+        <tr><td><code>severity</code></td><td>Sets the node color and the severity filter.</td></tr>
+        <tr><td><code>sender.name</code></td><td>Alert source group.</td></tr>
+        <tr><td><code>team</code></td><td>Team group.</td></tr>
+        <tr><td><code>type.classification</code></td><td>Alert type group.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>If one resource has alerts from several sources, teams, or types, it is linked to each of them.</p>
+    <div class="note"><p><b>Note</b>Text from alerts is shown as plain text in tooltips and in the details card. Names that contain markup are displayed literally and are not interpreted.</p></div>
+  </article>
+
+  <article class="topic" id="troubleshooting">
+    <span class="kind">Troubleshooting</span>
+    <h2>Troubleshooting</h2>
+
+    <h4>The menu entries do not appear</h4>
+    <p>Wait a few minutes after deployment, then log out and log in again. Confirm that the deployment finished without errors and that the routes were added under <span class="ui">Example dashboards</span>.</p>
+
+    <h4>The panel is blank or shows <span class="ui">Unable to load alerts</span></h4>
+    <p>Check that your tenant ID is correct and that your user can read alerts. Open the browser developer tools and look at the failed request to see the status code and response.</p>
+
+    <h4>The panel shows <span class="ui">3D view unavailable</span></h4>
+    <p>Turn on hardware acceleration in the browser settings and restart the browser. Remote desktop sessions and some virtual machines have no GPU, so use the ranked list there.</p>
+
+    <h4>The graph is slow or the fans spin up</h4>
+    <ul>
+      <li>Lower <code>maxNodes</code> in the route, or raise the severity filter.</li>
+      <li>Switch <span class="ui">Layout</span> to <span class="ui">Frozen</span> once the shape is settled.</li>
+      <li>Switch <span class="ui">Flow</span> off.</li>
+      <li>On a computer with two GPUs, make sure the browser runs on the high-performance one.</li>
+    </ul>
+
+    <h4>Some resources are missing</h4>
+    <p>Check the status line for a count of hidden lower-priority resources. Raise <code>maxNodes</code> or filter by severity or search to bring them in. Alerts with no resource name are never drawn.</p>
+
+    <h4>Clicking a node does not change the alert list</h4>
+    <p>You are probably on the full-page route, which has no list. Open <span class="ui">Alerts 3D force graph</span>. If the list is present but does not change, check that the page was not opened with a fixed filter.</p>
+
+    <h4>The alert list is empty after clicking a node whose name contains a quote</h4>
+    <p>The panel escapes single quotes by doubling them. If your cluster uses a different escape rule, the filter can be wrong for those names. Click <span class="ui">Clear selection</span> and report the name pattern to the person who maintains your fork.</p>
+
+    <h4>The graph went black</h4>
+    <p>This is usually a GPU context loss. Wait for the recovery message to clear. If it does not, reload the page.</p>
+  </article>
+
+  <article class="topic" id="limitations">
+    <span class="kind">Reference</span>
+    <h2>Limitations</h2>
+    <div class="restriction"><p><b>Restriction</b>The 3D canvas is operated with a pointer. It has no keyboard navigation. The controls above the graph are keyboard accessible, and the ranked list that appears when WebGL is unavailable is a standard table.</p></div>
+    <ul>
+      <li>The graph shows open alerts only and one resource name for each resource node.</li>
+      <li>Grouping, severity, and search choices are not remembered between visits. Use route properties for the defaults.</li>
+      <li>Graphs with more resources than <code>maxNodes</code> are cut to that limit. Raising it is possible, but large graphs are slower to lay out and draw.</li>
+      <li>The panel was built and unit-tested without a GPU. Draw performance, frame rates, and GPU recovery should be checked in the browsers and on the hardware that your users have before wide rollout.</li>
+      <li>The upstream toolkit is archived. Updates to the panel and its libraries are the responsibility of the team that owns your fork.</li>
+    </ul>
+  </article>
+
+  <footer>This help describes the 3D force graph panel as implemented in your fork of the dashboard extension toolkit. It is not an IBM publication.</footer>
+</main>
+</div>
+<script>
+(function(){
+  var btn=document.getElementById('themebtn');
+  btn.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    var dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var next=cur?(cur==='dark'?'light':'dark'):(dark?'light':'dark');
+    document.documentElement.setAttribute('data-theme',next);
+  });
+  var links=[].slice.call(document.querySelectorAll('nav.toc a'));
+  var map={};links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a;});
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){
+          links.forEach(function(a){a.classList.remove('active');});
+          var a=map[e.target.id];if(a)a.classList.add('active');
+        }
+      });
+    },{rootMargin:'-20% 0px -70% 0px'});
+    document.querySelectorAll('article.topic').forEach(function(t){io.observe(t);});
+  }
+})();
+</script>
+</body>
+</html>

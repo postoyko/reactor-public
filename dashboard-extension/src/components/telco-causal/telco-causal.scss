@@ -1,0 +1,525 @@
+@use '@carbon/styles/scss/theme' as *;
+@use '@carbon/styles/scss/type' as *;
+@use '@carbon/styles/scss/spacing' as *;
+
+.telco-causal-container {
+  padding: $spacing-05;
+  background-color: #060911;
+  color: #f4f4f4;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  .causal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: $spacing-05;
+    border-bottom: 1px solid #1a2333;
+    margin-bottom: $spacing-05;
+
+    .causal-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #a56eff;
+      display: flex;
+      align-items: center;
+      gap: $spacing-03;
+      letter-spacing: -0.5px;
+    }
+
+    .causal-subtitle {
+      color: #8c9ba5;
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: $spacing-03;
+      align-items: center;
+
+      .gpu-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(165, 110, 255, 0.15);
+        border: 1px solid #8a3ffc;
+        color: #d4bbff;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+
+  .causal-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: $spacing-04;
+    margin-bottom: $spacing-06;
+
+    .kpi-box {
+      background: #0d1322;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: $spacing-04;
+      transition: all 0.2s;
+
+      &:hover {
+        border-color: #a56eff;
+        transform: translateY(-2px);
+      }
+
+      .kpi-title {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+
+      .kpi-num {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-top: 4px;
+        color: #38bdf8;
+      }
+
+      .kpi-meta {
+        font-size: 0.72rem;
+        color: #64748b;
+        margin-top: 4px;
+      }
+    }
+  }
+
+  // 3D GPU Force Canvas Panel
+  .force3d-panel {
+    background: #0d1322;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    padding: $spacing-05;
+    margin-bottom: $spacing-06;
+    position: relative;
+
+    .force3d-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-04;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: $spacing-03;
+
+      .force3d-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: $spacing-03;
+      }
+
+      .force3d-tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $spacing-03;
+        align-items: center;
+
+        .control-group {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          background: #141d30;
+          padding: 2px 6px;
+          border-radius: 4px;
+          border: 1px solid #1e293b;
+
+          .control-label {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-right: 2px;
+          }
+
+          button {
+            padding: 2px 6px;
+            font-size: 0.72rem;
+            min-height: 24px;
+          }
+        }
+      }
+    }
+
+    .force3d-canvas-container {
+      position: relative;
+      width: 100%;
+      height: 540px;
+      background: radial-gradient(circle at center, #111a2f 0%, #050811 100%);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid #1a2438;
+
+      canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        cursor: grab;
+
+        &:active {
+          cursor: grabbing;
+        }
+      }
+
+      // HUD Overlay Top Left
+      .hud-layers {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        background: rgba(10, 15, 29, 0.88);
+        backdrop-filter: blur(8px);
+        border: 1px solid #1e293b;
+        padding: 10px 14px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        z-index: 10;
+        color: #cbd5e1;
+
+        .hud-layer-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .hud-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+          }
+        }
+      }
+
+      // 3D Camera Controls Floating Top Right
+      .camera-controls-hud {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        display: flex;
+        gap: 6px;
+        z-index: 10;
+
+        button {
+          background: rgba(15, 23, 42, 0.85);
+          backdrop-filter: blur(6px);
+          color: #e2e8f0;
+          border: 1px solid #334155;
+          border-radius: 4px;
+          padding: 6px 10px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            background: #8a3ffc;
+            border-color: #a56eff;
+            color: #fff;
+          }
+
+          &.active {
+            background: #0f62fe;
+            border-color: #4589ff;
+          }
+        }
+      }
+
+      // 3D Hover Tooltip HUD
+      .node-tooltip-hud {
+        position: absolute;
+        background: rgba(13, 19, 34, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid #8a3ffc;
+        box-shadow: 0 0 16px rgba(138, 63, 252, 0.35);
+        padding: 12px 16px;
+        border-radius: 6px;
+        pointer-events: none;
+        z-index: 20;
+        min-width: 200px;
+        font-size: 0.78rem;
+
+        .hud-node-title {
+          font-weight: 700;
+          color: #00d2ff;
+          font-size: 0.85rem;
+          margin-bottom: 4px;
+        }
+
+        .hud-node-meta {
+          color: #94a3b8;
+          margin-bottom: 2px;
+        }
+
+        .hud-node-sev {
+          display: inline-block;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-weight: 700;
+          font-size: 0.7rem;
+          margin-top: 4px;
+        }
+      }
+
+      // Instructions bottom
+      .hud-instructions {
+        position: absolute;
+        bottom: 12px;
+        left: 14px;
+        font-size: 0.72rem;
+        color: #64748b;
+        background: rgba(10, 15, 29, 0.8);
+        padding: 4px 8px;
+        border-radius: 4px;
+      }
+    }
+  }
+
+  // Sankey Trajectory Panel
+  .sankey-panel {
+    background: #0d1322;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    padding: $spacing-05;
+    margin-bottom: $spacing-06;
+
+    .sankey-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-04;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: $spacing-03;
+
+      .sankey-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: $spacing-02;
+      }
+    }
+
+    .sankey-svg-wrapper {
+      width: 100%;
+      height: 380px;
+      overflow: hidden;
+
+      svg {
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+
+  // Dual Grid
+  .causal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $spacing-05;
+
+    @media (max-width: 1100px) {
+      grid-template-columns: 1fr;
+    }
+
+    .causal-card {
+      background: #0d1322;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: $spacing-05;
+
+      .card-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin-bottom: $spacing-04;
+        border-bottom: 1px solid #1e293b;
+        padding-bottom: $spacing-03;
+      }
+    }
+  }
+}
+
+// ── High-Contrast About Modal & Guide System ───────────────────────────────
+
+.about-modal-wrapper {
+  .about-guide-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    color: #f1f5f9;
+    font-size: 0.92rem;
+    line-height: 1.7;
+
+    .about-card {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+
+      .card-header-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #00d2ff;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+      }
+
+      .card-body-text {
+        color: #e2e8f0;
+        font-size: 0.92rem;
+        line-height: 1.75;
+
+        strong {
+          color: #ffffff;
+          font-weight: 700;
+        }
+
+        .highlight-pill {
+          display: inline-block;
+          background: rgba(0, 210, 255, 0.12);
+          color: #38bdf8;
+          border: 1px solid rgba(0, 210, 255, 0.25);
+          padding: 1px 7px;
+          border-radius: 4px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          margin: 0 3px;
+        }
+      }
+
+      .capabilities-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .cap-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+
+          .cap-bullet {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #00d2ff;
+            margin-top: 8px;
+            flex-shrink: 0;
+          }
+
+          .cap-text {
+            color: #e2e8f0;
+            font-size: 0.92rem;
+            line-height: 1.7;
+
+            strong {
+              color: #ffffff;
+            }
+          }
+        }
+      }
+
+      .usage-steps-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+
+        .step-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+
+          .step-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: rgba(0, 210, 255, 0.15);
+            border: 1px solid #00d2ff;
+            color: #00d2ff;
+            font-size: 0.82rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+          }
+
+          .step-content {
+            flex: 1;
+
+            .step-title {
+              font-size: 0.94rem;
+              font-weight: 700;
+              color: #ffffff;
+              margin-bottom: 4px;
+            }
+
+            .step-desc {
+              font-size: 0.9rem;
+              color: #cbd5e1;
+              line-height: 1.65;
+
+              strong {
+                color: #ffffff;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Force High-Contrast Dark Theme on Carbon Modal for Extensions
+.cds--modal {
+  .cds--modal-container {
+    background-color: #0d1322 !important;
+    border: 1px solid #334155 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85) !important;
+  }
+
+  .cds--modal-header {
+    background-color: #0d1322 !important;
+    border-bottom: 1px solid #1e293b !important;
+    padding-bottom: 16px !important;
+
+    .cds--modal-header__heading {
+      color: #ffffff !important;
+      font-size: 1.15rem !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.3px !important;
+    }
+
+    .cds--modal-close__icon {
+      fill: #e2e8f0 !important;
+    }
+  }
+
+  .cds--modal-content {
+    background-color: #0d1322 !important;
+    color: #f1f5f9 !important;
+    padding-top: 18px !important;
+    padding-bottom: 24px !important;
+  }
+}

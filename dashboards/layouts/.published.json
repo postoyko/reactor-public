@@ -1,0 +1,127 @@
+{
+  "incident-atlas-layout-6": {
+    "route": "/layout-incident-atlas-layout-6",
+    "panelId": "layout-incident-atlas-layout-6",
+    "title": "Incident Atlas (layout)"
+  },
+  "tpl-operations": {
+    "route": "/layout-tpl-operations",
+    "panelId": "layout-tpl-operations",
+    "title": "Operations overview"
+  },
+  "tpl-triage": {
+    "route": "/layout-tpl-triage",
+    "panelId": "layout-tpl-triage",
+    "title": "Alert triage"
+  },
+  "tpl-executive": {
+    "route": "/layout-tpl-executive",
+    "panelId": "layout-tpl-executive",
+    "title": "Executive summary"
+  },
+  "tpl-incidents": {
+    "route": "/layout-tpl-incidents",
+    "panelId": "layout-tpl-incidents",
+    "title": "Incident review"
+  },
+  "tpl-telco": {
+    "route": "/layout-tpl-telco",
+    "panelId": "layout-tpl-telco",
+    "title": "Telco network"
+  },
+  "tpl-workspace": {
+    "route": "/layout-tpl-workspace",
+    "panelId": "layout-tpl-workspace",
+    "title": "Investigation workspace"
+  },
+  "tpl-noc": {
+    "route": "/layout-tpl-noc",
+    "panelId": "layout-tpl-noc",
+    "title": "NOC command center"
+  },
+  "tpl-service": {
+    "route": "/layout-tpl-service",
+    "panelId": "layout-tpl-service",
+    "title": "Service review"
+  },
+  "tpl-workbench": {
+    "route": "/layout-tpl-workbench",
+    "panelId": "layout-tpl-workbench",
+    "title": "Triage workbench"
+  },
+  "tpl-wall": {
+    "route": "/layout-tpl-wall",
+    "panelId": "layout-tpl-wall",
+    "title": "Wall display"
+  },
+  "tpl-report": {
+    "route": "/layout-tpl-report",
+    "panelId": "layout-tpl-report",
+    "title": "Team report"
+  },
+  "tpl-hub": {
+    "route": "/layout-tpl-hub",
+    "panelId": "layout-tpl-hub",
+    "title": "Operations hub"
+  },
+  "tpl-insight": {
+    "route": "/layout-tpl-insight",
+    "panelId": "layout-tpl-insight",
+    "title": "Insight board"
+  },
+  "tpl-gallery1": {
+    "route": "/layout-tpl-gallery1",
+    "panelId": "layout-tpl-gallery1",
+    "title": "Chart gallery: compare"
+  },
+  "tpl-gallery2": {
+    "route": "/layout-tpl-gallery2",
+    "panelId": "layout-tpl-gallery2",
+    "title": "Chart gallery: patterns"
+  },
+  "tpl-status": {
+    "route": "/layout-tpl-status",
+    "panelId": "layout-tpl-status",
+    "title": "Status board"
+  },
+  "tpl-control": {
+    "route": "/layout-tpl-control",
+    "panelId": "layout-tpl-control",
+    "title": "Control room"
+  },
+  "tpl-incdesk": {
+    "route": "/layout-tpl-incdesk",
+    "panelId": "layout-tpl-incdesk",
+    "title": "Incident desk"
+  },
+  "tpl-scorecard": {
+    "route": "/layout-tpl-scorecard",
+    "panelId": "layout-tpl-scorecard",
+    "title": "Severity scorecard"
+  },
+  "tpl-incidentops": {
+    "route": "/layout-tpl-incidentops",
+    "panelId": "layout-tpl-incidentops",
+    "title": "Incident & alert operations"
+  },
+  "tpl-apphealth": {
+    "route": "/layout-tpl-apphealth",
+    "panelId": "layout-tpl-apphealth",
+    "title": "Application health"
+  },
+  "tpl-metrics": {
+    "route": "/layout-tpl-metrics",
+    "panelId": "layout-tpl-metrics",
+    "title": "Metrics explorer"
+  },
+  "tpl-insights": {
+    "route": "/layout-tpl-insights",
+    "panelId": "layout-tpl-insights",
+    "title": "Alert insights"
+  },
+  "tpl-actions": {
+    "route": "/layout-tpl-actions",
+    "panelId": "layout-tpl-actions",
+    "title": "Interactive controls"
+  }
+}

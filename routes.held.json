@@ -1,0 +1,47 @@
+{
+  "note": "Routes kept in Studio but not deployed to the cluster. Move one back with the Deployed switch.",
+  "routes": [
+    {
+      "path": "/alerts-force-graph-3d",
+      "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+      "panelId": null,
+      "title": "Alerts 3D force graph",
+      "inSidebar": false
+    },
+    {
+      "path": "/force-graph-3d",
+      "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+      "panelId": "force-graph-3d",
+      "title": "3D force graph (full page)",
+      "inSidebar": false
+    },
+    {
+      "path": "/3df_sample",
+      "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+      "panelId": "3df_sample",
+      "title": "3D Force Alert Topology (Sample Dashboard)",
+      "inSidebar": false
+    },
+    {
+      "path": "/studiotest1",
+      "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+      "panelId": "studiotest1-dashboard",
+      "title": "Studiotest1",
+      "inSidebar": false
+    },
+    {
+      "path": "/layout-incident-atlas-layout-6",
+      "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+      "panelId": "layout-incident-atlas-layout-6",
+      "title": "Incident Atlas (layout)",
+      "inSidebar": false
+    },
+    {
+      "path": "/cognitive-deep-dive",
+      "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+      "panelId": "cognitive-deep-dive-dashboard",
+      "title": "Cognitive Deep Dive",
+      "inSidebar": false
+    }
+  ]
+}

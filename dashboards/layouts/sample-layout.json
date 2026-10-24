@@ -1,0 +1,59 @@
+{
+  "kind": "dashboard-builder",
+  "version": 1,
+  "dashboard": {
+    "id": "d-mvhxvrcp1cbru",
+    "name": "sample (layout)",
+    "updated": 1792576729017,
+    "widgets": [
+      {
+        "id": "w-mvhxw2zw2e84m",
+        "type": "bar",
+        "title": "Bar chart",
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 6,
+        "config": {
+          "query": "getAlerts",
+          "emits": true,
+          "listens": true,
+          "groupBy": "severityLabel",
+          "metric": "count",
+          "limit": 8
+        }
+      },
+      {
+        "id": "w-mvhxw7ik3dgpt",
+        "type": "donut",
+        "title": "Donut",
+        "x": 4,
+        "y": 0,
+        "w": 4,
+        "h": 6,
+        "config": {
+          "query": "getAlerts",
+          "emits": true,
+          "listens": true,
+          "groupBy": "state",
+          "metric": "count",
+          "limit": 6
+        }
+      },
+      {
+        "id": "w-mvhxwd1642b6f",
+        "type": "tile:top-n",
+        "title": "Top N (alerts)",
+        "x": 0,
+        "y": 6,
+        "w": 6,
+        "h": 8,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false
+        }
+      }
+    ]
+  }
+}

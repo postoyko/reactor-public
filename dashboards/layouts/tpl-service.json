@@ -1,0 +1,366 @@
+{
+  "kind": "dashboard-builder",
+  "version": 1,
+  "dashboard": {
+    "id": "d-tpl-service",
+    "name": "Service review",
+    "updated": 1792767869481,
+    "widgets": [
+      {
+        "id": "w-service-1",
+        "type": "text",
+        "title": "Service review",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 4,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "text": "# Service review\nA periodic review pack: summary, incidents, alerts and notes. Use it in the weekly operations meeting.",
+          "bg": "#161616",
+          "fg": "#ffffff",
+          "chromeless": true
+        }
+      },
+      {
+        "id": "w-service-2",
+        "type": "carbon:Tabs",
+        "title": "Service review",
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 22,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "props": {
+            "items": [
+              "Summary :: widgets",
+              "Incidents :: widgets",
+              "Alerts :: widgets",
+              "Notes :: widgets"
+            ]
+          }
+        }
+      },
+      {
+        "id": "w-service-3",
+        "type": "kpi",
+        "title": "Open alerts",
+        "x": 0,
+        "y": 0,
+        "w": 3,
+        "h": 3,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "metric": "count",
+          "bg": "#262626",
+          "fg": "#ffffff",
+          "text": "In scope for this review"
+        },
+        "parent": "w-service-2#0"
+      },
+      {
+        "id": "w-service-4",
+        "type": "kpi",
+        "title": "Critical",
+        "x": 3,
+        "y": 0,
+        "w": 3,
+        "h": 3,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "metric": "count",
+          "bg": "#da1e28",
+          "fg": "#ffffff",
+          "text": "Needs a post-incident look",
+          "where": {
+            "field": "severityLabel",
+            "value": "Critical"
+          }
+        },
+        "parent": "w-service-2#0"
+      },
+      {
+        "id": "w-service-5",
+        "type": "kpi",
+        "title": "Open incidents",
+        "x": 6,
+        "y": 0,
+        "w": 3,
+        "h": 3,
+        "config": {
+          "query": "getStories",
+          "emits": false,
+          "listens": true,
+          "metric": "count",
+          "bg": "#393939",
+          "fg": "#ffffff",
+          "text": "Still unresolved",
+          "where": {
+            "field": "state",
+            "value": "resolved",
+            "op": "!="
+          }
+        },
+        "parent": "w-service-2#0"
+      },
+      {
+        "id": "w-service-6",
+        "type": "kpi",
+        "title": "Teams involved",
+        "x": 9,
+        "y": 0,
+        "w": 3,
+        "h": 3,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "metric": "distinct",
+          "valueField": "team",
+          "bg": "#525252",
+          "fg": "#ffffff",
+          "text": "Who carried the load"
+        },
+        "parent": "w-service-2#0"
+      },
+      {
+        "id": "w-service-7",
+        "type": "carbon:SplitPane",
+        "title": "Breakdown",
+        "x": 0,
+        "y": 3,
+        "w": 12,
+        "h": 15,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "props": {
+            "direction": "horizontal",
+            "first": "widgets",
+            "second": "widgets",
+            "size": 45
+          }
+        },
+        "parent": "w-service-2#0"
+      },
+      {
+        "id": "w-service-8",
+        "type": "carbon:DonutChart",
+        "title": "Severity mix",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 11,
+        "config": {
+          "query": "getAlerts",
+          "emits": true,
+          "listens": true,
+          "groupBy": "severityLabel"
+        },
+        "parent": "w-service-7#0"
+      },
+      {
+        "id": "w-service-9",
+        "type": "carbon:Accordion",
+        "title": "Where it comes from",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 13,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "props": {
+            "items": [
+              "By team :: widgets",
+              "By monitoring source :: widgets"
+            ],
+            "startOpen": true
+          }
+        },
+        "parent": "w-service-7#1"
+      },
+      {
+        "id": "w-service-10",
+        "type": "bar",
+        "title": "By team",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 4,
+        "config": {
+          "query": "getAlerts",
+          "emits": true,
+          "listens": true,
+          "groupBy": "team",
+          "metric": "count",
+          "limit": 8
+        },
+        "parent": "w-service-9#0"
+      },
+      {
+        "id": "w-service-11",
+        "type": "bar",
+        "title": "By source",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 5,
+        "config": {
+          "query": "getAlerts",
+          "emits": true,
+          "listens": true,
+          "groupBy": "sender",
+          "metric": "count",
+          "limit": 6
+        },
+        "parent": "w-service-9#1"
+      },
+      {
+        "id": "w-service-12",
+        "type": "carbon:SimpleBarChart",
+        "title": "Incidents by team",
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 9,
+        "config": {
+          "query": "getStories",
+          "emits": true,
+          "listens": true,
+          "groupBy": "team"
+        },
+        "parent": "w-service-2#1"
+      },
+      {
+        "id": "w-service-13",
+        "type": "table",
+        "title": "Incidents",
+        "x": 4,
+        "y": 0,
+        "w": 8,
+        "h": 14,
+        "config": {
+          "query": "getStories",
+          "emits": false,
+          "listens": true,
+          "limit": 50,
+          "columns": [
+            "priority",
+            "title",
+            "state",
+            "team",
+            "alertCount",
+            "created"
+          ],
+          "sortBy": "priority",
+          "drill": {
+            "mode": "details",
+            "newTab": true
+          }
+        },
+        "parent": "w-service-2#1"
+      },
+      {
+        "id": "w-service-14",
+        "type": "carbon:Search",
+        "title": "Search summary",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 3,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "props": {
+            "labelText": "Search the alert summary",
+            "placeholder": "Type to narrow the alerts"
+          },
+          "chromeless": true,
+          "sendTo": [
+            "w-service-15"
+          ],
+          "bind": {
+            "field": "summary",
+            "op": "contains",
+            "query": "getAlerts"
+          }
+        },
+        "parent": "w-service-2#2"
+      },
+      {
+        "id": "w-service-15",
+        "type": "table",
+        "title": "Alerts",
+        "x": 0,
+        "y": 3,
+        "w": 12,
+        "h": 14,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "limit": 100,
+          "columns": [
+            "severityLabel",
+            "resource",
+            "summary",
+            "inIncident",
+            "runbookName",
+            "firstOccurrence"
+          ],
+          "sortBy": "severity",
+          "sortDesc": true,
+          "drill": {
+            "mode": "details",
+            "newTab": true
+          }
+        },
+        "parent": "w-service-2#2"
+      },
+      {
+        "id": "w-service-16",
+        "type": "text",
+        "title": "Review notes",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "text": "# Review notes\nWhat changed this period?\n- Add the notable incidents and what caused them\nWhat is still open, and who owns it?\n- Name an owner and a date for each item\nWhat do we do differently next time?\n- One change per recurring cause"
+        },
+        "parent": "w-service-2#3"
+      }
+    ],
+    "bar": {
+      "fields": [
+        {
+          "query": "getAlerts",
+          "field": "severityLabel"
+        },
+        {
+          "query": "getAlerts",
+          "field": "team"
+        }
+      ],
+      "time": true,
+      "preset": "all"
+    },
+    "rowH": 28
+  }
+}

@@ -1,0 +1,613 @@
+@use '@carbon/styles/scss/theme' as *;
+@use '@carbon/styles/scss/type' as *;
+@use '@carbon/styles/scss/spacing' as *;
+
+.telco-command-container {
+  padding: $spacing-05;
+  background-color: #0b0f19;
+  color: #f4f4f4;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  // Header & Controls
+  .telco-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: $spacing-05;
+    border-bottom: 1px solid #1f293d;
+    margin-bottom: $spacing-05;
+
+    .telco-title-group {
+      .telco-main-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #00d2ff;
+        display: flex;
+        align-items: center;
+        gap: $spacing-03;
+        letter-spacing: -0.5px;
+      }
+
+      .telco-subtitle {
+        color: #8c9ba5;
+        font-size: 0.85rem;
+        margin-top: 4px;
+      }
+    }
+
+    .telco-controls-group {
+      display: flex;
+      align-items: center;
+      gap: $spacing-04;
+
+      .live-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(36, 161, 72, 0.2);
+        border: 1px solid #24a148;
+        color: #42be65;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+
+        .live-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #42be65;
+          box-shadow: 0 0 8px #42be65;
+          animation: pulse 1.8s infinite;
+        }
+      }
+    }
+  }
+
+  // Breadcrumbs Filter Bar
+  .telco-filter-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: $spacing-03;
+    background: #111827;
+    border: 1px solid #1e293b;
+    padding: $spacing-03 $spacing-05;
+    border-radius: 4px;
+    margin-bottom: $spacing-05;
+    font-size: 0.82rem;
+
+    .filter-tag {
+      background: #0f62fe;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 2px;
+      font-weight: 600;
+    }
+
+    .clear-filter-btn {
+      margin-left: auto;
+      cursor: pointer;
+      color: #78a9ff;
+      text-decoration: underline;
+      font-size: 0.8rem;
+    }
+  }
+
+  // KPI Row
+  .telco-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: $spacing-04;
+    margin-bottom: $spacing-06;
+
+    .kpi-card {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: $spacing-04;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, border-color 0.2s;
+
+      &:hover {
+        transform: translateY(-2px);
+        border-color: #3b82f6;
+      }
+
+      .kpi-label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+      }
+
+      .kpi-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-top: $spacing-02;
+        color: #f8fafc;
+      }
+
+      .kpi-meta {
+        font-size: 0.72rem;
+        color: #64748b;
+        margin-top: 4px;
+      }
+
+      &.kpi-critical .kpi-value { color: #fa4d56; }
+      &.kpi-major .kpi-value { color: #ff832b; }
+      &.kpi-ai .kpi-value { color: #a56eff; }
+      &.kpi-auto .kpi-value { color: #00d2ff; }
+      &.kpi-nodes .kpi-value { color: #42be65; }
+    }
+  }
+
+  // Two Column Grid Layout
+  .telco-main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $spacing-05;
+    margin-bottom: $spacing-06;
+
+    @media (max-width: 1200px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // Section Panels
+  .telco-panel {
+    background: #111827;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    padding: $spacing-05;
+    position: relative;
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-04;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: $spacing-03;
+
+      .panel-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: $spacing-02;
+      }
+
+      .panel-badge {
+        font-size: 0.72rem;
+        padding: 2px 6px;
+        background: #1e293b;
+        color: #94a3b8;
+        border-radius: 3px;
+      }
+    }
+  }
+
+  // D3 Topology Canvas Container
+  .topology-canvas-wrapper {
+    position: relative;
+    width: 100%;
+    height: 480px;
+    background: radial-gradient(circle at center, #131b2e 0%, #0a0d18 100%);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #1e293b;
+
+    svg,
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .topo-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 10;
+
+      button {
+        background: rgba(30, 41, 59, 0.85);
+        color: #e2e8f0;
+        border: 1px solid #334155;
+        border-radius: 3px;
+        padding: 4px 8px;
+        cursor: pointer;
+        font-size: 0.75rem;
+
+        &:hover {
+          background: #3b82f6;
+          color: #fff;
+        }
+      }
+    }
+
+    .topo-legend {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #334155;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      display: flex;
+      gap: 12px;
+      color: #94a3b8;
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        .legend-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+        }
+      }
+    }
+  }
+
+  // Incidents Queue Deck
+  .incidents-queue {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-03;
+    max-height: 480px;
+    overflow-y: auto;
+    padding-right: 4px;
+
+    .incident-item {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      padding: $spacing-03;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover, &.active {
+        border-color: #00d2ff;
+        background: #23324a;
+        transform: translateX(2px);
+      }
+
+      .incident-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .incident-priority {
+          font-size: 0.7rem;
+          font-weight: 700;
+          padding: 2px 6px;
+          border-radius: 2px;
+          text-transform: uppercase;
+
+          &.p1 { background: #fa4d56; color: #fff; }
+          &.p2 { background: #ff832b; color: #000; }
+          &.p3 { background: #f1c21b; color: #000; }
+          &.p4 { background: #4589ff; color: #fff; }
+          &.p5 { background: #8d8d8d; color: #fff; }
+        }
+
+        .incident-score {
+          font-size: 0.75rem;
+          color: #a56eff;
+          font-weight: 600;
+        }
+      }
+
+      .incident-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin: 6px 0;
+      }
+
+      .incident-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.72rem;
+        color: #94a3b8;
+      }
+    }
+  }
+
+  // Multi-Source Ingest Matrix
+  .sources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: $spacing-03;
+
+    .source-chip {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      padding: $spacing-03;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      transition: all 0.2s;
+
+      &:hover, &.active {
+        border-color: #3b82f6;
+        background: #27374d;
+      }
+
+      .source-name {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-weight: 600;
+      }
+
+      .source-count {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #38bdf8;
+      }
+    }
+  }
+
+  // DataTable Styling
+  .telco-table-wrapper {
+    margin-top: $spacing-05;
+
+    .cds--data-table-container {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+    }
+
+    .cds--data-table {
+      background: #111827;
+
+      th {
+        background: #1e293b;
+        color: #cbd5e1;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+      }
+
+      td {
+        background: #111827;
+        color: #e2e8f0;
+        border-top: 1px solid #1e293b;
+        font-size: 0.82rem;
+      }
+
+      tr:hover td {
+        background: #1e293b !important;
+      }
+    }
+
+    .sev-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+
+      &.sev-6 { background: #fa4d56; color: #fff; }
+      &.sev-5 { background: #ff832b; color: #000; }
+      &.sev-4 { background: #f1c21b; color: #000; }
+      &.sev-3 { background: #4589ff; color: #fff; }
+      &.sev-2 { background: #08bdba; color: #000; }
+      &.sev-1 { background: #8d8d8d; color: #fff; }
+    }
+  }
+
+  // Runbook Drawer / Modal
+  .runbook-simulator-box {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    padding: $spacing-04;
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: #58a6ff;
+    margin-top: $spacing-04;
+    max-height: 200px;
+    overflow-y: auto;
+
+    .log-line {
+      margin-bottom: 4px;
+      &.success { color: #7ee787; }
+      &.warn { color: #f2cc60; }
+      &.info { color: #79c0ff; }
+    }
+  }
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+// ── High-Contrast About Modal & Guide System ───────────────────────────────
+
+.about-modal-wrapper {
+  .about-guide-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    color: #f1f5f9;
+    font-size: 0.92rem;
+    line-height: 1.7;
+
+    .about-card {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+
+      .card-header-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #00d2ff;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+      }
+
+      .card-body-text {
+        color: #e2e8f0;
+        font-size: 0.92rem;
+        line-height: 1.75;
+
+        strong {
+          color: #ffffff;
+          font-weight: 700;
+        }
+
+        .highlight-pill {
+          display: inline-block;
+          background: rgba(0, 210, 255, 0.12);
+          color: #38bdf8;
+          border: 1px solid rgba(0, 210, 255, 0.25);
+          padding: 1px 7px;
+          border-radius: 4px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          margin: 0 3px;
+        }
+      }
+
+      .capabilities-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .cap-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+
+          .cap-bullet {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #00d2ff;
+            margin-top: 8px;
+            flex-shrink: 0;
+          }
+
+          .cap-text {
+            color: #e2e8f0;
+            font-size: 0.92rem;
+            line-height: 1.7;
+
+            strong {
+              color: #ffffff;
+            }
+          }
+        }
+      }
+
+      .usage-steps-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+
+        .step-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+
+          .step-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: rgba(0, 210, 255, 0.15);
+            border: 1px solid #00d2ff;
+            color: #00d2ff;
+            font-size: 0.82rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+          }
+
+          .step-content {
+            flex: 1;
+
+            .step-title {
+              font-size: 0.94rem;
+              font-weight: 700;
+              color: #ffffff;
+              margin-bottom: 4px;
+            }
+
+            .step-desc {
+              font-size: 0.9rem;
+              color: #cbd5e1;
+              line-height: 1.65;
+
+              strong {
+                color: #ffffff;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Force High-Contrast Dark Theme on Carbon Modal for Extensions
+.cds--modal {
+  .cds--modal-container {
+    background-color: #0d1322 !important;
+    border: 1px solid #334155 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85) !important;
+  }
+
+  .cds--modal-header {
+    background-color: #0d1322 !important;
+    border-bottom: 1px solid #1e293b !important;
+    padding-bottom: 16px !important;
+
+    .cds--modal-header__heading {
+      color: #ffffff !important;
+      font-size: 1.15rem !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.3px !important;
+    }
+
+    .cds--modal-close__icon {
+      fill: #e2e8f0 !important;
+    }
+  }
+
+  .cds--modal-content {
+    background-color: #0d1322 !important;
+    color: #f1f5f9 !important;
+    padding-top: 18px !important;
+    padding-bottom: 24px !important;
+  }
+}

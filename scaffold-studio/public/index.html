@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scaffold — Concert Operate Dashboard Composer</title>
+  <link rel="stylesheet" href="https://1.www.s81c.com/common/carbon/plex/sans.css" />
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --surface: #111827;
+      --surface-2: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #0070f3;
+      --primary-hover: #0051b3;
+      --cyan: #00d2ff;
+      --green: #10b981;
+      --red: #ef4444;
+      --purple: #a855f7;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      background: linear-gradient(135deg, #0070f3, #00d2ff);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .status-badges {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .badge-dot.error { background: var(--red); }
+
+    .nav-tabs {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      padding: 0 2rem;
+      gap: 1rem;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr 440px;
+      gap: 1.5rem;
+      padding: 1.5rem 2rem;
+      flex: 1;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .component-palette {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .comp-item {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      transition: all 0.15s;
+    }
+
+    .comp-item:hover { border-color: var(--cyan); }
+    .comp-item.selected { border-color: var(--primary); background: #132238; }
+
+    .comp-info { flex: 1; }
+    .comp-name { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+    .comp-desc { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+    .api-wiring-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+    .form-input, .form-select {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--primary); }
+
+    /* Wireframe Preview */
+    .wireframe-box {
+      background: #060911;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      min-height: 220px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .wf-block {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-secondary { background: var(--surface-2); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-success { background: var(--green); }
+    .btn-success:hover { background: #059669; }
+    .btn-sm { padding: 4px 10px; font-size: 0.75rem; }
+
+    /* Terminal Console */
+    .terminal-card {
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .terminal-header {
+      background: var(--surface);
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .terminal-dots { display: flex; gap: 6px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27c93f; }
+
+    .terminal-body {
+      padding: 12px;
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 0.78rem;
+      color: #38bdf8;
+      overflow-y: auto;
+      flex: 1;
+      white-space: pre-wrap;
+      line-height: 1.45;
+      min-height: 440px;
+      max-height: 650px;
+    }
+
+    /* Switchboard table */
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; padding: 10px; color: var(--text-muted); border-bottom: 1px solid var(--border); font-weight: 600; }
+    td { padding: 12px 10px; border-bottom: 1px solid var(--surface-2); }
+
+    .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--surface-2); transition: .2s; border-radius: 22px; border: 1px solid var(--border);
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
+      background-color: white; transition: .2s; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(18px); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">S</div>
+      <div>
+        <div class="brand-title">Scaffold Studio — Dashboard &amp; API Composer</div>
+        <div class="brand-sub">Visual Component Builder for IBM Concert Operate / Cloud Pak for AIOps</div>
+      </div>
+    </div>
+    <div class="status-badges">
+      <div class="badge">
+        <span class="badge-dot" id="dot-os"></span>
+        <span id="text-os">OpenShift: Checking...</span>
+      </div>
+      <div class="badge">
+        <span class="badge-dot" id="dot-zen"></span>
+        <span id="text-zen">Bundle API: Checking...</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="setTab('composer')">🎨 Visual Dashboard Composer</button>
+    <button class="tab-btn" onclick="setTab('switchboard')">🔀 Active Routes Switchboard</button>
+    <button class="tab-btn" onclick="setTab('sync')">📂 Folder Sync &amp; Import</button>
+  </div>
+
+  <div class="main-layout">
+    
+    <!-- Left Column: Active Tab Content -->
+    <div>
+
+      <!-- TAB 1: Visual Composer & API Wiring -->
+      <div id="tab-composer">
+        <div class="card">
+          <div class="card-title">1. Dashboard Metadata</div>
+          <div class="card-desc">Define name and route slug for the new Concert Operate dashboard.</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Dashboard Title</label>
+              <input type="text" id="dash-title" class="form-input" placeholder="e.g. 5G RAN & Core Slicing Observatory" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Route Path Slug</label>
+              <input type="text" id="dash-id" class="form-input" placeholder="e.g. ran-slicing-observatory" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">2. Select UI Components to Include</div>
+          <div class="card-desc">Click components to add/remove them from the dashboard composition.</div>
+          
+          <div class="component-palette" id="palette-grid">
+            <div class="comp-item selected" data-type="kpi-grid" onclick="toggleComponent(this)">
+              <input type="checkbox" checked />
+              <div class="comp-info">
+                <div class="comp-name">Top KPI Metrics Bar</div>
+                <div class="comp-desc">Active incidents, open alarms, critical count, probable causes</div>
+              </div>
+            </div>
+
+            <div class="comp-item selected" data-type="3d-mesh" onclick="toggleComponent(this)">
+              <input type="checkbox" checked />
+              <div class="comp-info">
+                <div class="comp-name">3D WebGL Stratified Force Mesh</div>
+                <div class="comp-desc">Three.js 4-tier Z-strata planes, rotating halos, animated photons</div>
+              </div>
+            </div>
+
+            <div class="comp-item selected" data-type="blast-radar" onclick="toggleComponent(this)">
+              <input type="checkbox" checked />
+              <div class="comp-info">
+                <div class="comp-name">Concentric Blast Radius Radar</div>
+                <div class="comp-desc">Radial 4-zone impact radar around active probable cause</div>
+              </div>
+            </div>
+
+            <div class="comp-item" data-type="time-scrubber" onclick="toggleComponent(this)">
+              <input type="checkbox" />
+              <div class="comp-info">
+                <div class="comp-name">Causal Time-Slip Scrubber</div>
+                <div class="comp-desc">Historical timeline playback bar (t-30m to t-0)</div>
+              </div>
+            </div>
+
+            <div class="comp-item selected" data-type="alerts-table" onclick="toggleComponent(this)">
+              <input type="checkbox" checked />
+              <div class="comp-info">
+                <div class="comp-name">Live Alarm Ingest Table</div>
+                <div class="comp-desc">Interactive alarm table with severity tags and node filter</div>
+              </div>
+            </div>
+
+            <div class="comp-item" data-type="incidents-table" onclick="toggleComponent(this)">
+              <input type="checkbox" />
+              <div class="comp-info">
+                <div class="comp-name">Correlated Incident Stories</div>
+                <div class="comp-desc">Incident flight deck with priority ranking and alert links</div>
+              </div>
+            </div>
+
+            <div class="comp-item" data-type="runbook-console" onclick="toggleComponent(this)">
+              <input type="checkbox" />
+              <div class="comp-info">
+                <div class="comp-name">One-Click Runbook Console</div>
+                <div class="comp-desc">Executable automated policy actions with state feedback</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">3. API Connectors &amp; Live Data Wiring</div>
+          <div class="card-desc">Configure live query filters and telemetry polling rates.</div>
+
+          <div class="api-wiring-grid">
+            <div class="form-group">
+              <label class="form-label">Alerts API Filter</label>
+              <input type="text" id="api-alert-filter" class="form-input" value="state = 'open'" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Incidents API Filter</label>
+              <input type="text" id="api-inc-filter" class="form-input" value="state != 'resolved'" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Auto-Poll Refresh Interval</label>
+              <select id="api-refresh" class="form-select">
+                <option value="15">15 Seconds</option>
+                <option value="30" selected>30 Seconds (Default)</option>
+                <option value="60">60 Seconds</option>
+                <option value="0">Manual Refresh Only</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cluster Auth</label>
+              <input type="text" class="form-input" value="ZenApiKey Injected from target.json" disabled style="color: #10b981;" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">4. Composed Layout Wireframe Preview</div>
+          <div class="wireframe-box" id="wireframe-preview"></div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="btn btn-success" onclick="generateComposedDashboard()">⚡ Generate Dashboard &amp; Add to Routes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Active Routes Switchboard -->
+      <div id="tab-switchboard" style="display: none;">
+        <div class="card">
+          <div class="card-title">
+            <span>Concert Operate Active Navigation Routes</span>
+            <button class="btn btn-secondary btn-sm" onclick="fetchDashboards()">Refresh</button>
+          </div>
+          <div class="card-desc">Toggle, rename, or remove routes from the live Concert Operate sidebar.</div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Active</th>
+                <th>Title / Display Name</th>
+                <th>Route Path</th>
+                <th>Panel ID</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="dashboards-tbody"></tbody>
+          </table>
+
+          <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
+            <button class="btn btn-primary" onclick="saveRoutes()">Save Route Configuration</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Folder Sync -->
+      <div id="tab-sync" style="display: none;">
+        <div class="card">
+          <div class="card-title">Sync Standalone / Downloads Folder</div>
+          <div class="card-desc">Sync updated source files from your local downloads folder into the project.</div>
+
+          <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
+            <input type="text" id="sync-path" class="form-input" value="/Users/postoyko/Downloads/tcg" />
+            <button class="btn btn-secondary" onclick="handleSync()">Sync Files</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: 1-Click Build & Streaming Console -->
+    <div>
+      <div class="card terminal-card">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span>Build &amp; Deployment Stream</span>
+          <button class="btn btn-sm btn-secondary" onclick="clearTerminal()">Clear</button>
+        </div>
+        <div class="terminal-body" id="terminal-body">⚡ Scaffold Studio Ready.
+Define UI components &amp; API filters on the left, then click "Generate Dashboard" or "Build &amp; Deploy".</div>
+        <div style="padding: 12px; background: var(--surface); border-top: 1px solid var(--border);">
+          <button class="btn btn-success" id="btn-deploy" style="width: 100%; justify-content: center; padding: 12px;" onclick="triggerDeploy()">
+            ⚡ Build &amp; Deploy to Concert Operate
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let currentRoutes = { menuRoutes: [], routes: [] };
+
+    function setTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-composer').style.display = (tab === 'composer' ? 'block' : 'none');
+      document.getElementById('tab-switchboard').style.display = (tab === 'switchboard' ? 'block' : 'none');
+      document.getElementById('tab-sync').style.display = (tab === 'sync' ? 'block' : 'none');
+    }
+
+    function toggleComponent(el) {
+      const cb = el.querySelector('input');
+      cb.checked = !cb.checked;
+      el.classList.toggle('selected', cb.checked);
+      updateWireframe();
+    }
+
+    function updateWireframe() {
+      const wf = document.getElementById('wireframe-preview');
+      wf.innerHTML = '';
+      
+      const selected = Array.from(document.querySelectorAll('.comp-item.selected')).map(el => el.getAttribute('data-type'));
+      
+      if (selected.includes('kpi-grid')) {
+        wf.innerHTML += '<div class="wf-block">📊 Top KPI Metrics Bar (Incidents, Alarms, Probable Causes)</div>';
+      }
+      if (selected.includes('time-scrubber')) {
+        wf.innerHTML += '<div class="wf-block">⏱️ Causal Time-Slip Scrubber Bar (t-30m to t-0)</div>';
+      }
+      
+      let viewRow = '<div style="display: flex; gap: 8px;">';
+      if (selected.includes('3d-mesh')) viewRow += '<div class="wf-block" style="flex: 1;">🌐 GPU 3D WebGL Stratified Force Mesh</div>';
+      if (selected.includes('blast-radar')) viewRow += '<div class="wf-block" style="flex: 1;">🎯 Concentric Radial Blast Radius Radar</div>';
+      viewRow += '</div>';
+      
+      if (selected.includes('3d-mesh') || selected.includes('blast-radar')) wf.innerHTML += viewRow;
+      if (selected.includes('alerts-table')) wf.innerHTML += '<div class="wf-block">📋 Live Ingest Alarm Table</div>';
+      if (selected.includes('incidents-table')) wf.innerHTML += '<div class="wf-block">📖 Correlated Incident Stories Table</div>';
+      if (selected.includes('runbook-console')) wf.innerHTML += '<div class="wf-block">⚡ One-Click Automated Runbook Console</div>';
+    }
+
+    async function checkHealth() {
+      try {
+        const res = await fetch('/api/cluster/status');
+        const data = await res.json();
+        document.getElementById('dot-os').className = 'badge-dot ' + (data.openshift ? '' : 'error');
+        document.getElementById('text-os').innerText = 'OpenShift: ' + (data.openshift ? 'Connected (200)' : 'Error');
+        document.getElementById('dot-zen').className = 'badge-dot ' + (data.bundleLive ? '' : 'error');
+        document.getElementById('text-zen').innerText = 'Bundle API: ' + (data.bundleLive ? 'Live (200)' : 'Offline');
+      } catch(e) {}
+    }
+
+    async function fetchDashboards() {
+      const res = await fetch('/api/dashboards');
+      const data = await res.json();
+      currentRoutes = data.routesConfig.spec;
+      const activeSet = new Set(currentRoutes.menuRoutes[0]?.routes || []);
+      const tbody = document.getElementById('dashboards-tbody');
+      tbody.innerHTML = '';
+
+      currentRoutes.routes.forEach((r) => {
+        const isActive = activeSet.has(r.path);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <label class="toggle-switch">
+              <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleRoute('${r.path}', this.checked)" />
+              <span class="slider"></span>
+            </label>
+          </td>
+          <td><input type="text" class="form-input" style="padding: 4px 8px;" value="${r.title}" onchange="updateTitle('${r.path}', this.value)" /></td>
+          <td style="font-family: monospace; color: var(--cyan);">${r.path}</td>
+          <td style="font-family: monospace; color: var(--text-muted); font-size: 0.75rem;">${r.panelId}</td>
+          <td><button class="btn btn-secondary btn-sm" onclick="removeRoute('${r.path}')">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleRoute(path, checked) {
+      let active = currentRoutes.menuRoutes[0].routes;
+      if (checked && !active.includes(path)) active.push(path);
+      if (!checked) currentRoutes.menuRoutes[0].routes = active.filter(p => p !== path);
+    }
+
+    function updateTitle(path, newTitle) {
+      const item = currentRoutes.routes.find(r => r.path === path);
+      if (item) item.title = newTitle;
+    }
+
+    function removeRoute(path) {
+      if (!confirm('Remove route ' + path + '?')) return;
+      currentRoutes.routes = currentRoutes.routes.filter(r => r.path !== path);
+      currentRoutes.menuRoutes[0].routes = currentRoutes.menuRoutes[0].routes.filter(p => p !== path);
+      fetchDashboards();
+    }
+
+    async function saveRoutes() {
+      logTerminal('💾 Saving route configuration...');
+      const res = await fetch('/api/routes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ spec: currentRoutes })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        logTerminal('✅ Routes saved to config/routes.json. Click "Build & Deploy" to push to cluster.');
+      } else {
+        logTerminal('❌ Failed saving routes: ' + data.error);
+      }
+    }
+
+    async function generateComposedDashboard() {
+      const title = document.getElementById('dash-title').value.trim();
+      let id = document.getElementById('dash-id').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+      if (!title || !id) {
+        alert('Please specify Title and Slug');
+        return;
+      }
+
+      const components = Array.from(document.querySelectorAll('.comp-item.selected')).map(el => ({
+        type: el.getAttribute('data-type')
+      }));
+
+      const apiBindings = {
+        alertFilter: document.getElementById('api-alert-filter').value.trim(),
+        incFilter: document.getElementById('api-inc-filter').value.trim(),
+        refreshSeconds: Number(document.getElementById('api-refresh').value)
+      };
+
+      logTerminal(`🛠️ Composing custom dashboard [${title}] with ${components.length} visual components...`);
+
+      const res = await fetch('/api/scaffold', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, title, components, apiBindings })
+      });
+
+      const data = await res.json();
+      if (data.ok) {
+        logTerminal(`🎉 Dashboard created and registered! Click "Build & Deploy" to compile and push to cluster.`);
+        fetchDashboards();
+      } else {
+        logTerminal('❌ Error generating dashboard: ' + data.error);
+      }
+    }
+
+    async function handleSync() {
+      const sourcePath = document.getElementById('sync-path').value.trim();
+      logTerminal(`📂 Syncing files from ${sourcePath}...`);
+      const res = await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourcePath })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        logTerminal(`✅ Sync complete: ${data.filesSynced} files copied to dashboards/telco-causal-gen2/`);
+      } else {
+        logTerminal('❌ Sync error: ' + data.error);
+      }
+    }
+
+    function triggerDeploy() {
+      const btn = document.getElementById('btn-deploy');
+      btn.disabled = true;
+      btn.innerText = '⏳ Building & Deploying...';
+      clearTerminal();
+      logTerminal('🚀 Starting end-to-end build & deployment...');
+
+      const evtSource = new EventSource('/api/deploy/stream');
+      evtSource.onmessage = function(e) {
+        if (e.data === '[DONE]') {
+          evtSource.close();
+          btn.disabled = false;
+          btn.innerText = '⚡ Build & Deploy to Concert Operate';
+          checkHealth();
+          return;
+        }
+        logTerminal(e.data);
+      };
+      evtSource.onerror = function() {
+        evtSource.close();
+        btn.disabled = false;
+        btn.innerText = '⚡ Build & Deploy to Concert Operate';
+      };
+    }
+
+    function logTerminal(msg) {
+      const term = document.getElementById('terminal-body');
+      term.innerText += '\n' + msg;
+      term.scrollTop = term.scrollHeight;
+    }
+
+    function clearTerminal() {
+      document.getElementById('terminal-body').innerText = '';
+    }
+
+    document.getElementById('dash-title').addEventListener('input', function(e) {
+      const slug = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      document.getElementById('dash-id').value = slug;
+    });
+
+    updateWireframe();
+    fetchDashboards();
+    checkHealth();
+    setInterval(checkHealth, 15000);
+  </script>
+</body>
+</html>

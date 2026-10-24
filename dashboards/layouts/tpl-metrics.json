@@ -1,0 +1,147 @@
+{
+  "kind": "dashboard-builder",
+  "version": 1,
+  "dashboard": {
+    "id": "d-tpl-metrics",
+    "name": "Metrics explorer",
+    "updated": 1792767865790,
+    "widgets": [
+      {
+        "id": "w-metrics-1",
+        "type": "text",
+        "title": "Metrics explorer",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 4,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "text": "# Metrics explorer\nSix hours of a metric and what is forecast. Choose the group, metric and resource in each chart’s settings.",
+          "bg": "#161616",
+          "fg": "#ffffff",
+          "chromeless": true
+        }
+      },
+      {
+        "id": "w-metrics-2",
+        "type": "carbon:LineChart",
+        "title": "Node CPU (percent of request)",
+        "x": 0,
+        "y": 4,
+        "w": 6,
+        "h": 9,
+        "config": {
+          "query": "getMetricSeries",
+          "emits": true,
+          "listens": true,
+          "filter": "kubernetesNode|required_cpu_percentage|",
+          "seriesBy": "kind",
+          "valueField": "value",
+          "props": {
+            "bins": 48,
+            "legend": "bottom"
+          },
+          "metric": "avg"
+        }
+      },
+      {
+        "id": "w-metrics-3",
+        "type": "carbon:LineChart",
+        "title": "Node memory (percent of request)",
+        "x": 6,
+        "y": 4,
+        "w": 6,
+        "h": 9,
+        "config": {
+          "query": "getMetricSeries",
+          "emits": true,
+          "listens": true,
+          "filter": "kubernetesNode|required_mem_percentage|",
+          "seriesBy": "kind",
+          "valueField": "value",
+          "props": {
+            "bins": 48,
+            "legend": "bottom"
+          },
+          "metric": "avg"
+        }
+      },
+      {
+        "id": "w-metrics-4",
+        "type": "carbon:LineChart",
+        "title": "Node CPU requested",
+        "x": 0,
+        "y": 13,
+        "w": 6,
+        "h": 9,
+        "config": {
+          "query": "getMetricSeries",
+          "emits": true,
+          "listens": true,
+          "filter": "kubernetesNode|required_cpu|",
+          "seriesBy": "kind",
+          "valueField": "value",
+          "props": {
+            "bins": 48,
+            "legend": "bottom"
+          },
+          "metric": "avg"
+        }
+      },
+      {
+        "id": "w-metrics-5",
+        "type": "carbon:LineChart",
+        "title": "Node CPU: expected range",
+        "x": 6,
+        "y": 13,
+        "w": 6,
+        "h": 9,
+        "config": {
+          "query": "getMetricSeries",
+          "emits": true,
+          "listens": true,
+          "filter": "kubernetesNode|required_cpu_percentage|",
+          "seriesBy": "kind",
+          "valueField": "value",
+          "props": {
+            "bins": 48,
+            "legend": "bottom"
+          },
+          "metric": "avg"
+        }
+      },
+      {
+        "id": "w-metrics-6",
+        "type": "table",
+        "title": "Anomalous points",
+        "x": 0,
+        "y": 22,
+        "w": 12,
+        "h": 7,
+        "config": {
+          "query": "getMetricSeries",
+          "emits": false,
+          "listens": true,
+          "limit": 50,
+          "columns": [
+            "time",
+            "resource",
+            "metric",
+            "value",
+            "expected",
+            "min",
+            "max"
+          ],
+          "filter": "kubernetesNode|required_cpu_percentage|",
+          "where": {
+            "field": "anomalous",
+            "value": "Yes"
+          }
+        }
+      }
+    ],
+    "rowH": 28
+  }
+}

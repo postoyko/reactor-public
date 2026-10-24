@@ -1,0 +1,206 @@
+{
+  "kind": "dashboard-builder",
+  "version": 1,
+  "dashboard": {
+    "id": "d-tpl-telco",
+    "name": "Telco network",
+    "updated": 1792767868144,
+    "widgets": [
+      {
+        "id": "w-telco-1",
+        "type": "text",
+        "title": "Telco network operations",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 4,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "text": "# Telco network operations\nCausal mesh and command views on live alerts. The tabs below are your own dashboards, embedded.",
+          "bg": "#161616",
+          "fg": "#ffffff",
+          "chromeless": true
+        }
+      },
+      {
+        "id": "w-telco-2",
+        "type": "kpi",
+        "title": "Open alerts",
+        "x": 0,
+        "y": 4,
+        "w": 4,
+        "h": 3,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "metric": "count",
+          "bg": "#262626",
+          "fg": "#ffffff",
+          "text": "Network and service alarms"
+        }
+      },
+      {
+        "id": "w-telco-3",
+        "type": "kpi",
+        "title": "Critical",
+        "x": 4,
+        "y": 4,
+        "w": 4,
+        "h": 3,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "metric": "count",
+          "bg": "#da1e28",
+          "fg": "#ffffff",
+          "text": "Service-affecting",
+          "where": {
+            "field": "severityLabel",
+            "value": "Critical"
+          }
+        }
+      },
+      {
+        "id": "w-telco-4",
+        "type": "kpi",
+        "title": "Open incidents",
+        "x": 8,
+        "y": 4,
+        "w": 4,
+        "h": 3,
+        "config": {
+          "query": "getStories",
+          "emits": false,
+          "listens": true,
+          "metric": "count",
+          "bg": "#393939",
+          "fg": "#ffffff",
+          "text": "Correlated faults",
+          "where": {
+            "field": "state",
+            "value": "resolved",
+            "op": "!="
+          }
+        }
+      },
+      {
+        "id": "w-telco-5",
+        "type": "carbon:Tabs",
+        "title": "Network views",
+        "x": 0,
+        "y": 7,
+        "w": 12,
+        "h": 17,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "props": {
+            "items": [
+              "Causal mesh :: widgets",
+              "Command center :: widgets",
+              "Alerts :: widgets"
+            ]
+          }
+        }
+      },
+      {
+        "id": "w-telco-6",
+        "type": "tile:telco-causal-gen2",
+        "title": "Telco Causal Mesh (Gen 2)",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 14,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false
+        },
+        "parent": "w-telco-5#0"
+      },
+      {
+        "id": "w-telco-7",
+        "type": "tile:telco-command",
+        "title": "Telco Command Center",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 14,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false
+        },
+        "parent": "w-telco-5#1"
+      },
+      {
+        "id": "w-telco-8",
+        "type": "carbon:SimpleBarChart",
+        "title": "Alerts by type",
+        "x": 0,
+        "y": 0,
+        "w": 5,
+        "h": 9,
+        "config": {
+          "query": "getAlerts",
+          "emits": true,
+          "listens": true,
+          "groupBy": "type"
+        },
+        "parent": "w-telco-5#2"
+      },
+      {
+        "id": "w-telco-9",
+        "type": "table",
+        "title": "Alerts",
+        "x": 5,
+        "y": 0,
+        "w": 7,
+        "h": 12,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "limit": 50,
+          "columns": [
+            "severityLabel",
+            "resource",
+            "summary",
+            "firstOccurrence"
+          ],
+          "sortBy": "severity",
+          "sortDesc": true,
+          "drill": {
+            "mode": "details",
+            "newTab": true
+          }
+        },
+        "parent": "w-telco-5#2"
+      }
+    ],
+    "bar": {
+      "fields": [
+        {
+          "query": "getAlerts",
+          "field": "severityLabel"
+        },
+        {
+          "query": "getAlerts",
+          "field": "type"
+        },
+        {
+          "query": "getAlerts",
+          "field": "sender"
+        }
+      ],
+      "time": true,
+      "preset": "all"
+    },
+    "rowH": 28
+  }
+}

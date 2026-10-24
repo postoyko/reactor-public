@@ -1,0 +1,201 @@
+{
+  "kind": "dashboard-builder",
+  "version": 1,
+  "dashboard": {
+    "id": "d-mvi09bre1u4w9",
+    "name": "Incident Atlas (layout)",
+    "updated": 1792580733349,
+    "widgets": [
+      {
+        "id": "w-mvi09bre21j37",
+        "type": "tile:incident-atlas",
+        "title": "Title, status and refresh",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 2,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "part": "Title, status and refresh",
+          "props": {
+            "part": "header"
+          },
+          "chromeless": true
+        }
+      },
+      {
+        "id": "w-mvi09bre3cah4",
+        "type": "tile:incident-atlas",
+        "title": "The KPI cards",
+        "x": 0,
+        "y": 2,
+        "w": 8,
+        "h": 3,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "part": "The KPI cards",
+          "props": {
+            "part": "kpis"
+          },
+          "chromeless": true
+        }
+      },
+      {
+        "id": "w-mvi09bre4higw",
+        "type": "tile:incident-atlas",
+        "title": "Filters, grouping and view controls",
+        "x": 0,
+        "y": 5,
+        "w": 8,
+        "h": 3,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "part": "Filters, grouping and view controls",
+          "props": {
+            "part": "tools"
+          },
+          "chromeless": true
+        }
+      },
+      {
+        "id": "w-mvi09bre5gh4t",
+        "type": "tile:incident-atlas",
+        "title": "The incident / alert graph",
+        "x": 0,
+        "y": 16,
+        "w": 8,
+        "h": 10,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "part": "The incident / alert graph",
+          "props": {
+            "part": "graph"
+          },
+          "chromeless": true
+        }
+      },
+      {
+        "id": "w-mvi09bre60cth",
+        "type": "tile:incident-atlas",
+        "title": "The alert table",
+        "x": 0,
+        "y": 8,
+        "w": 8,
+        "h": 8,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "part": "The alert table",
+          "props": {
+            "part": "alerts"
+          },
+          "chromeless": true
+        }
+      },
+      {
+        "id": "w-mvi09bre73lbo",
+        "type": "tile:incident-atlas",
+        "title": "Replay bar and timeline",
+        "x": 0,
+        "y": 26,
+        "w": 8,
+        "h": 5,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "part": "Replay bar and timeline",
+          "props": {
+            "part": "playback"
+          },
+          "chromeless": true
+        }
+      },
+      {
+        "id": "w-mvi09bre8cq7x",
+        "type": "tile:incident-atlas",
+        "title": "Incidents list",
+        "x": 8,
+        "y": 2,
+        "w": 4,
+        "h": 8,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "part": "Incidents list",
+          "props": {
+            "part": "incidents"
+          },
+          "chromeless": true
+        }
+      },
+      {
+        "id": "w-mvi09bre9gy8q",
+        "type": "tile:incident-atlas",
+        "title": "Selected incident: impact, changes, similar",
+        "x": 8,
+        "y": 10,
+        "w": 4,
+        "h": 12,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "part": "Selected incident: impact, changes, similar",
+          "props": {
+            "part": "details"
+          },
+          "chromeless": true
+        }
+      },
+      {
+        "id": "w-mvi09breaohc0",
+        "type": "tile:incident-atlas",
+        "title": "Data check",
+        "x": 8,
+        "y": 22,
+        "w": 4,
+        "h": 6,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "part": "Data check",
+          "props": {
+            "part": "datacheck"
+          },
+          "chromeless": true
+        }
+      },
+      {
+        "id": "w-mvi09brebvjhe",
+        "type": "tile:incident-atlas",
+        "title": "How to read this",
+        "x": 8,
+        "y": 28,
+        "w": 4,
+        "h": 3,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "part": "How to read this",
+          "props": {
+            "part": "help"
+          },
+          "chromeless": true
+        }
+      }
+    ]
+  }
+}

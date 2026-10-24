@@ -1,0 +1,579 @@
+/**
+ * © Copyright IBM Corp. 2026
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+@use '@carbon/styles/scss/spacing' as *;
+@use '@carbon/styles/scss/theme' as *;
+@use '@carbon/styles/scss/type' as *;
+
+.deep-dive {
+  padding: $spacing-07 $spacing-07 $spacing-11;
+  max-width: 1200px;
+  font-family: -apple-system, 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: $text-primary;
+  background: $background;
+
+  // ── Top Header ──
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $spacing-05;
+    margin-bottom: $spacing-06;
+    border-bottom: 1px solid $border-subtle-01;
+    padding-bottom: $spacing-05;
+  }
+
+  &__tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #0f62fe15;
+    color: #0f62fe;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-bottom: $spacing-02;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #0f62fe;
+    box-shadow: 0 0 8px #0f62fe;
+  }
+
+  &__title {
+    @include type-style('productive-heading-04');
+    margin: 0 0 $spacing-01 0;
+  }
+
+  &__subtitle {
+    font-size: 12px;
+    color: $text-secondary;
+    margin: 0;
+
+    &--loading { font-style: italic; }
+    &--error { color: #da1e28; }
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: $spacing-03;
+    flex-shrink: 0;
+  }
+
+  &__select {
+    font-size: 12px;
+    padding: 4px $spacing-03;
+    border: 1px solid $border-subtle-01;
+    border-radius: 4px;
+    background: $layer-01;
+    color: $text-primary;
+    cursor: pointer;
+  }
+
+  &__btn {
+    font-size: 12px;
+    padding: 4px $spacing-04;
+    border: 1px solid $border-subtle-01;
+    border-radius: 4px;
+    background: $layer-01;
+    color: $text-primary;
+    cursor: pointer;
+    font-weight: 500;
+
+    &:hover:not(:disabled) {
+      background: $layer-hover-01;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  // ── Interactive Cognitive Lens Tiles (User Clickable) ──
+  &__lens-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $spacing-05;
+    margin-bottom: $spacing-06;
+  }
+
+  &__lens-card {
+    background: $layer-01;
+    border: 2px solid $border-subtle-01;
+    border-radius: 8px;
+    padding: $spacing-05;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+      border-color: #0f62fe;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    &--active {
+      border-color: #0f62fe;
+      background: #0f62fe0a;
+      box-shadow: 0 4px 16px rgba(15, 98, 254, 0.15);
+    }
+
+    &--warning::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: #ff832b;
+    }
+
+    &--surge::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: #da1e28;
+    }
+
+    &--epicenter::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: #8a3ffc;
+    }
+  }
+
+  &__lens-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-03;
+  }
+
+  &__lens-icon {
+    font-size: 20px;
+  }
+
+  &__lens-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: 4px;
+
+    &--warning   { background: #fff1e5; color: #b24000; }
+    &--surge     { background: #ffebee; color: #b71c1c; }
+    &--epicenter { background: #f3e8ff; color: #6b21a8; }
+  }
+
+  &__lens-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: $text-primary;
+    margin: 0 0 $spacing-02 0;
+  }
+
+  &__lens-desc {
+    font-size: 12px;
+    color: $text-secondary;
+    line-height: 1.4;
+    margin-bottom: $spacing-03;
+  }
+
+  &__lens-stat {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 22px;
+    font-weight: 700;
+    color: $text-primary;
+
+    span {
+      font-size: 11px;
+      color: $text-secondary;
+      font-weight: 400;
+    }
+  }
+
+  // ── Deep Dive Dynamic Workspace ──
+  &__workspace {
+    background: $layer-01;
+    border: 1px solid $border-subtle-01;
+    border-radius: 8px;
+    padding: $spacing-06;
+    margin-bottom: $spacing-06;
+  }
+
+  &__workspace-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-05;
+    padding-bottom: $spacing-03;
+    border-bottom: 1px solid $border-subtle-01;
+
+    h2 {
+      @include type-style('productive-heading-02');
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  &__workspace-sub {
+    font-size: 12px;
+    color: $text-secondary;
+  }
+
+  // ── Deep Dive Sub-Grid ──
+  &__drilldown-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $spacing-06;
+    margin-bottom: $spacing-06;
+  }
+
+  &__card {
+    background: $background;
+    border: 1px solid $border-subtle-01;
+    border-radius: 6px;
+    padding: $spacing-05;
+
+    h4 {
+      @include type-style('productive-heading-01');
+      margin: 0 0 $spacing-04 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+
+  // ── Metrics Stat Bar ──
+  &__mini-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $spacing-03;
+    margin-bottom: $spacing-04;
+  }
+
+  &__mini-stat {
+    background: $layer-01;
+    border: 1px solid $border-subtle-01;
+    border-radius: 4px;
+    padding: $spacing-03;
+    text-align: center;
+  }
+
+  &__mini-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $text-secondary;
+  }
+
+  &__mini-value {
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  // ── Bar Track Visualizers ──
+  &__bar-row {
+    margin-bottom: $spacing-03;
+  }
+
+  &__bar-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  &__bar-track {
+    width: 100%;
+    height: 8px;
+    background: $border-subtle-01;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  &__bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+
+  // ── Data Tables ──
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+
+    th {
+      text-align: left;
+      font-weight: 600;
+      color: $text-secondary;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: $spacing-02 $spacing-03;
+      border-bottom: 1px solid $border-subtle-01;
+    }
+
+    td {
+      padding: $spacing-03;
+      border-bottom: 1px solid $border-subtle-01;
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: $layer-hover-01;
+    }
+  }
+
+  &__badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+
+    &--p1 { background: #ffebee; color: #b71c1c; }
+    &--p2 { background: #fff3e0; color: #e65100; }
+    &--p3 { background: #e3f2fd; color: #0d47a1; }
+    &--p4 { background: #f3e5f5; color: #4a148c; }
+    &--p5 { background: #f5f5f5; color: #424242; }
+  }
+
+  // ── Interactive Timeline / Nodes ──
+  &__node-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: $layer-01;
+    border: 1px solid $border-subtle-01;
+    border-radius: 16px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  &__action-btn {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #0f62fe;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+
+    &:hover {
+      background: #0043ce;
+    }
+  }
+}
+
+// ── High-Contrast About Modal & Guide System ───────────────────────────────
+
+.about-modal-wrapper {
+  .about-guide-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    color: #f1f5f9;
+    font-size: 0.92rem;
+    line-height: 1.7;
+
+    .about-card {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+
+      .card-header-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #00d2ff;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+      }
+
+      .card-body-text {
+        color: #e2e8f0;
+        font-size: 0.92rem;
+        line-height: 1.75;
+
+        strong {
+          color: #ffffff;
+          font-weight: 700;
+        }
+
+        .highlight-pill {
+          display: inline-block;
+          background: rgba(0, 210, 255, 0.12);
+          color: #38bdf8;
+          border: 1px solid rgba(0, 210, 255, 0.25);
+          padding: 1px 7px;
+          border-radius: 4px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          margin: 0 3px;
+        }
+      }
+
+      .capabilities-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .cap-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+
+          .cap-bullet {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #00d2ff;
+            margin-top: 8px;
+            flex-shrink: 0;
+          }
+
+          .cap-text {
+            color: #e2e8f0;
+            font-size: 0.92rem;
+            line-height: 1.7;
+
+            strong {
+              color: #ffffff;
+            }
+          }
+        }
+      }
+
+      .usage-steps-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+
+        .step-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+
+          .step-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: rgba(0, 210, 255, 0.15);
+            border: 1px solid #00d2ff;
+            color: #00d2ff;
+            font-size: 0.82rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+          }
+
+          .step-content {
+            flex: 1;
+
+            .step-title {
+              font-size: 0.94rem;
+              font-weight: 700;
+              color: #ffffff;
+              margin-bottom: 4px;
+            }
+
+            .step-desc {
+              font-size: 0.9rem;
+              color: #cbd5e1;
+              line-height: 1.65;
+
+              strong {
+                color: #ffffff;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Force High-Contrast Dark Theme on Carbon Modal for Extensions
+.cds--modal {
+  .cds--modal-container {
+    background-color: #0d1322 !important;
+    border: 1px solid #334155 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85) !important;
+  }
+
+  .cds--modal-header {
+    background-color: #0d1322 !important;
+    border-bottom: 1px solid #1e293b !important;
+    padding-bottom: 16px !important;
+
+    .cds--modal-header__heading {
+      color: #ffffff !important;
+      font-size: 1.15rem !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.3px !important;
+    }
+
+    .cds--modal-close__icon {
+      fill: #e2e8f0 !important;
+    }
+  }
+
+  .cds--modal-content {
+    background-color: #0d1322 !important;
+    color: #f1f5f9 !important;
+    padding-top: 18px !important;
+    padding-bottom: 24px !important;
+  }
+}
+
+// One section shown in its own tile (the `part` prop): no page padding, fill the tile.
+.deep-dive--part {
+  padding: 0;
+  max-width: none;
+}

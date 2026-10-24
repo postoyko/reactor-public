@@ -1,0 +1,225 @@
+{
+  "spec": {
+    "menuRoutes": [
+      {
+        "categoryTitle": "Custom Dashboards",
+        "routes": [
+          "/incident-alert-dashboard",
+          "/telco-causal-mesh-gen2",
+          "/dashboard-builder",
+          "/blast-radius",
+          "/incident-atlas",
+          "/layout-tpl-operations",
+          "/layout-tpl-triage",
+          "/layout-tpl-executive",
+          "/layout-tpl-incidents",
+          "/layout-tpl-telco",
+          "/layout-tpl-workspace",
+          "/layout-tpl-noc",
+          "/layout-tpl-service",
+          "/layout-tpl-workbench",
+          "/layout-tpl-wall",
+          "/layout-tpl-report",
+          "/layout-tpl-hub",
+          "/layout-tpl-insight",
+          "/layout-tpl-gallery1",
+          "/layout-tpl-gallery2",
+          "/layout-tpl-status",
+          "/layout-tpl-control",
+          "/layout-tpl-incdesk",
+          "/layout-tpl-scorecard",
+          "/layout-tpl-incidentops",
+          "/layout-tpl-apphealth",
+          "/layout-tpl-metrics",
+          "/layout-tpl-insights",
+          "/osm-map",
+          "/layout-tpl-actions"
+        ],
+        "type": "category"
+      }
+    ],
+    "routes": [
+      {
+        "path": "/incident-alert-dashboard",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "incident-dashboard",
+        "title": "Incident & Alert Dashboard"
+      },
+      {
+        "path": "/telco-causal-mesh-gen2",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "telco-causal-mesh-gen2-dashboard",
+        "title": "Telco Causal Mesh Gen 2"
+      },
+      {
+        "path": "/dashboard-builder",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "dashboard-builder",
+        "title": "Dashboard Designer"
+      },
+      {
+        "path": "/blast-radius",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "blast-radius",
+        "title": "Blast Radius"
+      },
+      {
+        "path": "/incident-atlas",
+        "panelId": "incident-atlas",
+        "title": "Incident Atlas",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js"
+      },
+      {
+        "path": "/layout-tpl-operations",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-operations",
+        "title": "Operations overview"
+      },
+      {
+        "path": "/layout-tpl-triage",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-triage",
+        "title": "Alert triage"
+      },
+      {
+        "path": "/layout-tpl-executive",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-executive",
+        "title": "Executive summary"
+      },
+      {
+        "path": "/layout-tpl-incidents",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-incidents",
+        "title": "Incident review"
+      },
+      {
+        "path": "/layout-tpl-telco",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-telco",
+        "title": "Telco network"
+      },
+      {
+        "path": "/layout-tpl-workspace",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-workspace",
+        "title": "Investigation workspace"
+      },
+      {
+        "path": "/layout-tpl-noc",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-noc",
+        "title": "NOC command center"
+      },
+      {
+        "path": "/layout-tpl-service",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-service",
+        "title": "Service review"
+      },
+      {
+        "path": "/layout-tpl-workbench",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-workbench",
+        "title": "Triage workbench"
+      },
+      {
+        "path": "/layout-tpl-wall",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-wall",
+        "title": "Wall display"
+      },
+      {
+        "path": "/layout-tpl-report",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-report",
+        "title": "Team report"
+      },
+      {
+        "path": "/layout-tpl-hub",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-hub",
+        "title": "Operations hub"
+      },
+      {
+        "path": "/layout-tpl-insight",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-insight",
+        "title": "Insight board"
+      },
+      {
+        "path": "/layout-tpl-gallery1",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-gallery1",
+        "title": "Chart gallery: compare"
+      },
+      {
+        "path": "/layout-tpl-gallery2",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-gallery2",
+        "title": "Chart gallery: patterns"
+      },
+      {
+        "path": "/layout-tpl-status",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-status",
+        "title": "Status board"
+      },
+      {
+        "path": "/layout-tpl-control",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-control",
+        "title": "Control room"
+      },
+      {
+        "path": "/layout-tpl-incdesk",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-incdesk",
+        "title": "Incident desk"
+      },
+      {
+        "path": "/layout-tpl-scorecard",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-scorecard",
+        "title": "Severity scorecard"
+      },
+      {
+        "path": "/layout-tpl-incidentops",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-incidentops",
+        "title": "Incident & alert operations"
+      },
+      {
+        "path": "/layout-tpl-apphealth",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-apphealth",
+        "title": "Application health"
+      },
+      {
+        "path": "/layout-tpl-metrics",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-metrics",
+        "title": "Metrics explorer"
+      },
+      {
+        "path": "/layout-tpl-insights",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-insights",
+        "title": "Alert insights"
+      },
+      {
+        "path": "/osm-map",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "osm-map",
+        "title": "Alerts map (OpenStreetMap)"
+      },
+      {
+        "path": "/layout-tpl-actions",
+        "bundlePath": "bundles/alerts-examples/files/alerts-examples-bundle.js",
+        "panelId": "layout-tpl-actions",
+        "title": "Interactive controls"
+      }
+    ],
+    "frameSrcUrls": ""
+  }
+}

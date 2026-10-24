@@ -1,0 +1,25 @@
+{
+  "kind": "dashboard-builder",
+  "version": 1,
+  "dashboard": {
+    "id": "d-mvhzyg971jvck",
+    "name": "Incident Atlas (layout)",
+    "updated": 1792580235735,
+    "widgets": [
+      {
+        "id": "w-mvhzyg97227jt",
+        "type": "tile:incident-atlas",
+        "title": "Incident Atlas",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 17,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false
+        }
+      }
+    ]
+  }
+}

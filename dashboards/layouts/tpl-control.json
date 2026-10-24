@@ -1,0 +1,293 @@
+{
+  "kind": "dashboard-builder",
+  "version": 1,
+  "dashboard": {
+    "id": "d-tpl-control",
+    "name": "Control room",
+    "updated": 1792767873251,
+    "widgets": [
+      {
+        "id": "w-control-13",
+        "type": "text",
+        "title": "Control room",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 4,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "text": "# Control room\nInputs on the left drive the figures, charts and table on the right.",
+          "bg": "#161616",
+          "fg": "#ffffff",
+          "chromeless": true
+        }
+      },
+      {
+        "id": "w-control-1",
+        "type": "kpi",
+        "title": "Alerts shown",
+        "x": 3,
+        "y": 4,
+        "w": 3,
+        "h": 3,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "metric": "count"
+        }
+      },
+      {
+        "id": "w-control-2",
+        "type": "kpi",
+        "title": "Teams",
+        "x": 6,
+        "y": 4,
+        "w": 3,
+        "h": 3,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "metric": "distinct",
+          "valueField": "team"
+        }
+      },
+      {
+        "id": "w-control-3",
+        "type": "kpi",
+        "title": "Resources",
+        "x": 9,
+        "y": 4,
+        "w": 3,
+        "h": 3,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "metric": "distinct",
+          "valueField": "resource"
+        }
+      },
+      {
+        "id": "w-control-4",
+        "type": "carbon:StackedBarChart",
+        "title": "Severity by team",
+        "x": 3,
+        "y": 7,
+        "w": 5,
+        "h": 7,
+        "config": {
+          "query": "getAlerts",
+          "emits": true,
+          "listens": true,
+          "groupBy": "severityLabel",
+          "seriesBy": "team"
+        }
+      },
+      {
+        "id": "w-control-5",
+        "type": "carbon:DonutChart",
+        "title": "By source",
+        "x": 8,
+        "y": 7,
+        "w": 4,
+        "h": 7,
+        "config": {
+          "query": "getAlerts",
+          "emits": true,
+          "listens": true,
+          "groupBy": "sender",
+          "limit": 6
+        }
+      },
+      {
+        "id": "w-control-6",
+        "type": "carbon:DataTable",
+        "title": "Alerts",
+        "x": 3,
+        "y": 14,
+        "w": 9,
+        "h": 10,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "columns": [
+            "severityLabel",
+            "resource",
+            "summary",
+            "state",
+            "team"
+          ],
+          "limit": 200
+        }
+      },
+      {
+        "id": "w-control-7",
+        "type": "carbon:Dropdown",
+        "title": "Severity",
+        "x": 0,
+        "y": 4,
+        "w": 3,
+        "h": 4,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "groupBy": "severityLabel",
+          "props": {
+            "source": "field",
+            "titleText": "Severity",
+            "placeholder": "Any severity"
+          }
+        }
+      },
+      {
+        "id": "w-control-8",
+        "type": "carbon:MultiSelect",
+        "title": "Team",
+        "x": 0,
+        "y": 8,
+        "w": 3,
+        "h": 4,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "groupBy": "team",
+          "props": {
+            "source": "field",
+            "titleText": "Teams",
+            "placeholder": "Any team"
+          }
+        }
+      },
+      {
+        "id": "w-control-9",
+        "type": "carbon:RadioButtonGroup",
+        "title": "State",
+        "x": 0,
+        "y": 12,
+        "w": 3,
+        "h": 4,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "groupBy": "state",
+          "props": {
+            "source": "field",
+            "legendText": "State"
+          }
+        }
+      },
+      {
+        "id": "w-control-10",
+        "type": "carbon:ComboBox",
+        "title": "Resource",
+        "x": 0,
+        "y": 16,
+        "w": 3,
+        "h": 4,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": true,
+          "groupBy": "resource",
+          "props": {
+            "source": "field",
+            "titleText": "Resource",
+            "placeholder": "Type or choose"
+          }
+        }
+      },
+      {
+        "id": "w-control-11",
+        "type": "carbon:Search",
+        "title": "Search summary",
+        "x": 0,
+        "y": 20,
+        "w": 3,
+        "h": 4,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "props": {
+            "labelText": "Search the summary",
+            "placeholder": "Type to narrow"
+          },
+          "sendTo": [
+            "w-control-1",
+            "w-control-2",
+            "w-control-3",
+            "w-control-4",
+            "w-control-5",
+            "w-control-6"
+          ],
+          "bind": {
+            "field": "summary",
+            "op": "contains",
+            "query": "getAlerts"
+          }
+        }
+      },
+      {
+        "id": "w-control-12",
+        "type": "carbon:Slider",
+        "title": "Minimum severity",
+        "x": 0,
+        "y": 24,
+        "w": 3,
+        "h": 4,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "props": {
+            "labelText": "Minimum severity (0 to 6)",
+            "min": 0,
+            "max": 6,
+            "step": 1,
+            "value": 0
+          },
+          "sendTo": [
+            "w-control-1",
+            "w-control-2",
+            "w-control-3",
+            "w-control-4",
+            "w-control-5",
+            "w-control-6"
+          ],
+          "bind": {
+            "field": "severity",
+            "op": ">=",
+            "query": "getAlerts"
+          }
+        }
+      }
+    ],
+    "bar": {
+      "fields": [
+        {
+          "query": "getAlerts",
+          "field": "severityLabel"
+        },
+        {
+          "query": "getAlerts",
+          "field": "team"
+        },
+        {
+          "query": "getAlerts",
+          "field": "type"
+        }
+      ],
+      "time": true,
+      "preset": "all"
+    },
+    "rowH": 28
+  }
+}

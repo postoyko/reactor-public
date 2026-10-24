@@ -1,0 +1,9 @@
+{
+  "name": "dashboard-scaffold-studio",
+  "version": "1.0.0",
+  "description": "Visual Dashboard Control Center & Code Scaffolder for IBM Concert Operate",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  }
+}

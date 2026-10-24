@@ -1,0 +1,159 @@
+{
+  "tile": "studiotest1",
+  "component": "Studiotest1Dashboard.tsx",
+  "parts": [
+    [
+      "header",
+      "Header"
+    ],
+    [
+      "section",
+      "Section"
+    ],
+    [
+      "top-kpi-metrics-bar",
+      "Top KPI Metrics Bar"
+    ],
+    [
+      "time-slip-scrubber",
+      "Time-Slip Scrubber"
+    ],
+    [
+      "main-visual-plane-grid",
+      "Main Visual Plane Grid"
+    ],
+    [
+      "live-alerts-ingest-table",
+      "Live Alerts Ingest Table"
+    ],
+    [
+      "correlated-incidents-table",
+      "Correlated Incidents Table"
+    ],
+    [
+      "one-click-runbook-execution-console",
+      "One-Click Runbook Execution Console"
+    ]
+  ],
+  "suggest": {
+    "top-kpi-metrics-bar": {
+      "note": "",
+      "items": [
+        [
+          "kpi",
+          "Active Incidents",
+          {
+            "query": "getStories",
+            "metric": "count"
+          },
+          {
+            "traced": false,
+            "notes": [
+              "no value expression found",
+              "guessed from labels"
+            ]
+          }
+        ],
+        [
+          "kpi",
+          "Correlated Alerts",
+          {
+            "query": "getAlerts",
+            "metric": "count"
+          },
+          {
+            "traced": false,
+            "notes": [
+              "no value expression found",
+              "guessed from labels"
+            ]
+          }
+        ],
+        [
+          "kpi",
+          "Critical Alarms (Sev 6)",
+          {
+            "query": "getAlerts",
+            "metric": "count",
+            "where": {
+              "field": "severityLabel",
+              "value": "Critical"
+            }
+          },
+          {
+            "traced": false,
+            "notes": [
+              "no value expression found",
+              "guessed from labels"
+            ]
+          }
+        ],
+        [
+          "kpi",
+          "Probable Causes",
+          {
+            "query": "getAlerts",
+            "metric": "count"
+          },
+          {
+            "traced": false,
+            "notes": [
+              "no value expression found",
+              "guessed from labels"
+            ]
+          }
+        ]
+      ]
+    },
+    "live-alerts-ingest-table": {
+      "note": "",
+      "items": [
+        [
+          "table",
+          "Live Alerts Ingest Table",
+          {
+            "query": "getAlerts",
+            "limit": 15,
+            "columns": [
+              "severityLabel",
+              "sender",
+              "summary"
+            ]
+          },
+          {
+            "traced": false,
+            "notes": [
+              "could not trace `alerts.slice(0, 15)` to a query",
+              "guessed from labels"
+            ]
+          }
+        ]
+      ]
+    },
+    "correlated-incidents-table": {
+      "note": "",
+      "items": [
+        [
+          "table",
+          "Correlated Incidents Table",
+          {
+            "query": "getStories",
+            "limit": 10,
+            "columns": [
+              "priority",
+              "title",
+              "state"
+            ]
+          },
+          {
+            "traced": false,
+            "notes": [
+              "could not trace `incidents.slice(0, 10)` to a query",
+              "guessed from labels"
+            ]
+          }
+        ]
+      ]
+    }
+  }
+}

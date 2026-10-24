@@ -1,0 +1,335 @@
+{
+  "kind": "dashboard-builder",
+  "version": 1,
+  "dashboard": {
+    "id": "d-tpl-incdesk",
+    "name": "Incident desk",
+    "updated": 1792767874036,
+    "widgets": [
+      {
+        "id": "w-incdesk-14",
+        "type": "text",
+        "title": "Incident desk",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 4,
+        "config": {
+          "query": "getAlerts",
+          "emits": false,
+          "listens": false,
+          "text": "# Incident desk\nThe same components on incidents: priorities, teams, trend and the queue.",
+          "bg": "#161616",
+          "fg": "#ffffff",
+          "chromeless": true
+        }
+      },
+      {
+        "id": "w-incdesk-1",
+        "type": "carbon:Tag",
+        "title": "Priority 1",
+        "x": 0,
+        "y": 4,
+        "w": 2,
+        "h": 3,
+        "config": {
+          "query": "getStories",
+          "emits": false,
+          "listens": true,
+          "props": {
+            "text": "Priority 1",
+            "type": "auto",
+            "showValue": true
+          },
+          "where": {
+            "field": "priority",
+            "value": "1"
+          }
+        }
+      },
+      {
+        "id": "w-incdesk-2",
+        "type": "carbon:Tag",
+        "title": "Priority 2",
+        "x": 2,
+        "y": 4,
+        "w": 2,
+        "h": 3,
+        "config": {
+          "query": "getStories",
+          "emits": false,
+          "listens": true,
+          "props": {
+            "text": "Priority 2",
+            "type": "auto",
+            "showValue": true
+          },
+          "where": {
+            "field": "priority",
+            "value": "2"
+          }
+        }
+      },
+      {
+        "id": "w-incdesk-3",
+        "type": "carbon:Tag",
+        "title": "Priority 3",
+        "x": 4,
+        "y": 4,
+        "w": 2,
+        "h": 3,
+        "config": {
+          "query": "getStories",
+          "emits": false,
+          "listens": true,
+          "props": {
+            "text": "Priority 3",
+            "type": "auto",
+            "showValue": true
+          },
+          "where": {
+            "field": "priority",
+            "value": "3"
+          }
+        }
+      },
+      {
+        "id": "w-incdesk-4",
+        "type": "carbon:Tag",
+        "title": "Priority 4",
+        "x": 6,
+        "y": 4,
+        "w": 2,
+        "h": 3,
+        "config": {
+          "query": "getStories",
+          "emits": false,
+          "listens": true,
+          "props": {
+            "text": "Priority 4",
+            "type": "auto",
+            "showValue": true
+          },
+          "where": {
+            "field": "priority",
+            "value": "4"
+          }
+        }
+      },
+      {
+        "id": "w-incdesk-5",
+        "type": "carbon:BadgeIndicator",
+        "title": "Alerts inside incidents",
+        "x": 8,
+        "y": 4,
+        "w": 4,
+        "h": 3,
+        "config": {
+          "query": "getStories",
+          "emits": false,
+          "listens": true,
+          "valueField": "alertCount",
+          "props": {
+            "label": "Alerts inside incidents",
+            "source": "live"
+          },
+          "metric": "sum"
+        }
+      },
+      {
+        "id": "w-incdesk-6",
+        "type": "carbon:InlineNotification",
+        "title": "Priority 1 banner",
+        "x": 0,
+        "y": 7,
+        "w": 8,
+        "h": 4,
+        "config": {
+          "query": "getStories",
+          "emits": false,
+          "listens": true,
+          "props": {
+            "kind": "error",
+            "title": "Priority 1 incidents are open.",
+            "subtitle": "Count now:",
+            "when": "above",
+            "threshold": 0,
+            "showValue": true,
+            "hideClose": true
+          },
+          "where": {
+            "field": "priority",
+            "value": "1"
+          }
+        }
+      },
+      {
+        "id": "w-incdesk-7",
+        "type": "carbon:Popover",
+        "title": "By team",
+        "x": 8,
+        "y": 7,
+        "w": 2,
+        "h": 3,
+        "config": {
+          "query": "getStories",
+          "emits": true,
+          "listens": true,
+          "groupBy": "team",
+          "props": {
+            "text": "Teams",
+            "content": "Choose a team."
+          }
+        }
+      },
+      {
+        "id": "w-incdesk-8",
+        "type": "carbon:ComboButton",
+        "title": "Quick filters",
+        "x": 10,
+        "y": 7,
+        "w": 2,
+        "h": 3,
+        "config": {
+          "query": "getStories",
+          "emits": false,
+          "listens": false,
+          "props": {
+            "items": [
+              "Priority 1 :: filter:priority=1",
+              "Priority 2 :: filter:priority=2",
+              "Clear my filters :: clear"
+            ]
+          }
+        }
+      },
+      {
+        "id": "w-incdesk-9",
+        "type": "carbon:StackedBarChart",
+        "title": "Priority by team",
+        "x": 0,
+        "y": 11,
+        "w": 4,
+        "h": 7,
+        "config": {
+          "query": "getStories",
+          "emits": true,
+          "listens": true,
+          "groupBy": "team",
+          "seriesBy": "priority"
+        }
+      },
+      {
+        "id": "w-incdesk-10",
+        "type": "carbon:AreaChart",
+        "title": "Incidents opened over time",
+        "x": 4,
+        "y": 11,
+        "w": 4,
+        "h": 7,
+        "config": {
+          "query": "getStories",
+          "emits": true,
+          "listens": true,
+          "seriesBy": "priority"
+        }
+      },
+      {
+        "id": "w-incdesk-11",
+        "type": "carbon:DonutChart",
+        "title": "By state",
+        "x": 8,
+        "y": 10,
+        "w": 4,
+        "h": 7,
+        "config": {
+          "query": "getStories",
+          "emits": true,
+          "listens": true,
+          "groupBy": "state"
+        }
+      },
+      {
+        "id": "w-incdesk-12",
+        "type": "carbon:StructuredList",
+        "title": "Incident queue",
+        "x": 0,
+        "y": 18,
+        "w": 5,
+        "h": 9,
+        "config": {
+          "query": "getStories",
+          "emits": false,
+          "listens": true,
+          "columns": [
+            "priority",
+            "title",
+            "team",
+            "state"
+          ],
+          "limit": 30
+        }
+      },
+      {
+        "id": "w-incdesk-13",
+        "type": "carbon:DataTable",
+        "title": "Incidents",
+        "x": 5,
+        "y": 18,
+        "w": 7,
+        "h": 9,
+        "config": {
+          "query": "getStories",
+          "emits": false,
+          "listens": true,
+          "props": {
+            "pageSize": 8
+          },
+          "columns": [
+            "priority",
+            "title",
+            "state",
+            "team",
+            "owner",
+            "alertCount"
+          ],
+          "limit": 100
+        }
+      },
+      {
+        "id": "w-incdesk-15",
+        "type": "carbon:IncidentInsights",
+        "title": "Incident insights",
+        "x": 0,
+        "y": 27,
+        "w": 12,
+        "h": 13,
+        "config": {
+          "query": "getStories",
+          "emits": false,
+          "listens": true,
+          "where": {
+            "field": "state",
+            "value": "resolved",
+            "op": "!="
+          }
+        }
+      }
+    ],
+    "bar": {
+      "fields": [
+        {
+          "query": "getStories",
+          "field": "team"
+        },
+        {
+          "query": "getStories",
+          "field": "state"
+        }
+      ],
+      "time": true,
+      "preset": "all"
+    },
+    "rowH": 28
+  }
+}
