@@ -64,12 +64,25 @@ export default function DrillDrawer({ req, onClose }: { req: DrillRequest; onClo
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
   };
-  const dragEdge = (e: React.PointerEvent) => {
+  /**
+   * Resizing from an edge or corner ('n', 'se', ...). Docked, only the left edge is offered and the right edge stays
+   * put; floating, every edge and corner moves its own side, the opposite side stays where it is.
+   */
+  const dragSide = (dir: string) => (e: React.PointerEvent) => {
     if (e.button !== 0 || !ref.current) return;
     e.preventDefault();
-    const right = ref.current.getBoundingClientRect().right;
-    // the right edge stays put; a floating panel grows to the left
-    const move = (m: PointerEvent) => { const w = keepWidth(right - m.clientX); setFloat(f => (f ? { ...f, x: Math.max(0, right - w) } : f)); };
+    e.stopPropagation();
+    const b0 = ref.current.getBoundingClientRect();
+    const docked = !float;
+    const move = (m: PointerEvent) => {
+      let { left, right, top: t, bottom } = b0;
+      if (dir.includes('w')) left = Math.max(0, Math.min(m.clientX, right - MIN_W));
+      if (dir.includes('e')) right = Math.min(window.innerWidth, Math.max(m.clientX, left + MIN_W));
+      if (dir.includes('n')) t = Math.max(top, Math.min(m.clientY, bottom - 160));
+      if (dir.includes('s')) bottom = Math.min(window.innerHeight - 8, Math.max(m.clientY, t + 160));
+      const w = keepWidth(right - left);
+      if (!docked) setFloat({ x: dir.includes('w') ? right - w : left, y: t, h: bottom - t });
+    };
     const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); document.body.classList.remove('db-dragging'); };
     document.body.classList.add('db-dragging');
     window.addEventListener('pointermove', move);
@@ -98,8 +111,9 @@ export default function DrillDrawer({ req, onClose }: { req: DrillRequest; onClo
   const rec = (r: Row) => r as Record<string, unknown>;
   return (
     <aside ref={ref} className={`db-drawer${float ? ' is-float' : ''}`} role="dialog" aria-label={req.title} style={place}>
-      <div className="db-drawer-edge" role="separator" aria-orientation="vertical" aria-label="Resize the panel" aria-valuenow={width} tabIndex={0} title="Drag to resize"
-        onPointerDown={dragEdge} onKeyDown={e => { if (e.key === 'ArrowLeft') { e.preventDefault(); keepWidth(width + 40); } if (e.key === 'ArrowRight') { e.preventDefault(); keepWidth(width - 40); } }} />
+      <div className="db-drawer-edge db-drawer-edge--w" role="separator" aria-orientation="vertical" aria-label="Resize the panel" aria-valuenow={width} tabIndex={0} title="Drag to resize"
+        onPointerDown={dragSide('w')} onKeyDown={e => { if (e.key === 'ArrowLeft') { e.preventDefault(); keepWidth(width + 40); } if (e.key === 'ArrowRight') { e.preventDefault(); keepWidth(width - 40); } }} />
+      {float && ['n', 'e', 's', 'nw', 'ne', 'sw', 'se'].map(d => <div key={d} className={`db-drawer-edge db-drawer-edge--${d}`} aria-hidden="true" onPointerDown={dragSide(d)} />)}
       <header className="db-drawer-head" onPointerDown={dragHead} onDoubleClick={() => setFloat(null)} title={float ? 'Drag to move · double-click to dock on the right' : 'Drag to move'}>
         <div>
           <h2>{req.title}</h2>

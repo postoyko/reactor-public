@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.64.3
+- The side panel (Explain, rows behind a click) resizes from every edge and corner once it is moved off the right side, with a grip in the bottom-right corner; docked, its left edge resizes it and now shows a handle.
+
 ## v1.64.2
 - The title band is the top of the dashboard: while viewing it is drawn above the active filters and the filter bar, at the height its text needs (grid.ts `titleBand`). Editing keeps it on the grid so it can still be moved or changed. Templates build it two rows tall.
 - Clicking a segment of a stacked bar chart filters again (on the bar and on the segment's series). Carbon reports a stacked segment differently from a plain bar, so these clicks were ignored.
