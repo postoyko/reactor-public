@@ -127,7 +127,7 @@ export default function Library({ sections, widgets, selectedId, tab, onTab, sea
                 {allOpen ? <CollapseAll size={16} /> : <ExpandAll size={16} />}
               </button>
             )}
-            <span className="db-seg" role="group" aria-label="View">
+            <span className="db-lib-seg" role="group" aria-label="View">
               <button type="button" className={view === 'list' ? 'on' : ''} aria-pressed={view === 'list'} title="List with descriptions" aria-label="List view" onClick={() => changeView('list')}><List size={16} /></button>
               <button type="button" className={view === 'grid' ? 'on' : ''} aria-pressed={view === 'grid'} title="Compact grid" aria-label="Grid view" onClick={() => changeView('grid')}><Grid size={16} /></button>
             </span>
