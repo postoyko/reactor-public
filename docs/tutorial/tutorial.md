@@ -6,6 +6,57 @@ A hands-on guide to building Concert Operate dashboards with the Reactor Dashboa
 
 [TOC]
 
+## 0. Before you start: get the code and run the Workbench
+
+You need git, Node.js 22, access to the GitHub repository and, for deploying, the cluster's details.
+
+### Get the code (first time)
+
+```
+git clone https://github.com/postoyko/reactor.git
+cd reactor
+git checkout main                     # or the branch your team works on
+cd dashboard-extension && npm ci && cd ..
+```
+
+### Every day
+
+```
+cd reactor
+git status                            # anything not committed?
+git pull                              # bring in what others pushed
+```
+
+To work on another branch: `git fetch origin`, then `git checkout <branch>`. `git branch --show-current` shows where you are. Commit your changes first (or put them aside with `git stash`), otherwise git refuses to switch.
+
+### Start the Workbench
+
+```
+cd scaffold
+node server.mjs                       # or: npm start
+```
+
+Open http://127.0.0.1:4000. It runs on your computer only; stop it with `Ctrl+C`. It has four tabs:
+
+| Tab | For |
+| --- | --- |
+| **Pages** | Every page in the Concert Operate sidebar: rename it, choose whether it deploys and shows in the sidebar, protect hand-written dashboards from being overwritten, add or remove pages |
+| **Design** | The Dashboard Designer on sample data (this tutorial) |
+| **Deploy** | Builds the extension and deploys it, with a live log |
+| **Setup** | Install or update the Designer, Git settings, the topology proxy, splitting dashboards into tiles |
+
+![The Pages tab](img/wb-pages.png)
+
+First time only: **Setup › Install / Update Designer**, then deploy.
+
+### What deploying needs (once per computer)
+
+- `dashboard-extension/target.json`: the Concert Operate address, user, API key, tenant and bundle name. It holds a key, so git ignores it: never commit it.
+- `export OPENSHIFT_PASSWORD='…'` (and `OPENSHIFT_USER` if it is not kubeadmin) in the terminal that starts the Workbench or runs `./deploy-dashboards.sh`.
+- The OpenShift address is currently written in `dashboard-extension/fast-deploy.mjs`; change it there for another cluster.
+
+After every deploy, hard-refresh Concert Operate (`Cmd+Shift+R`, or `Ctrl+Shift+R` on Windows).
+
 ## 1. Getting started
 
 The Designer lives in two places:
@@ -56,6 +107,15 @@ To add a widget, **click** it (it lands in the first free space) or **drag** it 
 4. **Duplicate / delete**: the icons on its title bar, or `Ctrl D` / `Del`.
 
 The **Layers** tab is the quickest way to find and select a widget on a busy dashboard.
+
+### Widgets inside widgets
+
+Containers hold other widgets: **Container**, **Tabs**, **Accordion**, **Split pane** (resizable), **Scroll pane**, **Carousel** and **Toolbar**. Drag a widget or a library item onto one (for Tabs, click the tab first), or use **Place in** on the General tab. Up to three levels deep; **Layers** shows the nesting.
+
+**Existing dashboards as tiles.** The **Your dashboards** group places a hand-written dashboard (Incident Atlas, Blast Radius…) as one tile, or one of its sections. In the Workbench, a selected tile offers **Break into widgets** or **Turn this section into widgets** when the Designer has equivalent widgets.
+
+**Undo / redo** keeps the last 50 steps.
+
 
 ## 4. Widget settings: General, Data, Style, Interact
 
@@ -131,6 +191,20 @@ You rarely type ids by hand. Instead, let an action fill the parameter: **Change
 The **Incident drill-down** template is built exactly this way:
 
 ![Incident drill-down: pick an incident, its alerts, alert groups and related incidents follow](img/tpl-drill-view.png)
+
+### What a click does
+
+Per widget, on the Interact tab, **When clicked** (*Click on it to*):
+
+| Choice | What happens |
+| --- | --- |
+| **Filter other widgets** | Sets a filter on every widget that uses the same source (charts and choices only) |
+| **Show the rows behind it** | A side panel lists the rows behind the bar, slice or number, with an optional **Open** button to an address |
+| **Open an address** | Opens a web or in-app address filled from the clicked row, e.g. `https://…/incidents/{id}` |
+| **Do nothing** | |
+
+**Links between dashboards.** Add `?db=field:value` to a dashboard's address to open it already filtered, for example `?db=severityLabel:Critical;state:open`. In an *Open an address* link, use the clicked row's values: `?db=severityLabel:{severityLabel}`.
+
 
 ## 7. The Action flows editor
 
@@ -234,6 +308,19 @@ Viewers can reshape a published dashboard without editing it. These changes are 
 
 As the designer you decide what viewers may change, per widget on the Interact tab: *Viewers can move and resize this widget*, *Viewers can regroup this chart*, *Viewers can show it as another chart*. **Link widgets** appears only when the dashboard has widgets that can send filters.
 
+### Saved views
+
+**Views** saves the current filter bar, time range, links and groupings under a name, so a viewer can come back to them in one click. **Import a shared view** takes one a colleague sent.
+
+![Views](img/views.png)
+
+### Saving and sharing dashboards in Concert Operate
+
+Inside Concert Operate the Designer saves automatically, in that person's browser. The ⋮ menu has **New dashboard**, **Duplicate**, **Rename**, **Delete**, **Export as JSON**, **Import JSON**, **Add the shared layout** (the starting dashboard, when one is set) and **Check the Concert Operate API**.
+
+- To share with one person: **Export as JSON**, send the file, they **Import JSON**.
+- To give everyone a dashboard: import the file in the Workbench (**Dashboards › Import from file…**), then **Publish** (section 12).
+
 ### View as: switch the chart type at runtime
 
 Hover a chart and an **as …** menu appears next to its title. A viewer can turn a bar chart into a word cloud, a donut into a pie or a treemap, a number into a gauge. Only types that read the same data are offered, so nothing is lost and switching back restores the original exactly:
@@ -298,6 +385,14 @@ Run it once after each deploy to a new tenant or Concert Operate upgrade.
 2. **Publish** adds it to the sidebar menu of the extension.
 3. The **Deploy** tab builds and deploys to the cluster.
 
+### More in the Workbench
+
+- **Dashboards ▾**: open a saved dashboard, **New dashboard…**, **Import from file…**, **Duplicate**, **Export to file**, **Delete dashboard…**.
+- **⋯** (next to the name): **Row height**; **Make this everyone's starting dashboard** (every user's Designer opens with it; saves and deploys); **Stop using a starting dashboard**; **Remove from the sidebar** (unpublishes; the file stays); **Publish all starter templates…**.
+- **Deploy** tab: the live build and deploy log.
+
+![The Deploy tab](img/wb-deploy.png)
+
 ### Versions in git
 
 Published dashboards are files in the repository, so git keeps their history. The Workbench does the git steps for you, with your own git login.
@@ -329,6 +424,29 @@ Published dashboards are files in the repository, so git keeps their history. Th
 
 Studio refuses to commit on a branch that is not allowed, with no branch checked out, or while a merge or rebase is unfinished. Branch switching, rebasing and force pushing stay in the terminal.
 
+### Git from the terminal
+
+The Workbench covers commit, push, pull and history. For everything else:
+
+| Task | Command |
+| --- | --- |
+| Where am I, what changed? | `git branch --show-current` · `git status` |
+| Get the latest | `git pull` |
+| Switch to another branch | `git fetch origin` then `git checkout <branch>` |
+| Start a branch for a bigger change | `git checkout -b dash/<name>` then `git push -u origin dash/<name>`; add it under Setup › Git › Allowed branches |
+| History of one dashboard | `git log --oneline -- dashboards/layouts/<name>.json` |
+| What changed in it | `git diff -- dashboards/layouts/<name>.json` |
+| Throw away uncommitted edits to it | `git restore dashboards/layouts/<name>.json` |
+| Bring back an old version | `git checkout <sha> -- dashboards/layouts/<name>.json`, then in the Workbench open it, **Save**, **Publish** and **Commit** |
+| Undo a commit that was pushed | `git revert <sha>` (adds a new commit; never rewrite pushed history) |
+
+**When Pull reports a conflict** (the same dashboard changed on both sides):
+
+1. In a terminal, run `git pull`. git lists the files in conflict.
+2. A dashboard file is easiest to settle by keeping one side whole: `git checkout --theirs <file>` keeps the version from the remote, `git checkout --ours <file>` keeps yours. Do the same for every file listed.
+3. `git add <files>` then `git commit`.
+4. In the Workbench, open the dashboard, **Save** and **Publish**: this rewrites the generated copies, so they match the version you kept. Then **Commit** and **Push**.
+
 ### From the command line
 
 ```
@@ -357,3 +475,33 @@ The deploy stops if the two copies differ (`./sync-designer.sh --back` keeps edi
 - ☐ API check run against the target tenant.
 - ☐ Committed and pushed (Design › Versions).
 - ☐ Saved, published and deployed; the dashboard opens from **Reactor** in the sidebar.
+
+## 13. Code dashboards and AI: use the contract
+
+Build in the Designer first. Write a code dashboard only for what the Designer cannot do (a new kind of visual, a source it does not read).
+
+> **Best practice: whenever a dashboard is written in code, by a person or an AI, give them `scaffold/DASHBOARD-CONTRACT.md` and require it.** It sets the folder layout, the shape that lets the Workbench split the dashboard into reusable tiles, and the rules learnt from the real API: which functions fail on Concert Operate and what to use instead, large-tenant limits, confirming every change to data, no keys or tenant ids in code.
+
+1. Give the AI the contract file and the prompt at the end of it (section 7 of the contract), plus what the dashboard is for.
+2. Put the result in `dashboards/<id>/`.
+3. In the Workbench, **Setup › Split dashboards into tiles › Check**: aim for *Ready* or *Mostly automatic*, with no findings marked bad.
+4. Check its readers against the real tenant with the API check (section 11), and test any change to data on a non-critical item first.
+5. Deploy, then commit it like any other change.
+
+The contract is also served by the Workbench at http://127.0.0.1:4000/api/contract.
+
+## 14. Troubleshooting
+
+| Symptom | What to do |
+| --- | --- |
+| A new or changed page does not show in Concert Operate | Hard-refresh (`Cmd+Shift+R`). On the Pages tab, check **Deploy** and **In sidebar** are on, then deploy again |
+| A widget says **Waiting for a value** | Its source needs a parameter: fill it on the Data tab, or let a flow set it (section 5) |
+| A widget shows an error, or no rows, on the real tenant | Run the API check (section 11) and share the report |
+| Tiles say *Section not found* / **Remove N tiles with a missing section** | The embedded dashboard changed since the layout was saved: remove those tiles, or pick another section for each |
+| Design tab says packages are missing | `cd dashboard-extension && npm ci`, then reopen the tab |
+| *Cannot reach Studio server* | The Workbench stopped: start `node server.mjs` again |
+| Deploy stops at authentication | Set `OPENSHIFT_PASSWORD` in that terminal and check `dashboard-extension/target.json` |
+| Versions: *Studio may not commit to …* | Add the branch under Setup › Git › Allowed branches, or switch branch |
+| Versions: Pull refused, same files changed | See *Git from the terminal* above |
+| Slow on a large tenant | Policies and raw alerts can take seconds; narrow with filters. Each source keeps at most 5,000 rows and the widget says when it was cut |
+| A Concert Operate action reports an error | Read the banner: it quotes the server. Policy lock and unlock are not supported by the server |

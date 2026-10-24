@@ -12,6 +12,13 @@ Custom dashboards and the Dashboard Designer for IBM Concert Operate / Cloud Pak
 | `sync-designer.sh` | Keeps `scaffold/designer/` and `dashboards/dashboard-builder/` identical |
 | `docs/dashboard-designer-tutorial.html` | The Designer tutorial, one file to open or share. Source in `docs/tutorial/`: edit `tutorial.md`, then `python3 docs/tutorial/build.py` |
 
+## Writing a dashboard in code (or with an AI)
+
+Build in the Dashboard Designer first. When a dashboard must be written in code, by a person or an AI, always hand over
+[`scaffold/DASHBOARD-CONTRACT.md`](scaffold/DASHBOARD-CONTRACT.md) and require it: it carries the rules learnt from the
+real Concert Operate API. Then check the result with Workbench **Setup › Split dashboards into tiles › Check** and the
+Designer's API check. See section 13 of the tutorial.
+
 ## Deploy
 
 ```bash
