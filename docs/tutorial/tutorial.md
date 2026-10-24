@@ -58,7 +58,7 @@ Open http://127.0.0.1:4000. It runs on your computer only; stop it with `Ctrl+C`
 | **Pages** | Every page in the Concert Operate sidebar: rename it, choose whether it deploys and shows in the sidebar, protect hand-written dashboards from being overwritten, add or remove pages |
 | **Design** | The Dashboard Designer on sample data (this tutorial) |
 | **Deploy** | Builds the extension and deploys it, with a live log |
-| **Setup** | Install or update the Designer, Git settings, the topology proxy, splitting dashboards into tiles |
+| **Setup** | Install or update the Designer, Git settings, real data for Design, the topology proxy, splitting dashboards into tiles |
 
 ![The Pages tab](img/wb-pages.png)
 
@@ -70,7 +70,7 @@ First time only: **Setup › Install / Update Designer**, then deploy.
 - `export OPENSHIFT_PASSWORD='…'` (and `OPENSHIFT_USER` if it is not kubeadmin) in the terminal that starts the Workbench or runs `./deploy-dashboards.sh`.
 - The OpenShift address is currently written in `dashboard-extension/fast-deploy.mjs`; change it there for another cluster.
 
-After every deploy, hard-refresh Concert Operate (`Cmd+Shift+R`, or `Ctrl+Shift+R` on Windows).
+After every deploy, hard-refresh Concert Operate (`Cmd+Shift+R`, or `Ctrl+Shift+R` on Windows). A deploy copies each dashboard into `dashboard-extension/src/components/`; those copies are not kept in git, so `git status` stays clean after deploying.
 
 ## 1. Getting started
 
@@ -182,6 +182,11 @@ Some sources need a **parameter** (an incident id, an alert filter, a resource i
 Type a value and the widget loads straight away:
 
 ![The same widget with an incident id](img/src-2.png)
+
+
+**Pick instead of typing.** Incident fields list the open incidents as you type (title, id, priority, state); pick one with the mouse or the arrow keys and Enter. The policy fields in Action flows list policy names the same way, adding to a list separated by commas. You can still type anything, including `{value}`.
+
+![Picking an incident instead of typing its id](img/pick.png)
 
 You rarely type ids by hand. Instead, let an action fill the parameter: **Change its source parameter** to `{value}` when an incident is picked elsewhere (section 7). That is how drill-downs are built.
 
@@ -402,6 +407,23 @@ The **API check** (⋮ menu in the toolbar) tests the Designer against *your* Co
 
 Run it once after each deploy to a new tenant or Concert Operate upgrade.
 
+
+### Real data for Design: the data snapshot
+
+The Workbench shows sample data. To design on your tenant's real data:
+
+1. In Concert Operate, open the Dashboard Designer, then **⋮ › Check the Concert Operate API › Record and download**. It records the answers of the data sources, plus the alerts, alert groups and related incidents of the first 10 incidents, into a file. Nothing is changed in Concert Operate.
+
+![Record and download in the API check](img/snap-record.png)
+
+2. In the Workbench, **Setup › Real data for Design › Upload snapshot**.
+
+![Setup › Real data for Design](img/snap-setup.png)
+
+3. The Design tab now says it shows *real data from your tenant* and when the snapshot was taken. Record a new one whenever you want fresher data; **Use sample data again** removes it.
+
+The file holds real data. It stays on your computer in `.studio/`, which git ignores. Actions that change data still never reach Concert Operate from the Workbench.
+
 ## 12. Publishing and deploying
 
 ### In the Workbench
@@ -528,6 +550,7 @@ The contract is also served by the Workbench at http://127.0.0.1:4000/api/contra
 | Deploy stops at authentication | Set `OPENSHIFT_PASSWORD` in that terminal and check `dashboard-extension/target.json` |
 | Versions: *Studio may not commit to …* | Add the branch under Setup › Git › Allowed branches, or switch branch |
 | Versions: Pull refused, same files changed | See *Git from the terminal* above |
+| A widget says *Not in the data snapshot* | The snapshot holds the first 10 incidents only: pick one of those, or record a new snapshot (section 11) |
 | Slow on a large tenant | Policies and raw alerts can take seconds; narrow with filters. Each source keeps at most 5,000 rows and the widget says when it was cut |
 | A Concert Operate action reports an error | Read the banner: it quotes the server. Policy lock and unlock are not supported by the server |
 
