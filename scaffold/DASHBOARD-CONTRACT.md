@@ -4,6 +4,8 @@ Give this page to anyone (a person or an AI) who writes a dashboard for Concert 
 
 Workbench's **Check** button (Setup, "Split dashboards into tiles") tells you how well a dashboard follows this.
 
+**First, ask whether it needs code at all.** Most dashboards can be built in the Dashboard Designer (Reactor › Dashboard Designer, or the Workbench **Design** tab) with no code: 19 data sources, click-to-filter, drill-downs, Action flows and Concert Operate actions, all tested against a real tenant. Write a code dashboard only for what the Designer cannot do (a new kind of visual, a source it does not read). See `docs/dashboard-designer-tutorial.html`.
+
 ## 1. Folder and files
 
 ```
@@ -73,7 +75,28 @@ Anything else stays a fixed tile, which is fine.
 - Show "showing N of M" whenever a list is cut off.
 - Handle loading, empty and error states in every block.
 
+What the real API does (found with the Designer's API check, October 2026):
+- `getIncidentAlerts` fails inside Concert Operate. Read an incident's alerts with `getAlerts` and the incident as `storyId`.
+- `getFiltersViews` without a type fails on tenants with inventory filters. Use `getFilters` with a type condition (`alert` or `incident`).
+- `setPolicyLock` is refused by the server (it sends `locked`, which the mutation does not accept). Do not offer locking.
+- GraphQL introspection is disabled, and `graphql()` takes the query as text, not an object.
+- Answers carry `__typename` fields and nested lists (each alert's `insights`): take the records from the shallowest list, and skip `__typename`.
+- Times may be epoch milliseconds (topology). Severity counts may be `null`: show "Not reported", not 0.
+- `getGroups` returns **user** groups, not alert groups.
+
+Large tenants:
+- Cap what you keep (the Designer keeps 5,000 rows per source) and say when you did.
+- Time out slow calls (the Designer uses 60 s), keep one load in flight at a time, and pause refreshing while the browser tab is hidden.
+- `getPoliciesMetadata` can return thousands of policies: load it once, not on every refresh.
+
+Changing data (mutations: create or update an incident, activate, deploy, reject, restore or rename policies):
+- Always ask the person to confirm first, saying what will change and how many items.
+- Act on exactly the rows on screen, after every filter. Accept policy names as well as ids, and list names that match nothing.
+- Report the result (done or the server's error) where the person can see it.
+
 ## 5. Look and behaviour
+
+- Pages appear in Concert Operate's sidebar under **Reactor** (`dashboard-extension/config/routes.json`, `categoryTitle`). Existing menus such as Custom dashboards are not touched.
 
 - Carbon components and tokens only (`@carbon/react`, `@carbon/charts-react`), light and dark.
 - Severity colours: Critical red, Major orange, Minor yellow, Warning blue, Information light blue, Indeterminate purple.
@@ -87,7 +110,9 @@ Anything else stays a fixed tile, which is fine.
 - [ ] Workbench **Check** says "Mostly automatic" or "Ready".
 - [ ] No findings marked "bad" (keys or secrets) and no hardcoded tenant.
 - [ ] README lists the Concert APIs it calls and what each block shows.
+- [ ] Mutations, if any, confirm first and report their result.
+- [ ] Tried against a real tenant, or its readers checked with the Designer's API check (⋮ › API check).
 
 ## 7. A prompt you can give an AI
 
-> Write a Concert Operate dashboard for <purpose> as a React + TypeScript component folder that follows DASHBOARD-CONTRACT.md exactly: one main component ending in a single `return (<Root>` whose direct children are 3 to 12 self-contained blocks, each preceded by a `{/* Label */}` comment; all hooks and state above the return; overlays after the block that opens them; data only through `window.akoraConfig.baseState.API.contentAnalyticsAPI`; no API keys and no tenant ID in the code; Carbon components only; handle loading, empty and error states. Include the panel file, scss scoped under one root class, version.ts and a README that lists the APIs used.
+> Write a Concert Operate dashboard for <purpose> as a React + TypeScript component folder that follows DASHBOARD-CONTRACT.md exactly: one main component ending in a single `return (<Root>` whose direct children are 3 to 12 self-contained blocks, each preceded by a `{/* Label */}` comment; all hooks and state above the return; overlays after the block that opens them; data only through `window.akoraConfig.baseState.API.contentAnalyticsAPI`; no API keys and no tenant ID in the code; follow the "What the real API does" and "Large tenants" rules in section 4; any change to Concert data asks for confirmation first; Carbon components only; handle loading, empty and error states. Include the panel file, scss scoped under one root class, version.ts and a README that lists the APIs used.
