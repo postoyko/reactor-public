@@ -179,6 +179,56 @@ export default function ActionStudio({ widgets, focus, onWidgets, onClose }: Pro
     setSel(ridOf(toId, moved.length - 1));
   };
 
+  /** Every action of `fromId` moves to the widget `toId` (events it cannot raise become its first event). */
+  const moveAll = (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    const src = byId.get(toId);
+    if (!src) return;
+    const evs = eventsOf(src);
+    const moved = rulesOf(fromId).map(l => {
+      const n: ActionLink = { ...l, event: evs.some(e => e.id === l.event) ? l.event : evs[0].id };
+      if (n.event !== l.event) delete n.when;
+      return n;
+    }).filter(l => l.to !== toId);
+    onWidgets(widgets.map(w => {
+      if (w.id === fromId) { const cfg = { ...w.config }; delete cfg.on; return { ...w, config: cfg }; }
+      if (w.id === toId) return { ...w, config: { ...w.config, on: [...(w.config.on || []), ...moved] } };
+      return w;
+    }), `${fromId}:from`);
+    setStaged(s => [...s.filter(x => x !== fromId), ...(moved.length ? [] : [toId])]);
+    setSel(null);
+  };
+  /** The actions of `fromId` that start on `was` start on `next` instead. */
+  const changeEvent = (fromId: string, was: string, next: string) => {
+    if (was === next) return;
+    const list = rulesOf(fromId);
+    if (!list.length) { const w = byId.get(fromId); if (w) addRule(fromId, { ...newLink(w, ordered.find(o => o.id !== fromId) || PLATFORM), event: next }); return; }
+    putRules(fromId, list.map(l => { if (l.event !== was) return l; const n: ActionLink = { ...l, event: next }; delete n.when; return n; }), `${fromId}:event`);
+  };
+  /** Every action that changes `was` changes `next` instead (keeping what it does when `next` understands it). */
+  const retargetAll = (was: string, next: string) => {
+    if (was === next) return;
+    onWidgets(widgets.map(w => {
+      if (!(w.config.on || []).some(l => l.to === was)) return w;
+      const on = (w.config.on || []).map(l => (l.to === was && w.id !== next ? withTarget(l, next) : l)).filter(l => l.to !== w.id);
+      const cfg = { ...w.config };
+      if (on.length) cfg.on = on; else delete cfg.on;
+      return { ...w, config: cfg };
+    }), `${was}:to`);
+  };
+  const withTarget = (l: ActionLink, id: string): ActionLink => {
+    const t = byId.get(id);
+    if (!t) return l;
+    const keep = actionsOf(t).some(a => a.id === l.do);
+    return keep ? { ...l, to: id } : withAction({ ...l, to: id }, t, suggestAction(t));
+  };
+  const withAction = (l: ActionLink, t: Widget, d: string): ActionLink => {
+    const spec = actionsOf(t).find(a => a.id === d);
+    const n: ActionLink = { ...l, do: d === 'prop' ? 'set:' : d === 'addprop' ? 'add:' : d };
+    if (spec && spec.arg && spec.arg.def !== undefined) n.arg = spec.arg.def; else delete n.arg;
+    return n;
+  };
+
   /* ── connectors: measured from the cards after every render ── */
   const measure = useCallback(() => {
     const board = boardRef.current;
@@ -321,7 +371,16 @@ export default function ActionStudio({ widgets, focus, onWidgets, onClose }: Pro
                 <div key={w.id} className={`db-af-card db-af-card--src${chain(w.id) ? ' is-chain' : ''}`} onPointerEnter={() => setHover(w.id)} onPointerLeave={() => setHover(null)}>
                   <div className="db-af-card-head">
                     <Glyph type={w.type} size={24} />
-                    <div className="db-af-card-name"><strong>{w.title || typeLabel(w.type)}</strong><span>{typeLabel(w.type)}</span></div>
+                    <div className="db-af-card-name">
+                      <TileMenu
+                        label={<strong>{w.title || typeLabel(w.type)}</strong>}
+                        title="Change the trigger widget"
+                        value={w.id}
+                        items={ordered.map(o => ({ id: o.id, label: o.title || typeLabel(o.type), sub: typeLabel(o.type), type: o.type }))}
+                        onPick={id => moveAll(w.id, id)}
+                      />
+                      <span>{typeLabel(w.type)}</span>
+                    </div>
                     {!list.length && <button type="button" className="db-af-x" title="Remove this trigger" aria-label={`Remove trigger ${w.title}`} onClick={() => setStaged(s => s.filter(x => x !== w.id))}><Close size={16} /></button>}
                   </div>
                   <ul className="db-af-events">
@@ -330,7 +389,13 @@ export default function ActionStudio({ widgets, focus, onWidgets, onClose }: Pro
                       return (
                         <li key={ev} className="db-af-event">
                           <Ic size={16} />
-                          <span>{eventLabel(w, ev)}</span>
+                          <TileMenu
+                            label={<span>{eventLabel(w, ev)}</span>}
+                            title="Change the event"
+                            value={ev}
+                            items={eventsOf(w).map(e => ({ id: e.id, label: e.label, group: GENERIC.has(e.id) ? 'Every widget' : 'This widget' }))}
+                            onPick={id => changeEvent(w.id, ev, id)}
+                          />
                           <button
                             type="button"
                             className="db-af-port db-af-port--out"
@@ -360,9 +425,11 @@ export default function ActionStudio({ widgets, focus, onWidgets, onClose }: Pro
               const Ic = GROUP_ICON[group];
               const a = argText(r.link);
               return (
-                <button
+                <div
                   key={r.rid}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) { e.preventDefault(); setSel(r.rid); } }}
                   className={`db-af-card db-af-card--act${sel === r.rid ? ' is-sel' : ''}${hover === r.rid ? ' is-chain' : ''}${r.target ? '' : ' is-broken'}`}
                   data-group={group}
                   onClick={() => setSel(r.rid)}
@@ -373,8 +440,25 @@ export default function ActionStudio({ widgets, focus, onWidgets, onClose }: Pro
                   <span className="db-af-port db-af-port--in" data-port={`in:${r.rid}`} />
                   <span className="db-af-act-icon"><Ic size={16} /></span>
                   <span className="db-af-act-text">
-                    <strong>{r.target ? actionLabel(r.target, r.link.do) : 'Target is missing'}</strong>
+                    {r.target ? (
+                      <TileMenu
+                        label={<strong>{actionLabel(r.target, r.link.do)}</strong>}
+                        title="Change what happens"
+                        value={r.link.do}
+                        search
+                        items={actionsOf(r.target).map(x => ({ id: x.id, label: x.label, group: x.group }))}
+                        groupOrder={GROUP_ORDER}
+                        onPick={id => { setSel(r.rid); updateRule(r, withAction(r.link, r.target!, id), 'do'); }}
+                      />
+                    ) : <strong>Target is missing</strong>}
                     <span>
+                      <TileMenu
+                        label={<em className="db-af-chip db-af-chip--to">on {r.target ? r.target.title : 'a missing widget'}</em>}
+                        title="Change the widget it acts on"
+                        value={r.link.to}
+                        items={[PLATFORM, ...ordered.filter(o => o.id !== r.from.id)].map(o => ({ id: o.id, label: o.title || typeLabel(o.type), sub: typeLabel(o.type), type: o.type }))}
+                        onPick={id => { setSel(r.rid); updateRule(r, withTarget(r.link, id), 'to'); }}
+                      />
                       {r.link.when ? <em className="db-af-chip db-af-chip--if">if = {r.link.when}</em> : null}
                       {a ? <em className="db-af-chip">{a.includes('{value}') ? <>{a.replace('{value}', '')}<b>value</b></> : a}</em> : null}
                       {!r.link.when && !a && <>{eventLabel(r.from, r.link.event).toLowerCase()}</>}
@@ -382,7 +466,7 @@ export default function ActionStudio({ widgets, focus, onWidgets, onClose }: Pro
                   </span>
                   {!r.target && <WarningAlt size={16} className="db-af-warn" />}
                   <span className="db-af-port db-af-port--outact" data-port={`out:${r.rid}`} />
-                </button>
+                </div>
               );
             })}
             {rules.length === 0 && (
@@ -399,7 +483,16 @@ export default function ActionStudio({ widgets, focus, onWidgets, onClose }: Pro
               <div key={w.id} data-drop={w.id} className={`db-af-card db-af-card--tgt${chain(w.id) ? ' is-chain' : ''}${drag && drag.over === w.id ? ' is-over' : ''}`} onPointerEnter={() => setHover(w.id)} onPointerLeave={() => setHover(null)}>
                 <span className="db-af-port db-af-port--in" data-port={`to:${w.id}`} />
                 <Glyph type={w.type} size={24} />
-                <div className="db-af-card-name"><strong>{w.title || typeLabel(w.type)}</strong><span>{typeLabel(w.type)}{w.config.hidden ? ' · hidden at start' : ''}</span></div>
+                <div className="db-af-card-name">
+                  <TileMenu
+                    label={<strong>{w.title || typeLabel(w.type)}</strong>}
+                    title={`Point its ${n} action${n === 1 ? '' : 's'} at another widget`}
+                    value={w.id}
+                    items={[PLATFORM, ...ordered].map(o => ({ id: o.id, label: o.title || typeLabel(o.type), sub: typeLabel(o.type), type: o.type }))}
+                    onPick={id => retargetAll(w.id, id)}
+                  />
+                  <span>{typeLabel(w.type)}{w.config.hidden ? ' · hidden at start' : ''}</span>
+                </div>
                 <span className="db-af-count" title={`${n} action${n === 1 ? '' : 's'} change it`}>{n}</span>
               </div>
             ))}
@@ -527,7 +620,7 @@ function RulePanel({ rule, widgets, onChange, onSource, onRemove, onDuplicate, o
 
   const own = events.filter(e => !GENERIC.has(e.id));
   const generic = events.filter(e => GENERIC.has(e.id));
-  const shownEvents = own.length && !moreEvents ? own : events;
+  const shownEvents = own.length && !moreEvents && !GENERIC.has(ev.id) ? own : events;
 
   const pickAction = (d: string) => {
     const spec = acts.find(a => a.id === d);
@@ -717,5 +810,55 @@ function PartsEditor({ arg, value, carries, onChange }: { arg: ActionArg; value?
         </label>
       ))}
     </div>
+  );
+}
+
+interface MenuItem { id: string; label: string; sub?: string; group?: string; type?: string }
+
+/** A dropdown on a tile: the tile's own text is the trigger. Clicks inside never reach the card behind it. */
+function TileMenu({ label, title, value, items, onPick, search, groupOrder }: { label: React.ReactNode; title: string; value: string; items: MenuItem[]; onPick: (id: string) => void; search?: boolean; groupOrder?: string[] }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState('');
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    const down = (e: PointerEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('pointerdown', down, true);
+    return () => document.removeEventListener('pointerdown', down, true);
+  }, [open]);
+  useEffect(() => { if (!open) setQ(''); }, [open]);
+  const query = q.trim().toLowerCase();
+  const shown = items.filter(i => !query || `${i.label} ${i.sub || ''}`.toLowerCase().includes(query));
+  const groups = Array.from(new Set(shown.map(i => i.group || '')));
+  if (groupOrder) groups.sort((a, b) => groupOrder.indexOf(a) - groupOrder.indexOf(b));
+  const stop = (e: React.SyntheticEvent) => e.stopPropagation();
+  const choose = (id: string) => { setOpen(false); if (id !== value) onPick(id); };
+  return (
+    <span className={`db-tm${open ? ' is-open' : ''}`} ref={ref} onClick={stop} onPointerDown={stop} onKeyDown={e => { e.stopPropagation(); if (e.key === 'Escape') setOpen(false); }}>
+      <button type="button" className="db-tm-btn" title={title} aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen(o => !o)}>
+        {label}<ChevronDown size={12} className="db-tm-caret" />
+      </button>
+      {open && (
+        <span className="db-tm-pop" role="listbox" aria-label={title}>
+          <span className="db-tm-title">{title}</span>
+          {(search || items.length > 10) && <input className="db-tm-search" autoFocus placeholder="Search" value={q} onChange={e => setQ(e.target.value)} />}
+          <span className="db-tm-list">
+            {shown.length === 0 && <span className="db-tm-none">No match</span>}
+            {groups.map(g => (
+              <React.Fragment key={g || '-'}>
+                {g && <span className="db-tm-group">{g}</span>}
+                {shown.filter(i => (i.group || '') === g).map(i => (
+                  <button key={i.id} type="button" role="option" aria-selected={i.id === value} className={`db-tm-item${i.id === value ? ' on' : ''}`} onClick={() => choose(i.id)}>
+                    {i.type && <Glyph type={i.type} size={18} />}
+                    <span className="db-tm-text"><span>{i.label}</span>{i.sub && <small>{i.sub}</small>}</span>
+                    {i.id === value && <Checkmark size={16} className="db-tm-check" />}
+                  </button>
+                ))}
+              </React.Fragment>
+            ))}
+          </span>
+        </span>
+      )}
+    </span>
   );
 }

@@ -1,5 +1,9 @@
 # Dashboard Designer changes
 
+## v1.55.0
+- Action flows: the tiles have dropdowns as well as the side panel. On a trigger, the widget's name changes the trigger (its actions move with it) and each event changes that event; on an action, its name changes what happens (grouped and searchable) and *on …* changes the widget it acts on; on a target, its name points every action that changes it at another widget.
+- **Check the Concert Operate API** (⋮ menu): calls each data source once against the real Concert Operate and records the shape of every answer (keys, types, list lengths), how many rows the Designer read from it and which fields. Helper functions and the incident and policy mutations are only looked up, never called. Sample values and the start of each function's code are optional. *Copy report* or *Download* gives a Markdown report to send back so the readers can be fixed against real responses.
+
 ## v1.54.0
 - Four new templates that show the v1.53 sources and actions at work:
   - **Incident drill-down**: a dropdown of incident ids drives *Alerts of an incident*, *Alert groups of an incident* and *Related incidents* through *Change its source parameter* (master and detail).

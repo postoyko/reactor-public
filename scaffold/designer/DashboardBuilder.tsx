@@ -8,7 +8,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { InlineNotification } from '@carbon/react';
-import { Add, Checkmark, ChevronDown, Connect, Copy, Download, Flow, Help, Template, OverflowMenuVertical, Redo, Renew, TrashCan, Undo, Upload } from '@carbon/icons-react';
+import { Activity, Add, Checkmark, ChevronDown, Connect, Copy, Download, Flow, Help, Template, OverflowMenuVertical, Redo, Renew, TrashCan, Undo, Upload } from '@carbon/icons-react';
 import './dashboard-builder.scss';
 import { ActionLink, Cond, Dashboard, Filter, FilterBarConfig, QueryName, Row, Widget } from './types';
 import { ActionApi, ActionCtx, coerce } from './actions';
@@ -48,6 +48,7 @@ import { DrillRequest, urlFilters } from './drill';
 import { inputDefault } from './bindings';
 import Inspector from './Inspector';
 import ActionStudio from './ActionStudio';
+import ApiCheck from './ApiCheck';
 import { matches, WidgetBody } from './Widgets';
 import { VERSION } from './version';
 import { DEFAULT_LAYOUT } from './default-layout';
@@ -105,6 +106,7 @@ export default function DashboardBuilder(props: Props) {
   const [wireKind, setWireKind] = useState<'data' | 'action'>('data');
   /** Action flows editor: open (with the widget in focus, or null) or closed (undefined). */
   const [flows, setFlows] = useState<string | null | undefined>(undefined);
+  const [apiCheck, setApiCheck] = useState(false);
   const [tour, setTour] = useState(false);
   const [pick, setPick] = useState(false);
   const [barSel, setBarSel] = useState<Record<string, string[]>>({});
@@ -816,6 +818,7 @@ export default function DashboardBuilder(props: Props) {
               {close => (
                 <>
                   {!readOnly && <button type="button" role="menuitem" className="db-pop-item" onClick={() => { setTour(true); close(); }}><span className="db-pop-check"><Help size={16} aria-hidden="true" /></span><span className="db-pop-text">Take the tour</span></button>}
+                  <button type="button" role="menuitem" className="db-pop-item" onClick={() => { setApiCheck(true); close(); }}><span className="db-pop-check"><Activity size={16} aria-hidden="true" /></span><span className="db-pop-text">Check the Concert Operate API</span></button>
                   <button type="button" role="menuitem" className="db-pop-item" onClick={() => { doExport(); close(); }}><span className="db-pop-check"><Download size={16} aria-hidden="true" /></span><span className="db-pop-text">Export as JSON</span></button>
                   {!readOnly && !authoring && <button type="button" role="menuitem" className="db-pop-item" onClick={() => { if (fileRef.current) fileRef.current.click(); close(); }}><span className="db-pop-check"><Upload size={16} aria-hidden="true" /></span><span className="db-pop-text">Import JSON</span></button>}
                   {!readOnly && !authoring && hasShared && <button type="button" role="menuitem" className="db-pop-item" onClick={() => { addShared(); close(); }}><span className="db-pop-check"><Copy size={16} aria-hidden="true" /></span><span className="db-pop-text">Add the shared layout</span></button>}
@@ -971,6 +974,7 @@ export default function DashboardBuilder(props: Props) {
             <span className="db-status-sel"><Glyph type={selected.type} size={16} />{typeLabel(selected.type)}<code>x {selected.x} · y {selected.y} · {selected.w}×{selected.h}</code></span>
           )}
         </footer>
+        {apiCheck && <ApiCheck hub={hub} onClose={() => setApiCheck(false)} />}
         {isEditing && flows !== undefined && <ActionStudio widgets={active.widgets} focus={flows} onWidgets={setWidgets} onClose={() => setFlows(undefined)} />}
       </div>
       {tour && <Tour onClose={() => setTour(false)} />}
