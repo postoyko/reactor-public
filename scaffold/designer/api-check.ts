@@ -126,7 +126,7 @@ export async function runApiCheck(hub: DataHub, opt: CheckOptions, onResult: (r:
     if (def.id === 'getMetricSeries') { push({ ...base, status: 'skipped', note: 'Built from the metric helpers below (group, metric, resource), checked there.' }); continue; }
     let param = '';
     if (def.param && def.param.required) {
-      if (def.id === 'getRawAlerts') param = "state != 'clear'";
+      if (def.id === 'getRawAlerts') param = 'state != \'clear\'';
       else if (def.id === 'getTopologyResource') param = (opt.resourceId || '').trim();
       else if (def.id === 'getRelatedStories') param = incidentId || alertIds.slice(0, 2).join(', ');
       else param = incidentId;
@@ -159,7 +159,7 @@ export async function runApiCheck(hub: DataHub, opt: CheckOptions, onResult: (r:
   const EXTRA: Array<[string, Record<string, unknown>]> = [
     ['getIncident', { incident: incidentId }], ['getAlertSummary', {}], ['getStandingAlertCount', {}], ['getStandingStoryCount', {}],
     ['getTickets', {}], ['getProfiles', {}], ['getSeasonalFindings', {}],
-    ['getDataQualityIssues', {}], ['getBlockedResources', {}], ['getStoriesWithAlertFilter', { filter: "state != 'clear'" }], ['getAlertSchema', {}], ['getStorySchema', {}]
+    ['getDataQualityIssues', {}], ['getBlockedResources', {}], ['getStoriesWithAlertFilter', { filter: 'state != \'clear\'' }], ['getAlertSchema', {}], ['getStorySchema', {}]
   ];
   for (const [name, extra] of EXTRA) {
     if (typeof a[name] !== 'function') { push({ name, api: name, kind: 'extra', status: 'missing' }); continue; }
@@ -194,30 +194,30 @@ export const availableFunctions = (): string[] => Object.keys(api()).filter(k =>
 export function reportText(results: CheckResult[], meta: { version: string; values: boolean }): string {
   const count = (s: CheckStatus) => results.filter(r => r.status === s).length;
   const lines = [
-    `# Concert Operate API check`,
-    ``,
+    '# Concert Operate API check',
+    '',
     `Designer ${meta.version} · ${new Date().toISOString()} · ${meta.values ? 'with sample values' : 'structure only, no values'}`,
-    ``,
+    '',
     `OK ${count('ok')} · empty ${count('empty')} · error ${count('error')} · missing ${count('missing')} · skipped ${count('skipped')}`,
-    ``,
+    '',
     `Functions in contentAnalyticsAPI: ${availableFunctions().join(', ') || '(none found)'}`,
-    ``
+    ''
   ];
   results.forEach(r => {
     lines.push(`## ${r.name} (${r.api}) · ${r.kind} · ${r.status.toUpperCase()}${r.ms !== undefined ? ` · ${r.ms} ms` : ''}`);
-    if (r.note) lines.push(``, r.note);
-    if (r.params) lines.push(``, `Parameters: \`${JSON.stringify(r.params)}\``);
-    if (r.kind === 'source' && r.rows !== undefined) lines.push(``, `Rows read: ${r.rows}${r.fields && r.fields.length ? ` · fields: ${r.fields.join(', ')}` : ''}`);
-    if (r.sample) lines.push(``, 'First row:', '```json', JSON.stringify(r.sample, null, 2), '```');
-    if (r.outline) lines.push(``, 'Response:', '```', r.outline, '```');
-    if (r.code) lines.push(``, 'Function code (start):', '```js', r.code, '```');
-    lines.push(``);
+    if (r.note) lines.push('', r.note);
+    if (r.params) lines.push('', `Parameters: \`${JSON.stringify(r.params)}\``);
+    if (r.kind === 'source' && r.rows !== undefined) lines.push('', `Rows read: ${r.rows}${r.fields && r.fields.length ? ` · fields: ${r.fields.join(', ')}` : ''}`);
+    if (r.sample) lines.push('', 'First row:', '```json', JSON.stringify(r.sample, null, 2), '```');
+    if (r.outline) lines.push('', 'Response:', '```', r.outline, '```');
+    if (r.code) lines.push('', 'Function code (start):', '```js', r.code, '```');
+    lines.push('');
   });
   return lines.join('\n');
 }
 
 /** Asks the API to describe itself (GraphQL introspection), for the exact parameters of every query and mutation. Read-only. */
-const INTROSPECT = `query DesignerIntrospection { __schema { queryType { name } mutationType { name } types { name kind fields { name args { name type { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } } } }`;
+const INTROSPECT = 'query DesignerIntrospection { __schema { queryType { name } mutationType { name } types { name kind fields { name args { name type { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } } } }';
 
 const typeText = (t: any): string => (!t ? '?' : t.kind === 'NON_NULL' ? `${typeText(t.ofType)}!` : t.kind === 'LIST' ? `[${typeText(t.ofType)}]` : t.name || '?');
 

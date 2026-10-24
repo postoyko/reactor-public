@@ -397,7 +397,6 @@ function Carousel({ a }: { a: Arg }) {
     if (!auto || auto < 1 || editing || n < 2) return undefined;
     const t = window.setInterval(() => go(1), auto * 1000);
     return () => window.clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auto, editing, n, loop]);
   const btn: React.CSSProperties = { border: 0, background: 'var(--cds-layer-accent-01, #e0e0e0)', width: 32, height: 32, cursor: 'pointer', fontSize: 18, lineHeight: '32px', color: 'inherit' };
   return (

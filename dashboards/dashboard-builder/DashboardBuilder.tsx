@@ -94,7 +94,7 @@ export default function DashboardBuilder(props: Props) {
   const readOnly = !authoring && (Boolean(props.readOnly) || fixed !== null);
   const [store, setStore] = useState<StoreState>(() =>
     authoring ? { version: 1, activeId: authoring.dashboard.id, dashboards: [authoring.dashboard] } :
-    fixed ? { version: 1, activeId: fixed.id, dashboards: [fixed] } : loadState());
+      fixed ? { version: 1, activeId: fixed.id, dashboards: [fixed] } : loadState());
   const [editing, setEditing] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filter[]>(() => (typeof window !== 'undefined' ? urlFilters(window.location.search) : []));
@@ -200,7 +200,6 @@ export default function DashboardBuilder(props: Props) {
       if (Object.keys(layout).length) out.layout = layout; else delete out.layout;
       return Object.keys(out).length ? out : undefined;
     }),
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [linkMode, resizeMode, viewing, baseActive]);
   const selected = active.widgets.find(w => w.id === selectedId) || null;
 
@@ -702,283 +701,283 @@ export default function DashboardBuilder(props: Props) {
   return (
     <ActionCtx.Provider value={actApi}><BuilderCtx.Provider value={ctx}>
       <NestCtx.Provider value={nest}>
-      <div className={`dashboard-builder-container db-shell${isEditing ? ' is-editing' : ''}`}>
-        <header className="db-bar-top">
-          <div className="db-title">
-            {authoring ? (
-              <span className="db-tb db-name"><span className="db-name-text">{active.name}</span></span>
-            ) : renaming && isEditing ? (
-              <input
-                className="db-name-input"
-                aria-label="Dashboard name"
-                value={active.name}
-                autoFocus
-                onFocus={e => e.target.select()}
-                onChange={e => rename(e.target.value)}
-                onBlur={() => setRenaming(false)}
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') setRenaming(false); }}
-              />
-            ) : (
-              <Menu
-                trigger={({ open, toggle }) => (
-                  <button type="button" className={`db-tb db-name${open ? ' is-on' : ''}`} aria-haspopup="menu" aria-expanded={open} onClick={() => { setConfirmDelete(false); toggle(); }} onDoubleClick={() => { if (isEditing) setRenaming(true); }}>
-                    <span className="db-name-text">{active.name}</span>
-                    <ChevronDown size={16} aria-hidden="true" />
+        <div className={`dashboard-builder-container db-shell${isEditing ? ' is-editing' : ''}`}>
+          <header className="db-bar-top">
+            <div className="db-title">
+              {authoring ? (
+                <span className="db-tb db-name"><span className="db-name-text">{active.name}</span></span>
+              ) : renaming && isEditing ? (
+                <input
+                  className="db-name-input"
+                  aria-label="Dashboard name"
+                  value={active.name}
+                  autoFocus
+                  onFocus={e => e.target.select()}
+                  onChange={e => rename(e.target.value)}
+                  onBlur={() => setRenaming(false)}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') setRenaming(false); }}
+                />
+              ) : (
+                <Menu
+                  trigger={({ open, toggle }) => (
+                    <button type="button" className={`db-tb db-name${open ? ' is-on' : ''}`} aria-haspopup="menu" aria-expanded={open} onClick={() => { setConfirmDelete(false); toggle(); }} onDoubleClick={() => { if (isEditing) setRenaming(true); }}>
+                      <span className="db-name-text">{active.name}</span>
+                      <ChevronDown size={16} aria-hidden="true" />
+                    </button>
+                  )}
+                >
+                  {close => (
+                    <>
+                      <div className="db-pop-label">Dashboards</div>
+                      {store.dashboards.map(d => (
+                        <button key={d.id} type="button" role="menuitemradio" aria-checked={d.id === active.id} className="db-pop-item" onClick={() => { switchTo(d.id); close(); }}>
+                          <span className="db-pop-check">{d.id === active.id && <Checkmark size={16} aria-hidden="true" />}</span>
+                          <span className="db-pop-text">{d.name}</span>
+                          <span className="db-pop-meta">{d.widgets.length}</span>
+                        </button>
+                      ))}
+                      {!readOnly && (
+                        <>
+                          <div className="db-pop-sep" />
+                          <button type="button" role="menuitem" className="db-pop-item" onClick={() => { newDashboard(); close(); }}><span className="db-pop-check"><Add size={16} aria-hidden="true" /></span><span className="db-pop-text">New dashboard</span></button>
+                          <button type="button" role="menuitem" className="db-pop-item" onClick={() => { copyDashboard(); close(); }}><span className="db-pop-check"><Copy size={16} aria-hidden="true" /></span><span className="db-pop-text">Duplicate “{active.name}”</span></button>
+                          <button type="button" role="menuitem" className="db-pop-item" onClick={() => { setEditing(true); setRenaming(true); close(); }}><span className="db-pop-check" /><span className="db-pop-text">Rename</span></button>
+                          {confirmDelete ? (
+                            <div className="db-pop-confirm">
+                              <span>Delete “{active.name}”? This can’t be undone.</span>
+                              <span>
+                                <button type="button" role="menuitem" className="db-pop-btn danger" onClick={() => { deleteDashboard(); close(); }}>Delete</button>
+                                <button type="button" role="menuitem" className="db-pop-btn" onClick={() => setConfirmDelete(false)}>Keep</button>
+                              </span>
+                            </div>
+                          ) : (
+                            <button type="button" role="menuitem" className="db-pop-item danger" onClick={() => setConfirmDelete(true)}><span className="db-pop-check"><TrashCan size={16} aria-hidden="true" /></span><span className="db-pop-text">Delete dashboard…</span></button>
+                          )}
+                        </>
+                      )}
+                    </>
+                  )}
+                </Menu>
+              )}
+              <span className="db-version" title="Dashboard Designer version">{VERSION}</span>
+            </div>
+
+            {isEditing && (
+              <div className="db-tools">
+                <button type="button" className="db-tb icon" title="Undo (Ctrl+Z)" aria-label="Undo" disabled={h.past.length === 0} onClick={undo}><Undo size={16} /></button>
+                <button type="button" className="db-tb icon" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled={h.future.length === 0} onClick={redo}><Redo size={16} /></button>
+                <button type="button" data-tour="wire" className={`db-tb${wireMode ? ' is-on' : ''}`} aria-pressed={wireMode} title="Wire mode (W): drag from a widget's port to the widgets it should filter" onClick={() => setWireMode(m => !m)}>
+                  <Connect size={16} aria-hidden="true" />Wire
+                </button>
+                <button type="button" className={`db-tb${flows !== undefined ? ' is-on' : ''}`} title="Action flows: what happens when people click, change or pick something" onClick={() => setFlows(selected ? selected.id : null)}>
+                  <Flow size={16} aria-hidden="true" />Flows
+                </button>
+                <span className="db-sep" />
+                <FilterBarSettings bar={bar} onChange={setBar} />
+                <button type="button" className="db-tb" data-tour="templates" title="Start from a template" onClick={() => setPick(true)}>
+                  <Template size={16} aria-hidden="true" />Templates
+                </button>
+                <button type="button" className="db-tb" title="Find a widget to add (/)" onClick={() => { setTab('add'); window.setTimeout(() => { if (searchRef.current) searchRef.current.focus(); }, 0); }}>
+                  <Add size={16} aria-hidden="true" />Add widget
+                </button>
+              </div>
+            )}
+
+            <div className="db-tools db-tools--end">
+              {!isEditing && (
+                <ViewsMenu
+                  views={views[baseActive.id] || []}
+                  onSave={name => putViews(baseActive.id, l => [...l.filter(v => v.name !== name), { name, state: { sel: barSel, range, refresh: refreshS, fields: barOver[baseActive.id], links: linkOver[baseActive.id] } }])}
+                  onApply={v => {
+                    setBarSel(v.state.sel || {}); setRange((v.state.range as Range) || { preset: 'all' }); setRefreshS(Number(v.state.refresh) || 0);
+                    saveOver(baseActive.id, v.state.fields as Pick<FilterBarConfig, 'fields' | 'time'> | undefined);
+                    saveLinks(baseActive.id, () => (v.state.links as LinkOver[string] | undefined));
+                  }}
+                  onDelete={name => putViews(baseActive.id, l => l.filter(v => v.name !== name))}
+                  onImport={v => putViews(baseActive.id, l => [...l.filter(x => x.name !== v.name), v])}
+                />
+              )}
+              {!isEditing && active.widgets.length > 0 && (
+                <button type="button" className={`db-tb${resizeMode ? ' is-on' : ''}`} aria-pressed={resizeMode} title="Arrange widgets: drag a widget by its title to move it, drag its corner to resize it (only for you)" onClick={() => setResizeMode(m => !m)}>
+                  {resizeMode ? 'Done arranging' : 'Arrange widgets'}
+                </button>
+              )}
+              {!isEditing && lo && <button type="button" className="db-tb" title="Back to the links and sizes this dashboard was saved with" onClick={() => saveLinks(baseActive.id, () => undefined)}>Reset changes</button>}
+              {!isEditing && active.widgets.some(canSend) && (
+                <>
+                  <button type="button" className={`db-tb${linkMode ? ' is-on' : ''}`} aria-pressed={linkMode} title="Link widgets: choose which charts and filters change which widgets (only for you)" onClick={() => setLinkMode(m => !m)}>
+                    <Connect size={16} aria-hidden="true" />{linkMode ? 'Done linking' : 'Link widgets'}
                   </button>
-                )}
-              >
+                </>
+              )}
+              {!readOnly && <button type="button" className="db-tb" title="Take the 1-minute tour" aria-label="Take the tour" onClick={() => setTour(true)}><Help size={16} aria-hidden="true" />Tour</button>}
+              <button type="button" className="db-tb icon" title="Refresh data" aria-label="Refresh data" onClick={refreshAll}><Renew size={16} /></button>
+              <Menu align="right" trigger={({ open, toggle }) => (
+                <button type="button" className={`db-tb icon${open ? ' is-on' : ''}`} title="More" aria-label="More actions" aria-haspopup="menu" aria-expanded={open} onClick={toggle}><OverflowMenuVertical size={16} /></button>
+              )}>
                 {close => (
                   <>
-                    <div className="db-pop-label">Dashboards</div>
-                    {store.dashboards.map(d => (
-                      <button key={d.id} type="button" role="menuitemradio" aria-checked={d.id === active.id} className="db-pop-item" onClick={() => { switchTo(d.id); close(); }}>
-                        <span className="db-pop-check">{d.id === active.id && <Checkmark size={16} aria-hidden="true" />}</span>
-                        <span className="db-pop-text">{d.name}</span>
-                        <span className="db-pop-meta">{d.widgets.length}</span>
-                      </button>
-                    ))}
-                    {!readOnly && (
-                      <>
-                        <div className="db-pop-sep" />
-                        <button type="button" role="menuitem" className="db-pop-item" onClick={() => { newDashboard(); close(); }}><span className="db-pop-check"><Add size={16} aria-hidden="true" /></span><span className="db-pop-text">New dashboard</span></button>
-                        <button type="button" role="menuitem" className="db-pop-item" onClick={() => { copyDashboard(); close(); }}><span className="db-pop-check"><Copy size={16} aria-hidden="true" /></span><span className="db-pop-text">Duplicate “{active.name}”</span></button>
-                        <button type="button" role="menuitem" className="db-pop-item" onClick={() => { setEditing(true); setRenaming(true); close(); }}><span className="db-pop-check" /><span className="db-pop-text">Rename</span></button>
-                        {confirmDelete ? (
-                          <div className="db-pop-confirm">
-                            <span>Delete “{active.name}”? This can’t be undone.</span>
-                            <span>
-                              <button type="button" role="menuitem" className="db-pop-btn danger" onClick={() => { deleteDashboard(); close(); }}>Delete</button>
-                              <button type="button" role="menuitem" className="db-pop-btn" onClick={() => setConfirmDelete(false)}>Keep</button>
-                            </span>
-                          </div>
-                        ) : (
-                          <button type="button" role="menuitem" className="db-pop-item danger" onClick={() => setConfirmDelete(true)}><span className="db-pop-check"><TrashCan size={16} aria-hidden="true" /></span><span className="db-pop-text">Delete dashboard…</span></button>
-                        )}
-                      </>
-                    )}
+                    {!readOnly && <button type="button" role="menuitem" className="db-pop-item" onClick={() => { setTour(true); close(); }}><span className="db-pop-check"><Help size={16} aria-hidden="true" /></span><span className="db-pop-text">Take the tour</span></button>}
+                    <button type="button" role="menuitem" className="db-pop-item" onClick={() => { setApiCheck(true); close(); }}><span className="db-pop-check"><Activity size={16} aria-hidden="true" /></span><span className="db-pop-text">Check the Concert Operate API</span></button>
+                    <button type="button" role="menuitem" className="db-pop-item" onClick={() => { doExport(); close(); }}><span className="db-pop-check"><Download size={16} aria-hidden="true" /></span><span className="db-pop-text">Export as JSON</span></button>
+                    {!readOnly && !authoring && <button type="button" role="menuitem" className="db-pop-item" onClick={() => { if (fileRef.current) fileRef.current.click(); close(); }}><span className="db-pop-check"><Upload size={16} aria-hidden="true" /></span><span className="db-pop-text">Import JSON</span></button>}
+                    {!readOnly && !authoring && hasShared && <button type="button" role="menuitem" className="db-pop-item" onClick={() => { addShared(); close(); }}><span className="db-pop-check"><Copy size={16} aria-hidden="true" /></span><span className="db-pop-text">Add the shared layout</span></button>}
                   </>
                 )}
               </Menu>
-            )}
-            <span className="db-version" title="Dashboard Designer version">{VERSION}</span>
-          </div>
+              <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={e => doImport(e.target.files ? e.target.files[0] : undefined)} />
+              {readOnly ? (
+                <span className="db-badge" title="This layout is fixed. Make a copy to change it.">Read only</span>
+              ) : (
+                <div className="db-seg" role="group" aria-label="Mode" data-tour="mode">
+                  <button type="button" aria-pressed={!isEditing} onClick={() => { setEditing(false); setSelectedId(null); }}>Preview</button>
+                  <button type="button" aria-pressed={isEditing} onClick={() => setEditing(true)}>Edit</button>
+                </div>
+              )}
+            </div>
+          </header>
 
-          {isEditing && (
-            <div className="db-tools">
-              <button type="button" className="db-tb icon" title="Undo (Ctrl+Z)" aria-label="Undo" disabled={h.past.length === 0} onClick={undo}><Undo size={16} /></button>
-              <button type="button" className="db-tb icon" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled={h.future.length === 0} onClick={redo}><Redo size={16} /></button>
-              <button type="button" data-tour="wire" className={`db-tb${wireMode ? ' is-on' : ''}`} aria-pressed={wireMode} title="Wire mode (W): drag from a widget's port to the widgets it should filter" onClick={() => setWireMode(m => !m)}>
-                <Connect size={16} aria-hidden="true" />Wire
-              </button>
-              <button type="button" className={`db-tb${flows !== undefined ? ' is-on' : ''}`} title="Action flows: what happens when people click, change or pick something" onClick={() => setFlows(selected ? selected.id : null)}>
-                <Flow size={16} aria-hidden="true" />Flows
-              </button>
-              <span className="db-sep" />
-              <FilterBarSettings bar={bar} onChange={setBar} />
-              <button type="button" className="db-tb" data-tour="templates" title="Start from a template" onClick={() => setPick(true)}>
-                <Template size={16} aria-hidden="true" />Templates
-              </button>
-              <button type="button" className="db-tb" title="Find a widget to add (/)" onClick={() => { setTab('add'); window.setTimeout(() => { if (searchRef.current) searchRef.current.focus(); }, 0); }}>
-                <Add size={16} aria-hidden="true" />Add widget
-              </button>
+          {(saveFailed || notice) && (
+            <div className="db-notes">
+              {saveFailed && (
+                <InlineNotification kind="warning" lowContrast hideCloseButton title="Not saved in this browser." subtitle="Storage is blocked or full. Use Export to keep your work." />
+              )}
+              {notice && (
+                <InlineNotification kind={notice.kind} lowContrast title={notice.text} onCloseButtonClick={() => setNotice(null)} />
+              )}
             </div>
           )}
 
-          <div className="db-tools db-tools--end">
-            {!isEditing && (
-              <ViewsMenu
-                views={views[baseActive.id] || []}
-                onSave={name => putViews(baseActive.id, l => [...l.filter(v => v.name !== name), { name, state: { sel: barSel, range, refresh: refreshS, fields: barOver[baseActive.id], links: linkOver[baseActive.id] } }])}
-                onApply={v => {
-                  setBarSel(v.state.sel || {}); setRange((v.state.range as Range) || { preset: 'all' }); setRefreshS(Number(v.state.refresh) || 0);
-                  saveOver(baseActive.id, v.state.fields as Pick<FilterBarConfig, 'fields' | 'time'> | undefined);
-                  saveLinks(baseActive.id, () => (v.state.links as LinkOver[string] | undefined));
-                }}
-                onDelete={name => putViews(baseActive.id, l => l.filter(v => v.name !== name))}
-                onImport={v => putViews(baseActive.id, l => [...l.filter(x => x.name !== v.name), v])}
-              />
-            )}
-            {!isEditing && active.widgets.length > 0 && (
-              <button type="button" className={`db-tb${resizeMode ? ' is-on' : ''}`} aria-pressed={resizeMode} title="Arrange widgets: drag a widget by its title to move it, drag its corner to resize it (only for you)" onClick={() => setResizeMode(m => !m)}>
-                {resizeMode ? 'Done arranging' : 'Arrange widgets'}
-              </button>
-            )}
-            {!isEditing && lo && <button type="button" className="db-tb" title="Back to the links and sizes this dashboard was saved with" onClick={() => saveLinks(baseActive.id, () => undefined)}>Reset changes</button>}
-            {!isEditing && active.widgets.some(canSend) && (
-              <>
-                <button type="button" className={`db-tb${linkMode ? ' is-on' : ''}`} aria-pressed={linkMode} title="Link widgets: choose which charts and filters change which widgets (only for you)" onClick={() => setLinkMode(m => !m)}>
-                  <Connect size={16} aria-hidden="true" />{linkMode ? 'Done linking' : 'Link widgets'}
+          {filterChips.length > 0 && (
+            <div className="db-filters" role="status" aria-label="Active filters">
+              <span>Filtering by</span>
+              {filterChips.map(({ f, label, from }) => (
+                <button key={`${f.from}-${f.field}-${f.value}`} type="button" className="db-chip" title={from ? `Set from ${from}. Click to remove.` : 'Click to remove'} onClick={() => toggleFilter(f.from, f.query, f.field, f.value)}>
+                  {label} ×
                 </button>
-              </>
-            )}
-            {!readOnly && <button type="button" className="db-tb" title="Take the 1-minute tour" aria-label="Take the tour" onClick={() => setTour(true)}><Help size={16} aria-hidden="true" />Tour</button>}
-            <button type="button" className="db-tb icon" title="Refresh data" aria-label="Refresh data" onClick={refreshAll}><Renew size={16} /></button>
-            <Menu align="right" trigger={({ open, toggle }) => (
-              <button type="button" className={`db-tb icon${open ? ' is-on' : ''}`} title="More" aria-label="More actions" aria-haspopup="menu" aria-expanded={open} onClick={toggle}><OverflowMenuVertical size={16} /></button>
-            )}>
-              {close => (
-                <>
-                  {!readOnly && <button type="button" role="menuitem" className="db-pop-item" onClick={() => { setTour(true); close(); }}><span className="db-pop-check"><Help size={16} aria-hidden="true" /></span><span className="db-pop-text">Take the tour</span></button>}
-                  <button type="button" role="menuitem" className="db-pop-item" onClick={() => { setApiCheck(true); close(); }}><span className="db-pop-check"><Activity size={16} aria-hidden="true" /></span><span className="db-pop-text">Check the Concert Operate API</span></button>
-                  <button type="button" role="menuitem" className="db-pop-item" onClick={() => { doExport(); close(); }}><span className="db-pop-check"><Download size={16} aria-hidden="true" /></span><span className="db-pop-text">Export as JSON</span></button>
-                  {!readOnly && !authoring && <button type="button" role="menuitem" className="db-pop-item" onClick={() => { if (fileRef.current) fileRef.current.click(); close(); }}><span className="db-pop-check"><Upload size={16} aria-hidden="true" /></span><span className="db-pop-text">Import JSON</span></button>}
-                  {!readOnly && !authoring && hasShared && <button type="button" role="menuitem" className="db-pop-item" onClick={() => { addShared(); close(); }}><span className="db-pop-check"><Copy size={16} aria-hidden="true" /></span><span className="db-pop-text">Add the shared layout</span></button>}
-                </>
-              )}
-            </Menu>
-            <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={e => doImport(e.target.files ? e.target.files[0] : undefined)} />
- {readOnly ? (
-              <span className="db-badge" title="This layout is fixed. Make a copy to change it.">Read only</span>
-            ) : (
-              <div className="db-seg" role="group" aria-label="Mode" data-tour="mode">
-                <button type="button" aria-pressed={!isEditing} onClick={() => { setEditing(false); setSelectedId(null); }}>Preview</button>
-                <button type="button" aria-pressed={isEditing} onClick={() => setEditing(true)}>Edit</button>
-              </div>
-            )}
-          </div>
-        </header>
-
-        {(saveFailed || notice) && (
-          <div className="db-notes">
-            {saveFailed && (
-              <InlineNotification kind="warning" lowContrast hideCloseButton title="Not saved in this browser." subtitle="Storage is blocked or full. Use Export to keep your work." />
-            )}
-            {notice && (
-              <InlineNotification kind={notice.kind} lowContrast title={notice.text} onCloseButtonClick={() => setNotice(null)} />
-            )}
-          </div>
-        )}
-
-        {filterChips.length > 0 && (
-          <div className="db-filters" role="status" aria-label="Active filters">
-            <span>Filtering by</span>
-            {filterChips.map(({ f, label, from }) => (
-              <button key={`${f.from}-${f.field}-${f.value}`} type="button" className="db-chip" title={from ? `Set from ${from}. Click to remove.` : 'Click to remove'} onClick={() => toggleFilter(f.from, f.query, f.field, f.value)}>
-                {label} ×
-              </button>
-            ))}
-            <button type="button" className="db-link" onClick={() => setFilters([])}>Clear all</button>
-          </div>
-        )}
-
-        {bar && (
-          <FilterBar
-            bar={bar}
-            hub={hub}
-            sel={barSel}
-            onSel={(k, v) => setBarSel(cur => ({ ...cur, [k]: v }))}
-            range={range}
-            onRange={setRange}
-            refresh={refreshS}
-            onRefresh={setRefreshS}
-            onClear={() => { setBarSel({}); setRange({ preset: 'all' }); }}
-            extra={(
-              <div className="db-fb-field db-fb-fields">
-                <Menu align="right" trigger={({ open, toggle: t }) => (
-                  <button type="button" className={`db-fb-btn${open || over ? ' is-on' : ''}`} aria-haspopup="dialog" aria-expanded={open} title="Add or remove filters on this bar" onClick={t}>
-                    <Add size={16} aria-hidden="true" />Add or remove filters
-                  </button>
-                )}>
-                  {() => <FilterFieldsMenu bar={bar} changed={Boolean(over)}
-                    onChange={b => (isEditing ? setBar(b) : saveOver(active.id, { fields: b.fields, time: b.time }))}
-                    onReset={() => saveOver(active.id, undefined)} />}
-                </Menu>
-              </div>
-            )}
-          />
-        )}
-
-        {linkMode && !isEditing && <p className="db-linkhint" role="status"><strong>Linking.</strong> Drag from the dot on a chart or choice to the widgets it should filter; click a line to cut it. The <em>Filter bar</em> chip on a widget switches whether it follows the bar above. Only you see these changes.</p>}
-        <div className={`db-body${isEditing ? ' is-editing' : ''}`}>
-          {isEditing && (
-            <aside className="db-dock db-dock--left" aria-label="Widget library" data-tour="library">
-              <div className="db-dock-in">
-              <Library
-                sections={sections}
-                widgets={active.widgets}
-                selectedId={selectedId}
-                tab={tab}
-                onTab={setTab}
-                searchRef={searchRef}
-                onSelect={setSelectedId}
-                onDuplicate={duplicateWidget}
-                onRemove={removeWidget}
-                onWire={updateWidget}
-              />
-              </div>
-            </aside>
+              ))}
+              <button type="button" className="db-link" onClick={() => setFilters([])}>Clear all</button>
+            </div>
           )}
-          <LinkCtx.Provider value={linkApi}>
-          <div className="db-stage" ref={stageRef} data-tour="canvas">
-            {showStart && <StartScreen replace={active.widgets.length > 0} onPick={applyTemplate} onBlank={() => { setPick(false); setBlank(b => [...b, active.id]); }} onTour={() => setTour(true)} />}
-            <GridCanvas
-              widgets={active.widgets.filter(w => !w.parent)}
-              wired={wired}
-              rowH={active.rowH}
-              editing={isEditing}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-              onLayout={next => setWidgets([...next, ...active.widgets.filter(w => w.parent)])}
-              onRemove={removeWidget}
-              onDuplicate={duplicateWidget}
-              renderBody={renderBody}
-            />
-            <WireLayer
-              stageRef={stageRef}
-              widgets={active.widgets}
-              filters={filters}
-              values={values}
-              wireMode={(wireMode && isEditing) || (linkMode && !isEditing)}
-              selectedId={selectedId}
-              onSendTo={(id, sendTo) => { if (!isEditing) { runtimeSend(id, sendTo); return; } const w = active.widgets.find(x => x.id === id); if (w) { const cfg = { ...w.config }; if (sendTo === undefined) delete cfg.sendTo; else cfg.sendTo = sendTo; updateWidget({ ...w, config: cfg }, `${id}:sendTo`); } }}
-              onBindOp={(id, op) => { if (!isEditing) return; const w = active.widgets.find(x => x.id === id); if (w && w.config.bind) updateWidget({ ...w, config: { ...w.config, bind: { ...w.config.bind, op } } }, `${id}:op`); }}
-              onNotice={text => setNotice({ kind: 'info', text })}
-              passive={isEditing}
-              wireKind={isEditing ? wireKind : 'data'}
-              onWireKind={isEditing ? setWireKind : undefined}
-              onActions={isEditing ? (id, on) => { const w = active.widgets.find(x => x.id === id); if (w) { const cfg = { ...w.config }; if (on && on.length) cfg.on = on; else delete cfg.on; updateWidget({ ...w, config: cfg }, `${id}:on`); } } : undefined}
-            />
-          </div>
-          </LinkCtx.Provider>
-          {isEditing && (
-            <aside className={`db-dock db-dock--right${selected ? '' : ' db-dock--idle'}`} aria-label="Settings" data-tour="settings">
-              <div className="db-dock-in">
-              {selected ? (
-                <Inspector widget={selected} barOn={Boolean(bar)} everyone={active.widgets} slots={slots} onMove={moveTo} onFlows={id => setFlows(id)} onChange={updateWidget} partsFor={authoring ? authoring.partsFor : undefined} onClose={() => setSelectedId(null)} />
-              ) : (
-                <div className="db-rest">
-                  <h2>Nothing selected</h2>
-                  <p>Click a widget on the canvas, or pick one under Layers, to change its data and look.</p>
-                  <dl className="db-keys">
-                    <div><dt><kbd>/</kbd></dt><dd>Search widgets</dd></div>
-                    <div><dt><kbd>Ctrl</kbd><kbd>Z</kbd></dt><dd>Undo</dd></div>
-                    <div><dt><kbd>Ctrl</kbd><kbd>D</kbd></dt><dd>Duplicate the selected widget</dd></div>
-                    <div><dt><kbd>Del</kbd></dt><dd>Remove the selected widget</dd></div>
-                    <div><dt><kbd>←↑↓→</kbd></dt><dd>Move it one cell</dd></div>
-                    <div><dt><kbd>Shift</kbd><kbd>←↑↓→</kbd></dt><dd>Resize it one cell</dd></div>
-                  </dl>
+
+          {bar && (
+            <FilterBar
+              bar={bar}
+              hub={hub}
+              sel={barSel}
+              onSel={(k, v) => setBarSel(cur => ({ ...cur, [k]: v }))}
+              range={range}
+              onRange={setRange}
+              refresh={refreshS}
+              onRefresh={setRefreshS}
+              onClear={() => { setBarSel({}); setRange({ preset: 'all' }); }}
+              extra={(
+                <div className="db-fb-field db-fb-fields">
+                  <Menu align="right" trigger={({ open, toggle: t }) => (
+                    <button type="button" className={`db-fb-btn${open || over ? ' is-on' : ''}`} aria-haspopup="dialog" aria-expanded={open} title="Add or remove filters on this bar" onClick={t}>
+                      <Add size={16} aria-hidden="true" />Add or remove filters
+                    </button>
+                  )}>
+                    {() => <FilterFieldsMenu bar={bar} changed={Boolean(over)}
+                      onChange={b => (isEditing ? setBar(b) : saveOver(active.id, { fields: b.fields, time: b.time }))}
+                      onReset={() => saveOver(active.id, undefined)} />}
+                  </Menu>
                 </div>
               )}
+            />
+          )}
+
+          {linkMode && !isEditing && <p className="db-linkhint" role="status"><strong>Linking.</strong> Drag from the dot on a chart or choice to the widgets it should filter; click a line to cut it. The <em>Filter bar</em> chip on a widget switches whether it follows the bar above. Only you see these changes.</p>}
+          <div className={`db-body${isEditing ? ' is-editing' : ''}`}>
+            {isEditing && (
+              <aside className="db-dock db-dock--left" aria-label="Widget library" data-tour="library">
+                <div className="db-dock-in">
+                  <Library
+                    sections={sections}
+                    widgets={active.widgets}
+                    selectedId={selectedId}
+                    tab={tab}
+                    onTab={setTab}
+                    searchRef={searchRef}
+                    onSelect={setSelectedId}
+                    onDuplicate={duplicateWidget}
+                    onRemove={removeWidget}
+                    onWire={updateWidget}
+                  />
+                </div>
+              </aside>
+            )}
+            <LinkCtx.Provider value={linkApi}>
+              <div className="db-stage" ref={stageRef} data-tour="canvas">
+                {showStart && <StartScreen replace={active.widgets.length > 0} onPick={applyTemplate} onBlank={() => { setPick(false); setBlank(b => [...b, active.id]); }} onTour={() => setTour(true)} />}
+                <GridCanvas
+                  widgets={active.widgets.filter(w => !w.parent)}
+                  wired={wired}
+                  rowH={active.rowH}
+                  editing={isEditing}
+                  selectedId={selectedId}
+                  onSelect={setSelectedId}
+                  onLayout={next => setWidgets([...next, ...active.widgets.filter(w => w.parent)])}
+                  onRemove={removeWidget}
+                  onDuplicate={duplicateWidget}
+                  renderBody={renderBody}
+                />
+                <WireLayer
+                  stageRef={stageRef}
+                  widgets={active.widgets}
+                  filters={filters}
+                  values={values}
+                  wireMode={(wireMode && isEditing) || (linkMode && !isEditing)}
+                  selectedId={selectedId}
+                  onSendTo={(id, sendTo) => { if (!isEditing) { runtimeSend(id, sendTo); return; } const w = active.widgets.find(x => x.id === id); if (w) { const cfg = { ...w.config }; if (sendTo === undefined) delete cfg.sendTo; else cfg.sendTo = sendTo; updateWidget({ ...w, config: cfg }, `${id}:sendTo`); } }}
+                  onBindOp={(id, op) => { if (!isEditing) return; const w = active.widgets.find(x => x.id === id); if (w && w.config.bind) updateWidget({ ...w, config: { ...w.config, bind: { ...w.config.bind, op } } }, `${id}:op`); }}
+                  onNotice={text => setNotice({ kind: 'info', text })}
+                  passive={isEditing}
+                  wireKind={isEditing ? wireKind : 'data'}
+                  onWireKind={isEditing ? setWireKind : undefined}
+                  onActions={isEditing ? (id, on) => { const w = active.widgets.find(x => x.id === id); if (w) { const cfg = { ...w.config }; if (on && on.length) cfg.on = on; else delete cfg.on; updateWidget({ ...w, config: cfg }, `${id}:on`); } } : undefined}
+                />
               </div>
-            </aside>
-          )}
+            </LinkCtx.Provider>
+            {isEditing && (
+              <aside className={`db-dock db-dock--right${selected ? '' : ' db-dock--idle'}`} aria-label="Settings" data-tour="settings">
+                <div className="db-dock-in">
+                  {selected ? (
+                    <Inspector widget={selected} barOn={Boolean(bar)} everyone={active.widgets} slots={slots} onMove={moveTo} onFlows={id => setFlows(id)} onChange={updateWidget} partsFor={authoring ? authoring.partsFor : undefined} onClose={() => setSelectedId(null)} />
+                  ) : (
+                    <div className="db-rest">
+                      <h2>Nothing selected</h2>
+                      <p>Click a widget on the canvas, or pick one under Layers, to change its data and look.</p>
+                      <dl className="db-keys">
+                        <div><dt><kbd>/</kbd></dt><dd>Search widgets</dd></div>
+                        <div><dt><kbd>Ctrl</kbd><kbd>Z</kbd></dt><dd>Undo</dd></div>
+                        <div><dt><kbd>Ctrl</kbd><kbd>D</kbd></dt><dd>Duplicate the selected widget</dd></div>
+                        <div><dt><kbd>Del</kbd></dt><dd>Remove the selected widget</dd></div>
+                        <div><dt><kbd>←↑↓→</kbd></dt><dd>Move it one cell</dd></div>
+                        <div><dt><kbd>Shift</kbd><kbd>←↑↓→</kbd></dt><dd>Resize it one cell</dd></div>
+                      </dl>
+                    </div>
+                  )}
+                </div>
+              </aside>
+            )}
+          </div>
+
+          {drillReq && <DrillDrawer req={drillReq} onClose={() => setDrillReq(null)} />}
+
+          <footer className="db-status">
+            <span className={`db-save db-save--${saveState_}`}><i aria-hidden="true" />{saveText}</span>
+            <span>{active.widgets.length} widget{active.widgets.length === 1 ? '' : 's'}</span>
+            {filters.length > 0 && <span>{filters.length} filter{filters.length === 1 ? '' : 's'} active</span>}
+            <span className="db-status-fill" />
+            {isEditing && selected && (
+              <span className="db-status-sel"><Glyph type={selected.type} size={16} />{typeLabel(selected.type)}<code>x {selected.x} · y {selected.y} · {selected.w}×{selected.h}</code></span>
+            )}
+          </footer>
+          {apiCheck && <ApiCheck hub={hub} onClose={() => setApiCheck(false)} />}
+          {isEditing && flows !== undefined && <ActionStudio widgets={active.widgets} focus={flows} onWidgets={setWidgets} onClose={() => setFlows(undefined)} />}
         </div>
-
-        {drillReq && <DrillDrawer req={drillReq} onClose={() => setDrillReq(null)} />}
-
-        <footer className="db-status">
-          <span className={`db-save db-save--${saveState_}`}><i aria-hidden="true" />{saveText}</span>
-          <span>{active.widgets.length} widget{active.widgets.length === 1 ? '' : 's'}</span>
-          {filters.length > 0 && <span>{filters.length} filter{filters.length === 1 ? '' : 's'} active</span>}
-          <span className="db-status-fill" />
-          {isEditing && selected && (
-            <span className="db-status-sel"><Glyph type={selected.type} size={16} />{typeLabel(selected.type)}<code>x {selected.x} · y {selected.y} · {selected.w}×{selected.h}</code></span>
-          )}
-        </footer>
-        {apiCheck && <ApiCheck hub={hub} onClose={() => setApiCheck(false)} />}
-        {isEditing && flows !== undefined && <ActionStudio widgets={active.widgets} focus={flows} onWidgets={setWidgets} onClose={() => setFlows(undefined)} />}
-      </div>
-      {tour && <Tour onClose={() => setTour(false)} />}
+        {tour && <Tour onClose={() => setTour(false)} />}
       </NestCtx.Provider>
     </BuilderCtx.Provider></ActionCtx.Provider>
   );

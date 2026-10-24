@@ -599,9 +599,9 @@ const incidentActions = (): Widget[] => {
 /** Any alert filter, typed in once, drives raw alerts and the incidents that contain them. */
 const filterLab = (): Widget[] => {
   const s = new Sheet();
-  const box = s.add(cc('TextInput'), 'Alert filter', 0, 0, 8, 3, { props: { labelText: 'Alert filter (sent to the server as-is)', placeholder: "severity >= 5 and state != 'clear', then Enter" } });
-  s.add('text', 'Examples', 8, 0, 4, 3, { ...NOTE, text: "Try severity = 6, state = 'clear' or sender.name = 'Instana'." });
-  const raw = { query: 'getRawAlerts' as const, filter: "state != 'clear'" };
+  const box = s.add(cc('TextInput'), 'Alert filter', 0, 0, 8, 3, { props: { labelText: 'Alert filter (sent to the server as-is)', placeholder: 'severity >= 5 and state != \'clear\', then Enter' } });
+  s.add('text', 'Examples', 8, 0, 4, 3, { ...NOTE, text: 'Try severity = 6, state = \'clear\' or sender.name = \'Instana\'.' });
+  const raw = { query: 'getRawAlerts' as const, filter: 'state != \'clear\'' };
   const byInc = { query: 'getStoriesByAlerts' as const };
   const k1 = kpi(s, 'Matching alerts', 0, 3, 3, { ...raw, ...NAVY });
   const k2 = kpi(s, 'Incidents they are in', 3, 3, 3, { ...byInc, ...PURPLE });

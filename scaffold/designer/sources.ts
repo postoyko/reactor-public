@@ -43,12 +43,12 @@ export const SOURCES: SourceDef[] = [
   {
     id: 'getRawAlerts', label: 'Alerts (raw, any filter)', api: 'getRawAlerts', group: 'Live data', shape: 'alerts',
     description: 'Alerts straight from the store, including cleared ones, for any filter.',
-    param: { label: 'Alert filter', help: 'Sent to the server as-is, for example severity >= 5. Required by this query.', placeholder: "state != 'clear'", required: true }
+    param: { label: 'Alert filter', help: 'Sent to the server as-is, for example severity >= 5. Required by this query.', placeholder: 'state != \'clear\'', required: true }
   },
   {
     id: 'getStoriesByAlerts', label: 'Incidents of matching alerts', api: 'getStoriesByAlerts', group: 'Live data', shape: 'stories',
     description: 'The incidents that contain alerts matching a filter.',
-    param: { label: 'Alert filter', help: 'Incidents whose alerts match this filter, for example severity = 6. Empty means open alerts.', placeholder: "severity = 6" }
+    param: { label: 'Alert filter', help: 'Incidents whose alerts match this filter, for example severity = 6. Empty means open alerts.', placeholder: 'severity = 6' }
   },
   {
     // getIncidentAlerts itself fails inside Concert Operate (checked 2026-10-24); getAlerts takes the incident as storyId

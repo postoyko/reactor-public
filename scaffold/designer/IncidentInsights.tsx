@@ -78,27 +78,27 @@ export default function IncidentInsights({ storyId, title, show = 'both' }: { st
   return (
     <div className="db-insight">
       {showCause && <><h4>Probable cause</h4>
-      {s.causes.length === 0 ? <p className="db-note">No alert of this incident has a ranked probable cause.</p> : (
-        <table>
-          <thead><tr><th>Rank</th><th>Alert</th><th>Score</th><th>Severity score</th><th>Class</th></tr></thead>
-          <tbody>{s.causes.slice(0, 8).map((c, i) => <tr key={i}><td>{c.rank === 99 ? '-' : c.rank}</td><td>{c.alert}</td><td>{c.score ?? '-'}</td><td>{c.severityScore ?? '-'}</td><td>{c.classification || '-'}</td></tr>)}</tbody>
-        </table>
-      )}
-      <h4>Other insights on its {s.alerts} alert{s.alerts === 1 ? '' : 's'}</h4>
-      {s.others.length === 0 ? <p className="db-note">None.</p> : <p className="db-insight-types">{s.others.map(([t, n]) => <span key={t} className="db-insight-tag">{t} <b>{n}</b></span>)}</p>}
+        {s.causes.length === 0 ? <p className="db-note">No alert of this incident has a ranked probable cause.</p> : (
+          <table>
+            <thead><tr><th>Rank</th><th>Alert</th><th>Score</th><th>Severity score</th><th>Class</th></tr></thead>
+            <tbody>{s.causes.slice(0, 8).map((c, i) => <tr key={i}><td>{c.rank === 99 ? '-' : c.rank}</td><td>{c.alert}</td><td>{c.score ?? '-'}</td><td>{c.severityScore ?? '-'}</td><td>{c.classification || '-'}</td></tr>)}</tbody>
+          </table>
+        )}
+        <h4>Other insights on its {s.alerts} alert{s.alerts === 1 ? '' : 's'}</h4>
+        {s.others.length === 0 ? <p className="db-note">None.</p> : <p className="db-insight-types">{s.others.map(([t, n]) => <span key={t} className="db-insight-tag">{t} <b>{n}</b></span>)}</p>}
       </>}
       {showSimilar && <><h4>Similar incidents</h4>
-      {similar.error ? <p className="db-note">{similar.error}</p> : !similar.list ? <p className="db-note">Looking for similar incidents…</p> : similar.list.length === 0 ? <p className="db-note">No similar incidents found.</p> : (
-        <ul className="db-similar">
-          {similar.list.slice(0, 6).map(x => (
-            <li key={x.id}>
-              <div className="db-similar-head"><b>{x.url ? <a href={x.url} target="_blank" rel="noopener noreferrer">{x.title}</a> : x.title}</b>{x.score !== undefined && <span className="db-insight-tag">match {x.score.toFixed(2)}</span>}</div>
-              {x.resolution && <div className="db-similar-line">Resolved: {x.resolution}</div>}
-              {x.started && <div className="db-similar-line">Started {x.started.slice(0, 10)}</div>}
-            </li>
-          ))}
-        </ul>
-      )}
+        {similar.error ? <p className="db-note">{similar.error}</p> : !similar.list ? <p className="db-note">Looking for similar incidents…</p> : similar.list.length === 0 ? <p className="db-note">No similar incidents found.</p> : (
+          <ul className="db-similar">
+            {similar.list.slice(0, 6).map(x => (
+              <li key={x.id}>
+                <div className="db-similar-head"><b>{x.url ? <a href={x.url} target="_blank" rel="noopener noreferrer">{x.title}</a> : x.title}</b>{x.score !== undefined && <span className="db-insight-tag">match {x.score.toFixed(2)}</span>}</div>
+                {x.resolution && <div className="db-similar-line">Resolved: {x.resolution}</div>}
+                {x.started && <div className="db-similar-line">Started {x.started.slice(0, 10)}</div>}
+              </li>
+            ))}
+          </ul>
+        )}
       </>}
     </div>
   );

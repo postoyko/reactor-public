@@ -45,7 +45,6 @@ export default function IncidentTimeline({ row }: { row: Row }) {
   const mine = runs.filter(r => r.alertId && ids.has(r.alertId));
   useEffect(() => {
     Array.from(new Set(mine.map(r => r.runbookId))).forEach(id => { if (id && !names[id]) runbookDetail(ALERT_QUERY_PARAMS.tenantId, id).then(i => setNames(n => ({ ...n, [id]: i.name }))); });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mine.map(r => r.runbookId).join(',')]);
 
   const evs: Ev[] = [];

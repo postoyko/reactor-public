@@ -51,7 +51,6 @@ export default function Tour({ onClose }: { onClose: () => void }) {
     window.addEventListener('resize', measure);
     const id = window.setInterval(measure, 400);
     return () => { window.removeEventListener('resize', measure); window.clearInterval(id); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [i]);
 
   useEffect(() => {
@@ -62,7 +61,6 @@ export default function Tour({ onClose }: { onClose: () => void }) {
     };
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [i]);
 
   const vw = window.innerWidth, vh = window.innerHeight;

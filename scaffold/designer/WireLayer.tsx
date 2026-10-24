@@ -324,9 +324,9 @@ export default function WireLayer({ stageRef, widgets, filters, values, wireMode
             </span>
           )}
           {actMode ? <><strong>Actions.</strong> Drag from a <i className="db-wire-i act" /> on any widget to the widget it should change (open a dialog, show a panel, choose a tab, set a value ...). Click a line to choose the event and the action, or to cut it. Wires run when the dashboard is used (Preview).</> : <><strong>Wire mode.</strong> Drag from a <i className="db-wire-i" /> to a widget to connect them. Click a line for its menu (type, comparison, cut). <span className="db-wire-chip" /> filter, <span className="db-wire-chip value" /> typed value, dashed = automatic: every widget on the same data.
-          {sel && canSend(sel) && sel.config.sendTo && !sel.config.bind && (
-            <button type="button" className="db-link" onClick={() => onSendTo(sel.id, undefined)}>Make “{sel.title}” automatic again</button>
-          )}</>}
+            {sel && canSend(sel) && sel.config.sendTo && !sel.config.bind && (
+              <button type="button" className="db-link" onClick={() => onSendTo(sel.id, undefined)}>Make “{sel.title}” automatic again</button>
+            )}</>}
         </div>
       )}
     </>

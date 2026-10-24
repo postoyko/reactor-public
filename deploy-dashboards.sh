@@ -118,6 +118,17 @@ sync_dashboard "blast-radius"             "blast-radius"      "blast-radius.pane
 sync_dashboard "incident-atlas"          "incident-atlas"    "incident-atlas.panel.ts"
 sync_dashboard "dashboard-builder"        "dashboard-builder" "dashboard-builder.panel.ts"
 
+# The two copies of the Dashboard Designer must match (scaffold/designer is the master; see sync-designer.sh).
+if [ -x "$ROOT_DIR/sync-designer.sh" ] && [ -d "$ROOT_DIR/scaffold/designer" ] && [ -d "$ROOT_DIR/dashboards/dashboard-builder" ]; then
+  if ! drift="$("$ROOT_DIR/sync-designer.sh" --check)"; then
+    echo "❌ dashboard-builder: dashboards/dashboard-builder differs from scaffold/designer in:"
+    echo "$drift" | sed 's/^/     /'
+    echo "   Run ./sync-designer.sh (master -> build copy) or ./sync-designer.sh --back (keep the edits in the build copy), then deploy again."
+    [ "${FORCE:-}" = "1" ] || exit 1
+    echo "   FORCE=1: deploying the build copy as it is."
+  fi
+fi
+
 # The Dashboard Designer must be registered and routed by hand (see its INSTALL.md); fail early instead of deploying a page nobody can reach.
 if [ -d "$ROOT_DIR/dashboards/dashboard-builder" ]; then
   grep -q "dashboard-builder.panel" "$EXT_DIR/src/index.js" \

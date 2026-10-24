@@ -428,7 +428,7 @@ export function TextWidget({ w }: { w: Widget }) {
     <div className="db-text">
       {lines.map((l, i) => l.startsWith('# ') ? <h2 key={i} className="db-text-h">{l.slice(2)}</h2>
         : l.startsWith('- ') ? <div key={i} className="db-text-li">{l.slice(2)}</div>
-        : l.trim() === '' ? <div key={i} className="db-text-gap" /> : <p key={i} className="db-text-p">{l}</p>)}
+          : l.trim() === '' ? <div key={i} className="db-text-gap" /> : <p key={i} className="db-text-p">{l}</p>)}
     </div>
   );
 }

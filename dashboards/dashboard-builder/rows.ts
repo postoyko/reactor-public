@@ -49,7 +49,7 @@ export function serviceOf(text: string): string {
   return 'Digital Microservices';
 }
 
-export const RUNBOOK_COLUMN = "@insights.type='aiops.ibm.com/insight-type/runbook'";
+export const RUNBOOK_COLUMN = '@insights.type=\'aiops.ibm.com/insight-type/runbook\'';
 const ins = (t: string) => `@insights.type='aiops.ibm.com/insight-type/${t}'`;
 const causal = (src: string) => `${ins('relationship/causal')} and insights.source='aiops.ibm.com/insight-source/relationship/causal/${src}'`;
 export const COL = {
@@ -84,50 +84,50 @@ export interface FieldInfo {
 }
 
 const ALERT_FIELDS: FieldInfo[] = [
-    { key: 'severityLabel', label: 'Severity', kind: 'text' },
-    { key: 'severity', label: 'Severity (number)', kind: 'number' },
-    { key: 'state', label: 'State', kind: 'text' },
-    { key: 'resource', label: 'Resource', kind: 'text' },
-    { key: 'sender', label: 'Source (sender)', kind: 'text' },
-    { key: 'type', label: 'Type', kind: 'text' },
-    { key: 'team', label: 'Team', kind: 'text' },
-    { key: 'service', label: 'Business service', kind: 'text' },
-    { key: 'runbooks', label: 'Runbooks attached', kind: 'number' },
-    { key: 'eventCount', label: 'Event count', kind: 'number' },
-    { key: 'runbookName', label: 'Runbook', kind: 'text' },
-    { key: 'runbookAutomated', label: 'Runbook type', kind: 'text' },
-    { key: 'inIncident', label: 'In an incident', kind: 'text' },
-    { key: 'incidentCount', label: 'Incidents', kind: 'number' },
-    { key: 'criticality', label: 'Business criticality', kind: 'number' },
-    { key: 'entityType', label: 'Entity type', kind: 'text' },
-    { key: 'topologyGroup', label: 'Topology group', kind: 'text' },
-    { key: 'anomaly', label: 'Anomaly', kind: 'text' },
-    { key: 'seasonal', label: 'Seasonal', kind: 'text' },
-    { key: 'goldenSignal', label: 'Golden signal', kind: 'text' },
-    { key: 'logFixes', label: 'Log-analysis fixes', kind: 'number' },
-    { key: 'causalGroup', label: 'Causal group', kind: 'text' },
-    { key: 'causalLinks', label: 'Causal links', kind: 'number' },
-    { key: 'signature', label: 'Signature', kind: 'text' },
-    { key: 'recurrence', label: 'Times seen', kind: 'number' },
-    { key: 'owner', label: 'Owner', kind: 'text' },
-    { key: 'acknowledged', label: 'Acknowledged', kind: 'text' },
-    { key: 'summary', label: 'Summary', kind: 'text' },
-    { key: 'firstOccurrence', label: 'First occurrence', kind: 'time' },
-    { key: 'lastOccurrence', label: 'Last occurrence', kind: 'time' },
-    { key: 'id', label: 'Alert id', kind: 'text' }
+  { key: 'severityLabel', label: 'Severity', kind: 'text' },
+  { key: 'severity', label: 'Severity (number)', kind: 'number' },
+  { key: 'state', label: 'State', kind: 'text' },
+  { key: 'resource', label: 'Resource', kind: 'text' },
+  { key: 'sender', label: 'Source (sender)', kind: 'text' },
+  { key: 'type', label: 'Type', kind: 'text' },
+  { key: 'team', label: 'Team', kind: 'text' },
+  { key: 'service', label: 'Business service', kind: 'text' },
+  { key: 'runbooks', label: 'Runbooks attached', kind: 'number' },
+  { key: 'eventCount', label: 'Event count', kind: 'number' },
+  { key: 'runbookName', label: 'Runbook', kind: 'text' },
+  { key: 'runbookAutomated', label: 'Runbook type', kind: 'text' },
+  { key: 'inIncident', label: 'In an incident', kind: 'text' },
+  { key: 'incidentCount', label: 'Incidents', kind: 'number' },
+  { key: 'criticality', label: 'Business criticality', kind: 'number' },
+  { key: 'entityType', label: 'Entity type', kind: 'text' },
+  { key: 'topologyGroup', label: 'Topology group', kind: 'text' },
+  { key: 'anomaly', label: 'Anomaly', kind: 'text' },
+  { key: 'seasonal', label: 'Seasonal', kind: 'text' },
+  { key: 'goldenSignal', label: 'Golden signal', kind: 'text' },
+  { key: 'logFixes', label: 'Log-analysis fixes', kind: 'number' },
+  { key: 'causalGroup', label: 'Causal group', kind: 'text' },
+  { key: 'causalLinks', label: 'Causal links', kind: 'number' },
+  { key: 'signature', label: 'Signature', kind: 'text' },
+  { key: 'recurrence', label: 'Times seen', kind: 'number' },
+  { key: 'owner', label: 'Owner', kind: 'text' },
+  { key: 'acknowledged', label: 'Acknowledged', kind: 'text' },
+  { key: 'summary', label: 'Summary', kind: 'text' },
+  { key: 'firstOccurrence', label: 'First occurrence', kind: 'time' },
+  { key: 'lastOccurrence', label: 'Last occurrence', kind: 'time' },
+  { key: 'id', label: 'Alert id', kind: 'text' }
 ];
 const STORY_FIELDS: FieldInfo[] = [
-    { key: 'priority', label: 'Priority', kind: 'number' },
-    { key: 'state', label: 'State', kind: 'text' },
-    { key: 'team', label: 'Team', kind: 'text' },
-    { key: 'service', label: 'Business service', kind: 'text' },
-    { key: 'runbooks', label: 'Runbooks attached', kind: 'number' },
-    { key: 'owner', label: 'Owner', kind: 'text' },
-    { key: 'title', label: 'Title', kind: 'text' },
-    { key: 'description', label: 'Description', kind: 'text' },
-    { key: 'alertCount', label: 'Alert count', kind: 'number' },
-    { key: 'created', label: 'Created', kind: 'time' },
-    { key: 'id', label: 'Incident id', kind: 'text' }
+  { key: 'priority', label: 'Priority', kind: 'number' },
+  { key: 'state', label: 'State', kind: 'text' },
+  { key: 'team', label: 'Team', kind: 'text' },
+  { key: 'service', label: 'Business service', kind: 'text' },
+  { key: 'runbooks', label: 'Runbooks attached', kind: 'number' },
+  { key: 'owner', label: 'Owner', kind: 'text' },
+  { key: 'title', label: 'Title', kind: 'text' },
+  { key: 'description', label: 'Description', kind: 'text' },
+  { key: 'alertCount', label: 'Alert count', kind: 'number' },
+  { key: 'created', label: 'Created', kind: 'time' },
+  { key: 'id', label: 'Incident id', kind: 'text' }
 ];
 const BASE_FIELDS: Record<'getApplications' | 'getMetricSeries', FieldInfo[]> = {
   // Business applications and services as Concert Operate sees them (getImpactedApplications).

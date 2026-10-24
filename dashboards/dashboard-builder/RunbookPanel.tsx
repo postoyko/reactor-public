@@ -27,7 +27,6 @@ export default function RunbookPanel({ row }: { row: Row }) {
     Promise.all(ids.map(id => runbookDetail(ALERT_QUERY_PARAMS.tenantId, id))).then(l => { if (on) setInfo(l); });
     load();
     return () => { on = false; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [alertId, ids.join(',')]);
   if (ids.length === 0) return null;
   const run = (rb: RunbookInfo) => {

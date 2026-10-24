@@ -345,171 +345,171 @@ export default function ActionStudio({ widgets, focus, onWidgets, onClose }: Pro
 
       <div className="db-af-body">
         <div className="db-af-scroll" onPointerDown={e => { const t = e.target as HTMLElement; if (t === e.currentTarget || t.classList.contains('db-af-board') || t.classList.contains('db-af-lane')) setSel(null); }}>
-        <div className={`db-af-board${drag ? ' is-dragging' : ''}`} ref={boardRef}>
-          <svg className="db-af-wires" aria-hidden="true">
-            <defs>
-              <linearGradient id="db-af-grad" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stopColor="#0f62fe" /><stop offset="1" stopColor="#8a3ffc" /></linearGradient>
-              <linearGradient id="db-af-grad2" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stopColor="#8a3ffc" /><stop offset="1" stopColor="#007d79" /></linearGradient>
-            </defs>
-            {edges.map(e => (
-              <g key={e.id} className={`db-af-edge db-af-edge--${e.kind}${e.hot ? ' is-hot' : ''}`}>
-                <path className="db-af-edge-base" d={e.d} stroke={`url(#${e.kind === 'in' ? 'db-af-grad' : 'db-af-grad2'})`} />
-                <path className="db-af-edge-flow" d={e.d} />
-              </g>
-            ))}
-            {dragPath && <path className="db-af-edge-drag" d={dragPath} />}
-          </svg>
+          <div className={`db-af-board${drag ? ' is-dragging' : ''}`} ref={boardRef}>
+            <svg className="db-af-wires" aria-hidden="true">
+              <defs>
+                <linearGradient id="db-af-grad" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stopColor="#0f62fe" /><stop offset="1" stopColor="#8a3ffc" /></linearGradient>
+                <linearGradient id="db-af-grad2" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stopColor="#8a3ffc" /><stop offset="1" stopColor="#007d79" /></linearGradient>
+              </defs>
+              {edges.map(e => (
+                <g key={e.id} className={`db-af-edge db-af-edge--${e.kind}${e.hot ? ' is-hot' : ''}`}>
+                  <path className="db-af-edge-base" d={e.d} stroke={`url(#${e.kind === 'in' ? 'db-af-grad' : 'db-af-grad2'})`} />
+                  <path className="db-af-edge-flow" d={e.d} />
+                </g>
+              ))}
+              {dragPath && <path className="db-af-edge-drag" d={dragPath} />}
+            </svg>
 
-          <section className="db-af-lane db-af-lane--when" aria-label="Triggers">
-            <h3 className="db-af-lane-head"><span className="db-af-step">1</span>When</h3>
-            {sources.map(w => {
-              const list = rulesOf(w.id);
-              const used = Array.from(new Set(list.map(l => l.event)));
-              const firstEvent = eventsOf(w)[0];
-              const ports = used.length ? used : [firstEvent.id];
-              return (
-                <div key={w.id} className={`db-af-card db-af-card--src${chain(w.id) ? ' is-chain' : ''}`} onPointerEnter={() => setHover(w.id)} onPointerLeave={() => setHover(null)}>
-                  <div className="db-af-card-head">
-                    <Glyph type={w.type} size={24} />
-                    <div className="db-af-card-name">
-                      <TileMenu
-                        label={<strong>{w.title || typeLabel(w.type)}</strong>}
-                        title="Change the trigger widget"
-                        value={w.id}
-                        items={ordered.map(o => ({ id: o.id, label: o.title || typeLabel(o.type), sub: typeLabel(o.type), type: o.type }))}
-                        onPick={id => moveAll(w.id, id)}
-                      />
-                      <span>{typeLabel(w.type)}</span>
+            <section className="db-af-lane db-af-lane--when" aria-label="Triggers">
+              <h3 className="db-af-lane-head"><span className="db-af-step">1</span>When</h3>
+              {sources.map(w => {
+                const list = rulesOf(w.id);
+                const used = Array.from(new Set(list.map(l => l.event)));
+                const firstEvent = eventsOf(w)[0];
+                const ports = used.length ? used : [firstEvent.id];
+                return (
+                  <div key={w.id} className={`db-af-card db-af-card--src${chain(w.id) ? ' is-chain' : ''}`} onPointerEnter={() => setHover(w.id)} onPointerLeave={() => setHover(null)}>
+                    <div className="db-af-card-head">
+                      <Glyph type={w.type} size={24} />
+                      <div className="db-af-card-name">
+                        <TileMenu
+                          label={<strong>{w.title || typeLabel(w.type)}</strong>}
+                          title="Change the trigger widget"
+                          value={w.id}
+                          items={ordered.map(o => ({ id: o.id, label: o.title || typeLabel(o.type), sub: typeLabel(o.type), type: o.type }))}
+                          onPick={id => moveAll(w.id, id)}
+                        />
+                        <span>{typeLabel(w.type)}</span>
+                      </div>
+                      {!list.length && <button type="button" className="db-af-x" title="Remove this trigger" aria-label={`Remove trigger ${w.title}`} onClick={() => setStaged(s => s.filter(x => x !== w.id))}><Close size={16} /></button>}
                     </div>
-                    {!list.length && <button type="button" className="db-af-x" title="Remove this trigger" aria-label={`Remove trigger ${w.title}`} onClick={() => setStaged(s => s.filter(x => x !== w.id))}><Close size={16} /></button>}
+                    <ul className="db-af-events">
+                      {ports.map(ev => {
+                        const Ic = EVENT_ICON[ev] || Touch_1;
+                        return (
+                          <li key={ev} className="db-af-event">
+                            <Ic size={16} />
+                            <TileMenu
+                              label={<span>{eventLabel(w, ev)}</span>}
+                              title="Change the event"
+                              value={ev}
+                              items={eventsOf(w).map(e => ({ id: e.id, label: e.label, group: GENERIC.has(e.id) ? 'Every widget' : 'This widget' }))}
+                              onPick={id => changeEvent(w.id, ev, id)}
+                            />
+                            <button
+                              type="button"
+                              className="db-af-port db-af-port--out"
+                              data-port={`ev:${w.id}:${ev}`}
+                              title="Drag onto a widget to add an action"
+                              aria-label={`Add an action when ${w.title}: ${eventLabel(w, ev)}`}
+                              onPointerDown={e => startDrag(e, w.id, ev)}
+                              onClick={() => { const other = ordered.find(x => x.id !== w.id); if (other) addRule(w.id, { ...newLink(w, other), event: ev }); }}
+                            />
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    {!list.length && <p className="db-af-hint">Drag from <span className="db-af-dot" /> onto a widget to add the first action.</p>}
                   </div>
-                  <ul className="db-af-events">
-                    {ports.map(ev => {
-                      const Ic = EVENT_ICON[ev] || Touch_1;
-                      return (
-                        <li key={ev} className="db-af-event">
-                          <Ic size={16} />
-                          <TileMenu
-                            label={<span>{eventLabel(w, ev)}</span>}
-                            title="Change the event"
-                            value={ev}
-                            items={eventsOf(w).map(e => ({ id: e.id, label: e.label, group: GENERIC.has(e.id) ? 'Every widget' : 'This widget' }))}
-                            onPick={id => changeEvent(w.id, ev, id)}
-                          />
-                          <button
-                            type="button"
-                            className="db-af-port db-af-port--out"
-                            data-port={`ev:${w.id}:${ev}`}
-                            title="Drag onto a widget to add an action"
-                            aria-label={`Add an action when ${w.title}: ${eventLabel(w, ev)}`}
-                            onPointerDown={e => startDrag(e, w.id, ev)}
-                            onClick={() => { const other = ordered.find(x => x.id !== w.id); if (other) addRule(w.id, { ...newLink(w, other), event: ev }); }}
-                          />
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  {!list.length && <p className="db-af-hint">Drag from <span className="db-af-dot" /> onto a widget to add the first action.</p>}
-                </div>
-              );
-            })}
-            {picker && <TriggerPicker widgets={ordered} taken={sources.map(s => s.id)} onPick={id => { setStaged(s => [...s, id]); setPicker(false); }} onClose={() => setPicker(false)} />}
-            {!picker && <button type="button" className="db-af-ghost" onClick={() => setPicker(true)}><Add size={16} />Add a trigger</button>}
-          </section>
+                );
+              })}
+              {picker && <TriggerPicker widgets={ordered} taken={sources.map(s => s.id)} onPick={id => { setStaged(s => [...s, id]); setPicker(false); }} onClose={() => setPicker(false)} />}
+              {!picker && <button type="button" className="db-af-ghost" onClick={() => setPicker(true)}><Add size={16} />Add a trigger</button>}
+            </section>
 
-          <section className="db-af-lane db-af-lane--then" aria-label="Actions">
-            <h3 className="db-af-lane-head"><span className="db-af-step db-af-step--then">2</span>Then</h3>
-            {rules.map(r => {
-              const spec = r.target ? actionsOf(r.target).find(a => a.id === r.link.do) : undefined;
-              const group = spec ? spec.group : (r.link.do.startsWith('set:') || r.link.do.startsWith('add:') ? 'Settings' : 'Visibility');
-              const Ic = GROUP_ICON[group];
-              const a = argText(r.link);
-              return (
-                <div
-                  key={r.rid}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) { e.preventDefault(); setSel(r.rid); } }}
-                  className={`db-af-card db-af-card--act${sel === r.rid ? ' is-sel' : ''}${hover === r.rid ? ' is-chain' : ''}${r.target ? '' : ' is-broken'}`}
-                  data-group={group}
-                  onClick={() => setSel(r.rid)}
-                  onPointerEnter={() => setHover(r.rid)}
-                  onPointerLeave={() => setHover(null)}
-                  aria-pressed={sel === r.rid}
-                >
-                  <span className="db-af-port db-af-port--in" data-port={`in:${r.rid}`} />
-                  <span className="db-af-act-icon"><Ic size={16} /></span>
-                  <span className="db-af-act-text">
-                    {r.target ? (
-                      <TileMenu
-                        label={<strong>{actionLabel(r.target, r.link.do)}</strong>}
-                        title="Change what happens"
-                        value={r.link.do}
-                        search
-                        items={actionsOf(r.target).map(x => ({ id: x.id, label: x.label, group: x.group }))}
-                        groupOrder={GROUP_ORDER}
-                        onPick={id => { setSel(r.rid); updateRule(r, withAction(r.link, r.target!, id), 'do'); }}
-                      />
-                    ) : <strong>Target is missing</strong>}
-                    <span>
-                      <TileMenu
-                        label={<em className="db-af-chip db-af-chip--to">on {r.target ? r.target.title : 'a missing widget'}</em>}
-                        title="Change the widget it acts on"
-                        value={r.link.to}
-                        items={[PLATFORM, ...ordered.filter(o => o.id !== r.from.id)].map(o => ({ id: o.id, label: o.title || typeLabel(o.type), sub: typeLabel(o.type), type: o.type }))}
-                        onPick={id => { setSel(r.rid); updateRule(r, withTarget(r.link, id), 'to'); }}
-                      />
-                      {r.link.when ? <em className="db-af-chip db-af-chip--if">if = {r.link.when}</em> : null}
-                      {a ? <em className="db-af-chip">{a.includes('{value}') ? <>{a.replace('{value}', '')}<b>value</b></> : a}</em> : null}
-                      {!r.link.when && !a && <>{eventLabel(r.from, r.link.event).toLowerCase()}</>}
+            <section className="db-af-lane db-af-lane--then" aria-label="Actions">
+              <h3 className="db-af-lane-head"><span className="db-af-step db-af-step--then">2</span>Then</h3>
+              {rules.map(r => {
+                const spec = r.target ? actionsOf(r.target).find(a => a.id === r.link.do) : undefined;
+                const group = spec ? spec.group : (r.link.do.startsWith('set:') || r.link.do.startsWith('add:') ? 'Settings' : 'Visibility');
+                const Ic = GROUP_ICON[group];
+                const a = argText(r.link);
+                return (
+                  <div
+                    key={r.rid}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) { e.preventDefault(); setSel(r.rid); } }}
+                    className={`db-af-card db-af-card--act${sel === r.rid ? ' is-sel' : ''}${hover === r.rid ? ' is-chain' : ''}${r.target ? '' : ' is-broken'}`}
+                    data-group={group}
+                    onClick={() => setSel(r.rid)}
+                    onPointerEnter={() => setHover(r.rid)}
+                    onPointerLeave={() => setHover(null)}
+                    aria-pressed={sel === r.rid}
+                  >
+                    <span className="db-af-port db-af-port--in" data-port={`in:${r.rid}`} />
+                    <span className="db-af-act-icon"><Ic size={16} /></span>
+                    <span className="db-af-act-text">
+                      {r.target ? (
+                        <TileMenu
+                          label={<strong>{actionLabel(r.target, r.link.do)}</strong>}
+                          title="Change what happens"
+                          value={r.link.do}
+                          search
+                          items={actionsOf(r.target).map(x => ({ id: x.id, label: x.label, group: x.group }))}
+                          groupOrder={GROUP_ORDER}
+                          onPick={id => { setSel(r.rid); updateRule(r, withAction(r.link, r.target!, id), 'do'); }}
+                        />
+                      ) : <strong>Target is missing</strong>}
+                      <span>
+                        <TileMenu
+                          label={<em className="db-af-chip db-af-chip--to">on {r.target ? r.target.title : 'a missing widget'}</em>}
+                          title="Change the widget it acts on"
+                          value={r.link.to}
+                          items={[PLATFORM, ...ordered.filter(o => o.id !== r.from.id)].map(o => ({ id: o.id, label: o.title || typeLabel(o.type), sub: typeLabel(o.type), type: o.type }))}
+                          onPick={id => { setSel(r.rid); updateRule(r, withTarget(r.link, id), 'to'); }}
+                        />
+                        {r.link.when ? <em className="db-af-chip db-af-chip--if">if = {r.link.when}</em> : null}
+                        {a ? <em className="db-af-chip">{a.includes('{value}') ? <>{a.replace('{value}', '')}<b>value</b></> : a}</em> : null}
+                        {!r.link.when && !a && <>{eventLabel(r.from, r.link.event).toLowerCase()}</>}
+                      </span>
                     </span>
-                  </span>
-                  {!r.target && <WarningAlt size={16} className="db-af-warn" />}
-                  <span className="db-af-port db-af-port--outact" data-port={`out:${r.rid}`} />
-                </div>
-              );
-            })}
-            {rules.length === 0 && (
-              <div className="db-af-empty">
-                <Flow size={32} />
-                <p><strong>Make widgets react to each other.</strong> Add a trigger, then drag from its <span className="db-af-dot" /> onto the widget that should change.</p>
-              </div>
-            )}
-          </section>
-
-          <section className="db-af-lane db-af-lane--on" aria-label="Targets">
-            <h3 className="db-af-lane-head"><span className="db-af-step db-af-step--on">3</span>On</h3>
-            {targets.map(({ w, n }) => (
-              <div key={w.id} data-drop={w.id} className={`db-af-card db-af-card--tgt${chain(w.id) ? ' is-chain' : ''}${drag && drag.over === w.id ? ' is-over' : ''}`} onPointerEnter={() => setHover(w.id)} onPointerLeave={() => setHover(null)}>
-                <span className="db-af-port db-af-port--in" data-port={`to:${w.id}`} />
-                <Glyph type={w.type} size={24} />
-                <div className="db-af-card-name">
-                  <TileMenu
-                    label={<strong>{w.title || typeLabel(w.type)}</strong>}
-                    title={`Point its ${n} action${n === 1 ? '' : 's'} at another widget`}
-                    value={w.id}
-                    items={[PLATFORM, ...ordered].map(o => ({ id: o.id, label: o.title || typeLabel(o.type), sub: typeLabel(o.type), type: o.type }))}
-                    onPick={id => retargetAll(w.id, id)}
-                  />
-                  <span>{typeLabel(w.type)}{w.config.hidden ? ' · hidden at start' : ''}</span>
-                </div>
-                <span className="db-af-count" title={`${n} action${n === 1 ? '' : 's'} change it`}>{n}</span>
-              </div>
-            ))}
-            {drag && (
-              <div className="db-af-spare">
-                <p className="db-af-spare-head">Drop on any widget</p>
-                {spare.map(w => (
-                  <div key={w.id} data-drop={w.id} className={`db-af-card db-af-card--tgt db-af-card--spare${drag.over === w.id ? ' is-over' : ''}`}>
-                    <Glyph type={w.type} size={20} />
-                    <div className="db-af-card-name"><strong>{w.title || typeLabel(w.type)}</strong><span>{typeLabel(w.type)}</span></div>
+                    {!r.target && <WarningAlt size={16} className="db-af-warn" />}
+                    <span className="db-af-port db-af-port--outact" data-port={`out:${r.rid}`} />
                   </div>
-                ))}
-              </div>
-            )}
-            {!drag && targets.length === 0 && <p className="db-af-hint db-af-hint--lane">Widgets that actions change appear here.</p>}
-          </section>
-        </div>
+                );
+              })}
+              {rules.length === 0 && (
+                <div className="db-af-empty">
+                  <Flow size={32} />
+                  <p><strong>Make widgets react to each other.</strong> Add a trigger, then drag from its <span className="db-af-dot" /> onto the widget that should change.</p>
+                </div>
+              )}
+            </section>
+
+            <section className="db-af-lane db-af-lane--on" aria-label="Targets">
+              <h3 className="db-af-lane-head"><span className="db-af-step db-af-step--on">3</span>On</h3>
+              {targets.map(({ w, n }) => (
+                <div key={w.id} data-drop={w.id} className={`db-af-card db-af-card--tgt${chain(w.id) ? ' is-chain' : ''}${drag && drag.over === w.id ? ' is-over' : ''}`} onPointerEnter={() => setHover(w.id)} onPointerLeave={() => setHover(null)}>
+                  <span className="db-af-port db-af-port--in" data-port={`to:${w.id}`} />
+                  <Glyph type={w.type} size={24} />
+                  <div className="db-af-card-name">
+                    <TileMenu
+                      label={<strong>{w.title || typeLabel(w.type)}</strong>}
+                      title={`Point its ${n} action${n === 1 ? '' : 's'} at another widget`}
+                      value={w.id}
+                      items={[PLATFORM, ...ordered].map(o => ({ id: o.id, label: o.title || typeLabel(o.type), sub: typeLabel(o.type), type: o.type }))}
+                      onPick={id => retargetAll(w.id, id)}
+                    />
+                    <span>{typeLabel(w.type)}{w.config.hidden ? ' · hidden at start' : ''}</span>
+                  </div>
+                  <span className="db-af-count" title={`${n} action${n === 1 ? '' : 's'} change it`}>{n}</span>
+                </div>
+              ))}
+              {drag && (
+                <div className="db-af-spare">
+                  <p className="db-af-spare-head">Drop on any widget</p>
+                  {spare.map(w => (
+                    <div key={w.id} data-drop={w.id} className={`db-af-card db-af-card--tgt db-af-card--spare${drag.over === w.id ? ' is-over' : ''}`}>
+                      <Glyph type={w.type} size={20} />
+                      <div className="db-af-card-name"><strong>{w.title || typeLabel(w.type)}</strong><span>{typeLabel(w.type)}</span></div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {!drag && targets.length === 0 && <p className="db-af-hint db-af-hint--lane">Widgets that actions change appear here.</p>}
+            </section>
+          </div>
         </div>
 
         <aside className="db-af-side" aria-label={selected ? 'Edit action' : 'Suggestions'}>

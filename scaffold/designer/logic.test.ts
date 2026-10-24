@@ -228,7 +228,7 @@ describe('datahub', () => {
   it('uses the tenant and the right params per query, and survives a throwing fetcher', async () => {
     const seen: any[] = [];
     const hub = new DataHub(async (q, p) => { seen.push([q, p]); return {}; }, 'tenant-x');
-    const r1 = hub.acquire('getAlerts', "severity > 3", 0, () => {});
+    const r1 = hub.acquire('getAlerts', 'severity > 3', 0, () => {});
     const r2 = hub.acquire('getStories', undefined, 0, () => {});
     await tick();
     expect(seen[0][1]).toMatchObject({ tenantId: 'tenant-x', filter: 'severity > 3' });
@@ -404,7 +404,7 @@ describe('more data sources', () => {
     expect(hub.paramsFor('getIncidentAlerts', '')).toMatchObject({ __missing: 'Incident id' });
     expect(hub.paramsFor('getIncidentAlerts', 'inc-1')).toMatchObject({ tenantId: 't1', storyId: 'inc-1', format: 'AIOPS' });
     expect(hub.paramsFor('getIncidentAlerts', 'inc-1')).not.toHaveProperty('filter');
-    expect(hub.paramsFor('getFiltersViews', '')).toMatchObject({ condition: "type = 'alert'" });
+    expect(hub.paramsFor('getFiltersViews', '')).toMatchObject({ condition: 'type = \'alert\'' });
     expect(hub.paramsFor('getRelatedStories', 'alert-1, alert-2')).toMatchObject({ alertIds: ['alert-1', 'alert-2'] });
     expect(hub.paramsFor('getRelatedStories', 'inc-9')).toMatchObject({ storyId: 'inc-9' });
   });

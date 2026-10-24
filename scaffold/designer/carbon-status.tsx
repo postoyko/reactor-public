@@ -42,7 +42,7 @@ function Mark({ kind, size, round, color }: { kind: string; size: number; round?
   const r = size / 2;
   const shape = round || !/^(critical|failed|high|medium|cautious|caution-major|caution-minor)$/.test(kind) ? <circle cx={r} cy={r} r={r - 1} fill={c} />
     : /^(critical|failed)$/.test(kind) ? <polygon points={`${r},1 ${size - 1},${r} ${r},${size - 1} 1,${r}`} fill={c} />
-    : <polygon points={`${r},1 ${size - 1},${size - 1} 1,${size - 1}`} fill={c} />;
+      : <polygon points={`${r},1 ${size - 1},${size - 1} 1,${size - 1}`} fill={c} />;
   return <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">{shape}</svg>;
 }
 function Fallback({ kind, label, size, round, compact, color }: { kind: string; label: string; size: number; round?: boolean; compact?: boolean; color?: string }) {
