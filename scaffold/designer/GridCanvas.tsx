@@ -45,6 +45,15 @@ type Gesture =
   | { kind: 'move'; id: string; px: number; py: number; x: number; y: number }
   | { kind: 'resize'; id: string; px: number; py: number; w: number; h: number };
 
+/** A widget's own background and text colours, as CSS (Carbon's text tokens follow the text colour). */
+export function tintStyle(w: Widget): React.CSSProperties {
+  const bg = w.config.bg, fg = w.config.fg;
+  const tint: Record<string, string> = {};
+  if (bg) Object.assign(tint, { background: bg, '--db-card': bg });
+  if (fg) Object.assign(tint, { color: fg, '--cds-text-primary': fg, '--db-text': fg, '--db-muted': fg, '--cds-text-secondary': fg, '--cds-text-helper': fg, '--cds-link-primary': fg });
+  return tint as React.CSSProperties;
+}
+
 export default function GridCanvas({ widgets, rowH, editing, selectedId, onSelect, onLayout, onRemove, onDuplicate, renderBody, nested, wired, slot = '', depth = 0 }: Props) {
   const dnd = useContext(NestCtx)?.dnd;
   const link = useContext(LinkCtx);
@@ -179,10 +188,7 @@ export default function GridCanvas({ widgets, rowH, editing, selectedId, onSelec
           ? { height: Math.max(w.h, 3) * stepY - GAP }
           : { left: w.x * stepX, top: w.y * stepY, width: w.w * colW + (w.w - 1) * GAP, height: w.h * ROW + (w.h - 1) * GAP, ...(w.config.overlay ? { zIndex: 8 } : {}) };
         const bg = w.config.bg, fg = w.config.fg;
-        const tint: Record<string, string> = {};
-        if (bg) Object.assign(tint, { background: bg, '--db-card': bg });
-        if (fg) Object.assign(tint, { color: fg, '--cds-text-primary': fg, '--db-text': fg, '--db-muted': fg, '--cds-text-secondary': fg, '--cds-text-helper': fg, '--cds-link-primary': fg });
-        Object.assign(style, tint);
+        Object.assign(style, tintStyle(w));
         const active = gestureRef.current && gestureRef.current.id === w.id;
         return (
           <section

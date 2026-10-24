@@ -1,5 +1,10 @@
 # Dashboard Designer changes
 
+## v1.64.2
+- The title band is the top of the dashboard: while viewing it is drawn above the active filters and the filter bar, at the height its text needs (grid.ts `titleBand`). Editing keeps it on the grid so it can still be moved or changed. Templates build it two rows tall.
+- Clicking a segment of a stacked bar chart filters again (on the bar and on the segment's series). Carbon reports a stacked segment differently from a plain bar, so these clicks were ignored.
+- Clicking a treemap tile filters again (Carbon reports a tile as a tree node, with the name one level down).
+
 ## v1.64.1
 - The side panel (rows behind a click, Explain) opens below whatever sits above the dashboard, so Concert Operate's header no longer hides its title and Close button. Drag its title bar to move it, double-click the title bar to dock it on the right again, drag its left edge (or arrow keys on it) to resize; the width is remembered.
 

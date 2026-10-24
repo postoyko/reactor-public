@@ -135,3 +135,13 @@ export function fitHeights<T extends { id: string; type: string; x: number; y: n
   });
   return out;
 }
+
+/**
+ * The title band of a dashboard, when it has one: a frameless coloured text across the whole top, with nothing beside
+ * it. While viewing it is drawn above the filter bar, so the dashboard reads title first, then its filters.
+ */
+export function titleBand<T extends { type: string; x: number; y: number; w: number; h: number; parent?: string; config: { chromeless?: boolean; bg?: string; hidden?: boolean } }>(list: T[]): T | undefined {
+  const band = list.find(w => !w.parent && w.type === 'text' && w.x === 0 && w.y === 0 && w.w === GRID_COLS && w.config.chromeless && w.config.bg);
+  if (!band || band.config.hidden === true) return undefined;
+  return list.some(w => w !== band && !w.parent && w.y < band.h) ? undefined : band;
+}

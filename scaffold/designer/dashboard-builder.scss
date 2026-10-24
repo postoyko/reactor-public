@@ -400,6 +400,16 @@
     }
   }
 
+  /* The title band, drawn above the filters while viewing (grid.ts titleBand). */
+  .db-band {
+    margin: 16px 16px 0;
+    padding: 14px 16px;
+
+    .db-widget-body {
+      padding: 0;
+    }
+  }
+
   .db-filters {
     display: flex;
     flex-wrap: wrap;

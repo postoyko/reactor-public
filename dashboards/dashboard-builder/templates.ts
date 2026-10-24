@@ -651,16 +651,6 @@ const tenantConfig = (): Widget[] => {
   return s.list;
 };
 
-/** The title band is about 100px tall whatever the row height: taller in rows on compact dashboards, so the text is not clipped. */
-const fitBand = (list: Widget[], rowH?: number): Widget[] => {
-  const row = rowH || 48, h = Math.max(2, Math.ceil(106 / (row + 6)));
-  const band = list.find(w => !w.parent && w.type === 'text' && w.y === 0 && w.h === 2 && w.config.bg === '#161616' && w.config.chromeless);
-  if (!band || h === 2) return list;
-  list.forEach(w => { if (!w.parent) w.y += h - 2; });
-  band.y = 0; band.h = h;
-  return list;
-};
-
 export const TEMPLATES: Template[] = [
   { id: 'incidentops', rowH: 28, bar: bar(A('severityLabel', 'team', 'type', 'sender'), { refresh: 60 }), name: 'Incident command center', advanced: true, tagline: 'The incident-alert-dashboard, built from components',
     detail: 'KPI tiles, four analytic cards, incidents beside a tabbed intelligence panel (split pane + tabs), and the alert stream in severity tabs inside an accordion. Every chart filters the rest; search boxes narrow their own tables.', build: incidentOps },
@@ -726,7 +716,6 @@ export const TEMPLATES: Template[] = [
   { id: 'scorecard', rowH: 28, bar: bar(A('team', 'type')), name: 'Severity scorecard', tagline: 'Gauge, meter and status per severity',
     detail: 'For each of Critical, Major, Minor and Warning: a status shape, a gauge and a meter with warning and critical thresholds, then a flow chart and heatmap.', build: headed('Severity scorecard', 'Each severity against its own warning and critical thresholds.', scorecard) }
 ];
-TEMPLATES.forEach(t => { const b = t.build; t.build = () => fitBand(b(), t.rowH); });
 
 /** The templates that can be built with this toolkit. */
 TEMPLATES.forEach(t => { t.build = stably(t.id, t.build); });

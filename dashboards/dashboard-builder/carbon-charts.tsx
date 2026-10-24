@@ -249,9 +249,20 @@ function clicked(name: string, e: any, group: string, series: string): Array<[st
   const s = (v: unknown) => (v === undefined || v === null ? '' : String(v));
   switch (name) {
     case 'SimpleBarChart': return d && s(d.group) ? [[group, s(d.group)]] : [];
-    case 'GroupedBarChart': case 'StackedBarChart': case 'LollipopChart': return d && s(d.key) ? [[group, s(d.key)]] : [];
+    case 'StackedBarChart': {
+      // a segment of a stacked bar: d3's stack entry, with the bar in data.sharedStackKey and the segment in group
+      const key = d && d.data && s(d.data.sharedStackKey) ? s(d.data.sharedStackKey) : s(d && d.key);
+      const out: Array<[string, string]> = key ? [[group, key]] : [];
+      if (key && series && d && s(d.group)) out.push([series, s(d.group)]);
+      return out;
+    }
+    case 'GroupedBarChart': case 'LollipopChart': return d && s(d.key) ? [[group, s(d.key)]] : [];
     case 'PieChart': case 'DonutChart': { const x = d && d.data ? d.data : d; return x && s(x.group) ? [[group, s(x.group)]] : []; }
-    case 'TreemapChart': { const x = d && (d.group || d.name) ? d : null; return x ? [[group, s(x.group || x.name)]] : []; }
+    case 'TreemapChart': {
+      // a leaf is d3's hierarchy node: the tile's own name is in data
+      const x = d && d.data && (d.data.name || d.data.group) ? d.data : d && (d.group || d.name) ? d : null;
+      return x ? [[group, s(x.group || x.name)]] : [];
+    }
     case 'WordCloudChart': { const x = d && (d.word || d.group) ? d : null; return x ? [[group, s(x.word || x.group)]] : []; }
     case 'HeatmapChart': { const out: Array<[string, string]> = []; if (d && s(d.x)) out.push([group, s(d.x)]); if (d && s(d.y) && series) out.push([series, s(d.y)]); return out; }
     case 'RadarChart': { const k = typeof d === 'string' ? d : d && (d.key || d.name); return k ? [[group, s(k)]] : []; }

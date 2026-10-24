@@ -703,3 +703,14 @@ describe('Explain this', () => {
     expect(readTimeline({})).toEqual([]);
   });
 });
+
+import { titleBand } from './grid';
+
+describe('title band', () => {
+  const band = { id: 'b', type: 'text', x: 0, y: 0, w: 12, h: 2, config: { chromeless: true, bg: '#161616' } };
+  const tile = (y: number) => ({ id: `t${y}`, type: 'kpi', x: 0, y, w: 3, h: 3, config: {} });
+  it('finds the band across the top', () => expect(titleBand([band, tile(2)])).toBe(band));
+  it('ignores a band with something beside it', () => expect(titleBand([band, tile(1)])).toBeUndefined());
+  it('needs a colour and no frame', () => expect(titleBand([{ ...band, config: { chromeless: true } }])).toBeUndefined());
+  it('ignores a hidden band', () => expect(titleBand([{ ...band, config: { ...band.config, hidden: true } }])).toBeUndefined());
+});

@@ -22,12 +22,12 @@ import { Glyph } from './Glyph';
 import { typeLabel } from './meta';
 import { callApi, DataHub, sourceKey } from './datahub';
 import { BuilderCtx, BuilderContext } from './context';
-import { findSpot, fitHeights, moveItem } from './grid';
+import { findSpot, fitHeights, moveItem, titleBand } from './grid';
 import { defaultConfig, defaultTitle, minSize, NATIVE, TILES } from './registry';
 import { CARBON, GROUPS } from './carbon-catalog';
 import { cloneDashboard, exportJson, importJson, loadState, newId, saveState, sharedDashboard, StoreState } from './store';
 import { applyFilters, DEFAULT_GROUP, fieldLabel, toRows } from './rows';
-import GridCanvas from './GridCanvas';
+import GridCanvas, { tintStyle } from './GridCanvas';
 import { NestApi, NestCtx } from './nest';
 import { MAX_DEPTH, cloneSubtree, isContainer, isContainerType, slotOwner, slotsOf, subtreeIds } from './nesting';
 import { Dnd } from './dnd';
@@ -666,6 +666,16 @@ export default function DashboardBuilder(props: Props) {
   });
 
   const renderBody = useCallback((w: Widget) => <MemoBody w={w} />, []);
+  // While viewing, the title band sits above the filters; the grid below starts where the band ended.
+  const band = isEditing ? undefined : titleBand(active.widgets);
+  const gridWidgets = useMemo(() => {
+    const top = active.widgets.filter(w => !w.parent);
+    return band ? top.filter(w => w !== band).map(w => ({ ...w, y: w.y - band.h })) : top;
+  }, [active.widgets, band]);
+  const gridLink = useMemo(() => (band ? {
+    ...linkApi,
+    setLayout: (next: Widget[]) => linkApi.setLayout(next.map(w => (w.parent ? w : { ...w, y: w.y + band.h })))
+  } : linkApi), [linkApi, band]);
   const wired = useMemo(() => wiredIds(active.widgets, selected), [active.widgets, selected]);
   const dnd: Dnd = {
     canDrop: (src, slot, depth) => {
@@ -881,6 +891,12 @@ export default function DashboardBuilder(props: Props) {
             </div>
           )}
 
+          {band && (
+            <div className="db-band" style={tintStyle(band)} aria-label={band.title}>
+              <div className="db-widget-body">{renderBody(band)}</div>
+            </div>
+          )}
+
           {filterChips.length > 0 && (
             <div className="db-filters" role="status" aria-label="Active filters">
               <span>Filtering by</span>
@@ -940,11 +956,11 @@ export default function DashboardBuilder(props: Props) {
                 </div>
               </aside>
             )}
-            <LinkCtx.Provider value={linkApi}>
+            <LinkCtx.Provider value={gridLink}>
               <div className="db-stage" ref={stageRef} data-tour="canvas">
                 {showStart && <StartScreen replace={active.widgets.length > 0} onPick={applyTemplate} onBlank={() => { setPick(false); setBlank(b => [...b, active.id]); }} onTour={() => setTour(true)} />}
                 <GridCanvas
-                  widgets={active.widgets.filter(w => !w.parent)}
+                  widgets={gridWidgets}
                   wired={wired}
                   rowH={active.rowH}
                   editing={isEditing}
