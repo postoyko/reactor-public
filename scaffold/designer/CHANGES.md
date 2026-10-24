@@ -1,5 +1,10 @@
 # Dashboard Designer changes
 
+## v1.51.0
+- Widget library (Add): a list / grid switch (grid shows three icon cards per row, the description is in the tooltip; the choice is remembered), a Recently used group with the last six widgets added, Expand all / Collapse all, and a result count.
+- Search matches every word anywhere in the name, description or group ("chart bar", "status") and highlights the matches.
+- Every Carbon component now has its own icon (charts, tabs, accordion, inputs, toggles, notifications, status, buttons and so on) instead of one shared one, in the library, the layers list, title bars and the settings header.
+
 ## v1.50.1
 - Widget settings: long explanations under Frame, Linking, Actions and Wiring are folded behind an (i) button next to the section heading, so the settings themselves stay in view. "Follows filters from other widgets" is now a checkbox like the other on/off options.
 
