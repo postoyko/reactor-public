@@ -41,7 +41,7 @@ table{border-collapse:collapse;width:100%;margin:16px 0;font-size:.93rem;display
 th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--th);font-weight:600}
 figure{margin:20px 0}img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:4px;display:block}
 figcaption{color:var(--muted);font-size:.85rem;margin-top:6px}
-.narrow img{max-width:300px}.dia{background:#fff;padding:12px;border:1px solid var(--line);border-radius:4px;overflow-x:auto}.dia svg{display:block;margin:0 auto;max-width:100%;height:auto}.narrow2 img{max-width:620px}
+.narrow img{max-width:300px}.usp{margin:10px 0 18px;padding:10px 14px;border-left:4px solid #f1c21b;background:rgba(241,194,27,.12);border-radius:0 4px 4px 0}.usp-tag{display:inline-block;margin-right:8px;padding:1px 8px;border-radius:10px;background:#f1c21b;color:#161616;font-weight:600;font-size:.8rem}.usp-list td:first-child{color:#b28600;font-size:1.2rem}.dia{background:#fff;padding:12px;border:1px solid var(--line);border-radius:4px;overflow-x:auto}.dia svg{display:block;margin:0 auto;max-width:100%;height:auto}.narrow2 img{max-width:620px}
 .tabs4{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:16px 0}.tabs4 p{display:contents}
 @media(min-width:800px){.tabs4{grid-template-columns:repeat(4,1fr)}}
 .toc{background:var(--th);border:1px solid var(--line);border-radius:4px;padding:12px 20px;margin:24px 0}

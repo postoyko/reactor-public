@@ -6,6 +6,21 @@ A hands-on guide to building Concert Operate dashboards with the Reactor Dashboa
 
 [TOC]
 
+## Why Reactor
+
+Until now there was no dashboard editor for Concert Operate: every new or changed dashboard needed a developer who knows React. Reactor lets operations people build and change dashboards themselves, on live Concert data, with no code and no release cycle. Its four unique selling points:
+
+<div class="usp-list" markdown="1">
+
+| | What it gives you | Section |
+| --- | --- | --- |
+| ★ | **Drag-and-drop dashboard building.** Pick from 112 widgets, drop them on a grid, resize by dragging. No code, no React. | [3](#3-adding-and-arranging-widgets) |
+| ★ | **Change what any widget shows in a few clicks.** Choose the data source, field and grouping from lists, on live Concert data. | [5](#5-data-sources-and-parameters) |
+| ★ | **Action flows: a visual "when this, do that" editor.** Wire widgets together by dragging; drill-downs and buttons in minutes, logic that otherwise needs a developer. | [7](#7-the-action-flows-editor) |
+| ★ | **Viewers reshape dashboards themselves.** Resize widgets, regroup the data, turn a bar chart into a pie or a word cloud while using it, only for them, with one click to reset. | [9](#9-using-a-dashboard-preview-view-as-arrange-reset) |
+
+</div>
+
 ## 0. Before you start: get the code and run the Workbench
 
 You need git, Node.js 22, access to the GitHub repository and, for deploying, the cluster's details.
@@ -89,6 +104,8 @@ Keyboard shortcuts: `/` search widgets · `Ctrl Z` undo · `Ctrl D` duplicate ·
 
 ## 3. Adding and arranging widgets
 
+<div class="usp"><span class="usp-tag">★ USP</span> Drag-and-drop building: pick a widget, drop it on the grid, drag to move and resize. No code and no React skills needed.</div>
+
 The **Add** tab holds 112 widgets in groups: **Data and content** (Number, Bar chart, Donut, Timeline, Table, Image, Container, Note), then the **Carbon components** (Content, Navigation, Data, Charts, Status, Actions, Inputs) and **Your dashboards** (embed an existing dashboard).
 
 <div class="narrow" markdown="1">
@@ -147,6 +164,8 @@ Select a widget and the right panel shows its settings in four tabs. Each sectio
 - **Actions**: a summary of this widget’s Action flows with **Edit in Action flows** (section 7).
 
 ## 5. Data sources and parameters
+
+<div class="usp"><span class="usp-tag">★ USP</span> Change what any widget shows by choosing from lists: the source, the field, the grouping. Live Concert data, no code.</div>
 
 Every data widget reads one **Source**, picked on the Data tab. The picker is grouped and shows the Concert Operate function behind each source.
 
@@ -207,6 +226,8 @@ Per widget, on the Interact tab, **When clicked** (*Click on it to*):
 
 
 ## 7. The Action flows editor
+
+<div class="usp"><span class="usp-tag">★ USP</span> A visual “when this, do that” editor: interactions that would otherwise need a developer are wired by dragging, in minutes.</div>
 
 Action flows make widgets react to each other: *when* something happens in one widget, *then* do something *on* another. Open it with **Flows** in the toolbar, or **Edit in Action flows** on a widget’s Interact tab. Flows run while the dashboard is used, never while you design.
 
@@ -296,6 +317,8 @@ Switch **Preview** (top right) to see the dashboard as viewers do; **Edit** brin
 
 ### Resize and rewire at runtime (only for you)
 
+<div class="usp"><span class="usp-tag">★ USP</span> Viewers resize, move and rewire widgets themselves while using a dashboard, only for them, and reset in one click.</div>
+
 Viewers can reshape a published dashboard without editing it. These changes are kept per person, in their browser, and nobody else sees them. **Reset changes** puts everything back as published.
 
 **Arrange widgets.** Click it, then drag a widget by its title to move it, or drag its bottom-right corner to resize it. Click **Done arranging** to finish.
@@ -322,6 +345,8 @@ Inside Concert Operate the Designer saves automatically, in that person's browse
 - To give everyone a dashboard: import the file in the Workbench (**Dashboards › Import from file…**), then **Publish** (section 12).
 
 ### View as: switch the chart type at runtime
+
+<div class="usp"><span class="usp-tag">★ USP</span> Any chart can be switched to another chart type while the dashboard is in use: bar to pie, treemap or word cloud, number to gauge.</div>
 
 Hover a chart and an **as …** menu appears next to its title. A viewer can turn a bar chart into a word cloud, a donut into a pie or a treemap, a number into a gauge. Only types that read the same data are offered, so nothing is lost and switching back restores the original exactly:
 
