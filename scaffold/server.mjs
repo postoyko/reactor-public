@@ -17,6 +17,7 @@ import { readSettings, configTransform, configProblem } from './config.mjs';
 import { analyze as splitAnalyze, transform as splitTransform, loadTS, setCatalogSource, MARKER as SPLIT_MARKER } from './split.mjs';
 import { readCatalog } from './catalog.mjs';
 import { createTopology } from './topology.mjs';
+import { createGit } from './git.mjs';
 import { generateCustomComposedDashboard, generateCustomSCSS, generatePanelTS } from './templates.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -41,6 +42,7 @@ function repairRoutesFile() {
 const DASHBOARDS_DIR = path.join(ROOT_DIR, 'dashboards');
 const PORT = process.env.PORT || 4000;
 let deploying = false;
+const git = createGit({ rootDir: ROOT_DIR });
 const topology = createTopology({ rootDir: ROOT_DIR, runTool: (c, a) => runTool(c, a) });
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -207,8 +209,40 @@ const server = http.createServer(async (req, res) => {
   }
   if (url.pathname === '/api/layouts/publish' && req.method === 'POST') {
     const body = await readJSONBody(req);
-    try { return sendJSON(res, 200, { ok: true, ...publishLayout(body.slug) }); }
+    let out;
+    try { out = publishLayout(body.slug); }
     catch (e) { return sendJSON(res, 400, { error: e.message }); }
+    // Setup > Git > "Commit when I publish": a failed commit never undoes the publish, it is only reported
+    let gitCommit = null;
+    if (git.readSettings().autoCommit) {
+      try { const d = readLayout(body.slug); gitCommit = await git.commit(`Publish dashboard “${d ? d.name : body.slug}”`); }
+      catch (e) { gitCommit = { committed: false, error: e.message }; }
+    }
+    return sendJSON(res, 200, { ok: true, ...out, git: gitCommit });
+  }
+
+  // 4d. Dashboard versions in git (Setup > Git, Design > Versions). Only dashboard files are ever committed: see git.mjs.
+  if (url.pathname === '/api/git/status' && req.method === 'GET') {
+    try { return sendJSON(res, 200, await git.status()); } catch (e) { return sendJSON(res, 400, { error: e.message }); }
+  }
+  if (url.pathname.startsWith('/api/git/') && req.method === 'POST') {
+    const body = await readJSONBody(req);
+    const op = url.pathname.slice('/api/git/'.length);
+    try {
+      if (op === 'settings') return sendJSON(res, 200, await git.saveSettings(body || {}));
+      if (op === 'commit') return sendJSON(res, 200, await git.commit(body && body.message));
+      if (op === 'push') return sendJSON(res, 200, await git.push());
+      if (op === 'pull') return sendJSON(res, 200, await git.pull());
+      if (op === 'history') return sendJSON(res, 200, { versions: await git.history(body && body.slug) });
+      if (op === 'version') {
+        const raw = await git.version(body && body.slug, body && body.sha);
+        syncTiles();
+        const v = sanitizeDashboard(raw && raw.kind === FILE_KIND ? raw.dashboard : raw);
+        if (!v) throw new Error('That version is not a dashboard this Designer can read.');
+        return sendJSON(res, 200, { dashboard: v.dashboard, dropped: v.dropped });
+      }
+      return sendJSON(res, 404, { error: 'Unknown git action.' });
+    } catch (e) { return sendJSON(res, 400, { error: e.message }); }
   }
   if (url.pathname === '/api/layouts/unpublish' && req.method === 'POST') {
     const body = await readJSONBody(req);

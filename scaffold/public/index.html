@@ -253,7 +253,7 @@
     <div class="brand">
       <div class="brand-icon">W</div>
       <div>
-        <div class="brand-title">Concert Workbench — Dashboard &amp; API Composer <span style="font-weight:400;font-size:.75rem;opacity:.7">v1.75.2</span></div>
+        <div class="brand-title">Concert Workbench — Dashboard &amp; API Composer <span style="font-weight:400;font-size:.75rem;opacity:.7">v1.76.0</span></div>
         <div class="brand-sub">Visual Component Builder for IBM Concert Operate / Cloud Pak for AIOps</div>
       </div>
     </div>
@@ -505,6 +505,23 @@
           </div>
         </div>
 
+        <div class="card" id="git-card">
+          <div class="card-title"><span>Git: dashboard versions</span><span id="git-state" style="font-size:.8rem; color: var(--text-muted);"></span></div>
+          <div class="card-desc">Design &gt; <b>Versions</b> commits, pushes and pulls your dashboards with your own git login, and brings back older versions. Only dashboard files are committed (<code>dashboards/layouts</code>, the published copies and their sidebar entries), never code. No force push, rebase or branch switching: do those in a terminal.</div>
+          <table><tbody id="git-info"></tbody></table>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:10px; margin-top:8px;">
+            <label style="font-size:.8rem">Author name (this repository)<input id="git-name" style="width:100%"></label>
+            <label style="font-size:.8rem">Author email<input id="git-email" type="email" style="width:100%"></label>
+            <label style="font-size:.8rem; grid-column: 1 / -1;">Allowed branches (Studio commits only on these, comma separated)<input id="git-branches" placeholder="main" style="width:100%"></label>
+            <label style="font-size:.85rem; grid-column: 1 / -1; display:flex; gap:8px; align-items:center;"><input type="checkbox" id="git-auto"> Commit when I publish (message “Publish dashboard …”; pushing stays a separate step)</label>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:center;">
+            <button class="btn btn-primary btn-sm" onclick="saveGit()">Save</button>
+            <button class="btn btn-secondary btn-sm" onclick="loadGit()">Refresh</button>
+            <span id="git-msg" style="font-size:.8rem;"></span>
+          </div>
+        </div>
+
         <div class="card" id="topo-card">
           <div class="card-title"><span>Topology proxy</span><span id="topo-state" style="font-size:.8rem; color: var(--text-muted);"></span></div>
           <div class="card-desc">Lets dashboards in Concert Operate read the ASM topology service (Raw JSON tab, real neighbours). The service has its own address and login, so Studio holds them and forwards read-only requests. The password stays in <code>.studio/topology.json</code> on this computer and is never sent to a page.</div>
@@ -578,7 +595,7 @@ Define UI components &amp; API filters on the left, then click "Generate Dashboa
       const tb = Array.from(document.querySelectorAll('.tab-btn')).find(b => (b.getAttribute('onclick') || '').includes("'" + nav + "'"));
       if (tb) tb.classList.add('active');
       TAB_IDS.forEach(id => { const el = document.getElementById('tab-' + id); if (el) el.style.display = (id === tab || (tab === 'sync' && id === 'designer') ? 'block' : 'none'); });
-      if (tab === 'designer' || tab === 'sync') { refreshDesigner(); loadSplit(); }
+      if (tab === 'designer' || tab === 'sync') { refreshDesigner(); loadSplit(); loadGit(); }
       if (tab === 'layouts' && window.LayoutEditor) window.LayoutEditor.open();
       if (tab === 'switchboard') { fetchDashboards(); setPane('pages'); }
       // Design's Publish already deploys, so the header button would be a second way to do the same thing there.
@@ -651,6 +668,31 @@ Define UI components &amp; API filters on the left, then click "Generate Dashboa
       fetchDashboards();
     }
 
+    function gitMsg(t, bad) { const m = document.getElementById('git-msg'); m.textContent = t; m.style.color = bad ? '#da1e28' : '#198038'; }
+    async function loadGit() {
+      let g;
+      try { g = await (await fetch('/api/git/status')).json(); } catch (e) { return; }
+      const info = document.getElementById('git-info');
+      if (g.error || !g.repo) { document.getElementById('git-state').textContent = 'Not a git repository'; info.innerHTML = ''; return; }
+      document.getElementById('git-state').textContent = g.branchAllowed ? `On ${g.branch}` : `On ${g.branch || '(no branch)'}: not an allowed branch`;
+      const row = (k, v) => `<tr><td style="color:var(--text-muted);width:180px">${k}</td><td>${v}</td></tr>`;
+      const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      info.innerHTML = row('Repository', `<code>${esc(g.root)}</code>`) + row('Remote', g.remote ? `<code>${esc(g.remote)}</code>` : 'none (push is not possible)') +
+        row('Branch', `${esc(g.branch || '(detached)')}${g.upstream ? ` → ${esc(g.upstream)}` : ''}${g.ahead ? ` · ${g.ahead} to push` : ''}${g.behind ? ` · ${g.behind} to pull` : ''}`) +
+        row('Uncommitted dashboard files', String(g.changes.length)) + (g.busy ? row('Attention', 'A merge or rebase is in progress: finish it in a terminal') : '');
+      document.getElementById('git-name').value = g.author.name || '';
+      document.getElementById('git-email').value = g.author.email || '';
+      document.getElementById('git-branches').value = (g.settings.allowedBranches || []).join(', ');
+      document.getElementById('git-auto').checked = Boolean(g.settings.autoCommit);
+    }
+    async function saveGit() {
+      const v = id => document.getElementById(id).value;
+      try {
+        await api('/api/git/settings', { name: v('git-name'), email: v('git-email'), autoCommit: document.getElementById('git-auto').checked,
+          allowedBranches: v('git-branches').split(',').map(x => x.trim()).filter(Boolean) });
+        gitMsg('Saved.'); loadGit();
+      } catch (e) { gitMsg(e.message, true); }
+    }
     async function loadTopology() {
       try {
         const c = await (await fetch('/api/topology-config')).json();

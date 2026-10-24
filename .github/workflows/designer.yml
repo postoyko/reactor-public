@@ -23,6 +23,9 @@ jobs:
       - name: The two Designer copies match
         run: ./sync-designer.sh --check
 
+      - name: Workbench git versions (scaffold/git.mjs)
+        run: node --test scaffold/git.test.mjs
+
       - name: Install the toolkit's packages
         working-directory: dashboard-extension
         run: npm ci --no-audit --no-fund

@@ -8,7 +8,8 @@ import {
 const S = {
   layouts: [], defaultSlug: null, designerInstalled: false,
   slug: null, dash: null, dirty: false, selected: null,
-  past: [], future: [], busy: false, ready: false
+  past: [], future: [], busy: false, ready: false,
+  git: null
 };
 let root;
 let frame = null, frameReady = false, frameTimer = 0;
@@ -130,6 +131,7 @@ async function save() {
     const d = await api('/api/layouts', { slug: S.slug, dashboard: S.dash });
     S.slug = d.slug; S.dirty = false;
     await refreshList();
+    await refreshGit();
     say(`Saved dashboards/layouts/${d.slug}.json` + (d.defaultUpdated ? ' (the starting dashboard was updated too: deploy to ship it)' : '') + (d.dropped ? `. ${d.dropped} unusable widget(s) were dropped.` : '.'));
     renderToolbar();
     return true;
@@ -166,7 +168,9 @@ async function publish(andDeploy) {
   try {
     const d = await api('/api/layouts/publish', { slug: S.slug });
     await refreshList();
-    say(`Published as the page ${d.route} (added to the sidebar).` + (andDeploy ? ' Deploying…' : ' Click Build & Deploy to put it in Concert Operate.'));
+    const g = d.git ? (d.git.committed ? ` Committed ${d.git.sha} on ${d.git.branch}.` : d.git.error ? ` Not committed: ${d.git.error}` : '') : '';
+    say(`Published as the page ${d.route} (added to the sidebar).` + (andDeploy ? ' Deploying…' : ' Click Build & Deploy to put it in Concert Operate.') + g, !(d.git && d.git.error));
+    await refreshGit();
     renderToolbar();
     if (typeof fetchDashboards === 'function') fetchDashboards();
     if (andDeploy && typeof triggerDeploy === 'function') triggerDeploy();
@@ -518,6 +522,88 @@ function removeStale() {
 }
 
 
+// ---------- versions in git (Setup > Git). Only dashboard files are committed; see scaffold/git.mjs ----------
+async function refreshGit() { try { S.git = await api('/api/git/status'); } catch (e) { S.git = null; } }
+
+async function gitAction(op, done) {
+  try {
+    const d = await api('/api/git/' + op, {});
+    await refreshGit(); renderToolbar();
+    say(done(d));
+  } catch (e) { say(`git ${op}: ${e.message}`, false); await refreshGit(); renderToolbar(); }
+}
+
+async function gitCommit() {
+  const g = S.git;
+  if (!g || !g.changes.length) return;
+  if (S.dirty && confirm('This dashboard has unsaved changes. Save them first, so they are part of the commit?')) { if (!(await save())) return; }
+  const names = Array.from(new Set(g.changes.map(c => c.slug).filter(Boolean)));
+  const files = g.changes.map(c => `  ${c.change}: ${c.path}`).join('\n');
+  const message = prompt(`Commit ${g.changes.length} dashboard file${g.changes.length === 1 ? '' : 's'} on ${g.branch}:\n${files}\n\nMessage:`,
+    names.length ? `Update dashboard${names.length === 1 ? '' : 's'} ${names.join(', ')}` : 'Update dashboards');
+  if (!message) return;
+  try {
+    const d = await api('/api/git/commit', { message });
+    await refreshGit(); renderToolbar();
+    say(d.committed ? `Committed ${d.sha} on ${d.branch} (${d.files.length} file${d.files.length === 1 ? '' : 's'}). Push to share it.` : 'Nothing to commit.');
+  } catch (e) { say('NOT committed: ' + e.message, false); }
+}
+
+async function gitPull() {
+  if (S.dirty && !confirm('Pulling can change saved dashboards, and this one has unsaved changes. Pull anyway? (Your unsaved changes stay in the editor.)')) return;
+  await gitAction('pull', d => d.note);
+  await refreshList(); renderToolbar();
+}
+
+/** Lists the committed versions of the open dashboard; opening one puts it in the editor as unsaved changes. */
+async function showHistory() {
+  if (!S.slug) return;
+  let versions;
+  try { versions = (await api('/api/git/history', { slug: S.slug })).versions; } catch (e) { say('History: ' + e.message, false); return; }
+  const dlg = h('dialog', { class: 'le-dlg', 'aria-label': 'Versions of this dashboard' });
+  const close = () => { dlg.close(); dlg.remove(); };
+  const restore = async v => {
+    if (!confirmDiscard()) return;
+    try {
+      const d = await api('/api/git/version', { slug: S.slug, sha: v.sha });
+      const slug = S.slug;
+      close();
+      openDash(slug, d.dashboard); S.dirty = true; renderToolbar();
+      say(`Opened the version from ${new Date(v.date).toLocaleString()} (${v.sha}). Nothing is changed until you Save; then Publish and Commit to make it the current version.` + (d.dropped ? ` ${d.dropped} unusable widget(s) were dropped.` : ''));
+    } catch (e) { say('Could not open that version: ' + e.message, false); }
+  };
+  put(dlg,
+    h('div', { class: 'le-dlg-head' }, h('strong', {}, `Versions of “${S.dash.name}”`), h('button', { class: 'btn btn-secondary btn-sm', onclick: close }, 'Close')),
+    h('p', { class: 'le-hint' }, `Committed versions of dashboards/layouts/${S.slug}.json, newest first. Opening one never changes history: it becomes a new version when you save, publish and commit it.`),
+    versions.length
+      ? h('table', { class: 'data-table' }, h('thead', {}, h('tr', {}, h('th', {}, 'When'), h('th', {}, 'Who'), h('th', {}, 'Message'), h('th', {}, ''))),
+        h('tbody', {}, versions.map(v => h('tr', {},
+          h('td', { style: 'white-space:nowrap' }, new Date(v.date).toLocaleString()), h('td', {}, v.author), h('td', {}, h('code', {}, v.sha), ' ', v.subject),
+          h('td', {}, h('button', { class: 'btn btn-secondary btn-sm', onclick: () => restore(v) }, 'Open'))))))
+      : h('p', {}, 'This dashboard has no committed versions yet. Commit it from Versions.'));
+  root.append(dlg);
+  dlg.addEventListener('close', () => dlg.remove());
+  dlg.showModal();
+}
+
+function gitMenu() {
+  const g = S.git;
+  const n = g && g.repo ? g.changes.length : 0;
+  return menu(['Versions', n ? h('span', { class: 'le-badge', title: `${n} dashboard file(s) not committed` }, String(n)) : null, h('span', { class: 'le-caret' }, '▾')], (pop, close) => {
+    if (!g) { mlabel(pop, 'git status unavailable'); mi(pop, close, 'Try again', async () => { await refreshGit(); renderToolbar(); }); return; }
+    if (!g.repo) { mlabel(pop, 'This folder is not a git repository'); return; }
+    mlabel(pop, `Branch ${g.branch || '(none)'}${g.ahead ? ` · ${g.ahead} to push` : ''}${g.behind ? ` · ${g.behind} to pull` : ''}`);
+    const stop = g.busy ? 'git is in the middle of a merge or rebase: finish it in a terminal' : !g.branchAllowed ? `Studio may not commit to ${g.branch || 'this branch'} (Setup > Git)` : null;
+    if (stop) mlabel(pop, stop);
+    mi(pop, close, n ? `Commit ${n} changed file${n === 1 ? '' : 's'}…` : 'Nothing to commit', gitCommit, { disabled: !n || Boolean(stop), title: 'Commits the dashboard files only (layouts, published copies, sidebar entries), never code' });
+    mi(pop, close, 'Push', () => gitAction('push', d => `Pushed ${d.branch}.`), { disabled: Boolean(stop) || (g.upstream && !g.ahead), meta: g.ahead ? `${g.ahead}` : '' });
+    mi(pop, close, 'Pull', gitPull, { disabled: Boolean(stop), meta: g.behind ? `${g.behind}` : '', title: 'Brings in what others pushed. Stops, changing nothing, if the same files changed on both sides.' });
+    msep(pop);
+    mi(pop, close, 'History of this dashboard…', showHistory, { disabled: !S.slug, title: S.slug ? 'Committed versions; open one to bring it back' : 'Save the dashboard first' });
+    mi(pop, close, 'Refresh', async () => { await refreshGit(); renderToolbar(); });
+  });
+}
+
 function renderToolbar() {
   if (!root) return;
   const bar = root.querySelector('#le-bar'); bar.replaceChildren();
@@ -541,7 +627,7 @@ function renderToolbar() {
     }
   });
 
-  put(bar, layouts, fileIn);
+  put(bar, layouts, gitMenu(), fileIn);
   if (!has) { put(bar, h('button', { class: 'btn btn-sm', onclick: newLayout }, 'New dashboard')); return; }
 
   put(bar,
@@ -657,6 +743,10 @@ const CSS = `
 .le-mlabel{padding:6px 10px 2px;font-size:.72rem;color:var(--text-muted)}
 .le-mrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 10px;font-size:.85rem}
 .le-mrow input{width:80px}
+.le-badge{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;border-radius:9px;background:var(--primary);color:#fff;font-size:.7rem;line-height:18px;text-align:center}
+.le-dlg{margin:auto;width:min(860px,calc(100vw - 32px));max-height:80vh;border:1px solid var(--border);background:var(--surface);color:var(--text);padding:16px}
+.le-dlg::backdrop{background:rgba(0,0,0,.4)}
+.le-dlg-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px}
 `;
 
 function build(container) {
@@ -682,6 +772,7 @@ function build(container) {
 async function open() {
   if (!root) build(document.getElementById('tab-layouts'));
   try { await refreshList(); } catch (e) { say('Could not load dashboards: ' + e.message, false); }
+  await refreshGit();
   try {
     const st = await api('/api/preview/status');
     if (!st.available) {
