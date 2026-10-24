@@ -2,7 +2,7 @@
   "spec": {
     "menuRoutes": [
       {
-        "categoryTitle": "Custom Dashboards",
+        "categoryTitle": "Reactor",
         "routes": [
           "/incident-alert-dashboard",
           "/telco-causal-mesh-gen2",

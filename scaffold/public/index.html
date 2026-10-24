@@ -1002,7 +1002,7 @@ Define UI components &amp; API filters on the left, then click "Generate Dashboa
         const { inSidebar, ...r } = h;
         currentRoutes.routes.push(r);
         if (inSidebar !== false) {
-          if (!currentRoutes.menuRoutes[0]) currentRoutes.menuRoutes.push({ categoryTitle: 'Custom Dashboards', routes: [], type: 'category' });
+          if (!currentRoutes.menuRoutes[0]) currentRoutes.menuRoutes.push({ categoryTitle: 'Reactor', routes: [], type: 'category' });
           const list = currentRoutes.menuRoutes[0].routes || (currentRoutes.menuRoutes[0].routes = []);
           if (!list.includes(path)) list.push(path);
         }
@@ -1015,7 +1015,7 @@ Define UI components &amp; API filters on the left, then click "Generate Dashboa
     function toggleRoute(path, checked, el) {
       const h = heldRoutes.find(x => x.path === path);
       if (h) { h.inSidebar = checked; autoSaveRoutes(); return; }
-      if (!currentRoutes.menuRoutes[0]) currentRoutes.menuRoutes.push({ categoryTitle: 'Custom Dashboards', routes: [], type: 'category' });
+      if (!currentRoutes.menuRoutes[0]) currentRoutes.menuRoutes.push({ categoryTitle: 'Reactor', routes: [], type: 'category' });
       let active = currentRoutes.menuRoutes[0].routes || (currentRoutes.menuRoutes[0].routes = []);
       if (checked && !active.includes(path)) active.push(path);
       if (!checked) currentRoutes.menuRoutes[0].routes = active.filter(p => p !== path);
