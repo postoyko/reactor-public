@@ -7,6 +7,7 @@
  */
 
 import { pivotChoices } from './pivot';
+import { viewAsChoices } from './chart-kinds';
 import React from 'react';
 import { Button, Checkbox, Select, SelectItem, SelectItemGroup, TextInput } from '@carbon/react';
 import { sourceDef, SOURCES } from './sources';
@@ -428,6 +429,11 @@ export default function Inspector({ widget, onChange, onClose, partsFor, everyon
             {pivotChoices(widget) && (
               <div className="cds--form-item">
                 <label className="db-check"><input type="checkbox" checked={c.pivot !== false} onChange={e => { const n = { ...c }; if (e.target.checked) delete n.pivot; else n.pivot = false; onChange({ ...widget, config: n }, `${widget.id}:pivot`); }} />{' '}Viewers can regroup this chart (“by …” menu)</label>
+              </div>
+            )}
+            {viewAsChoices(widget) && (
+              <div className="cds--form-item">
+                <label className="db-check"><input type="checkbox" checked={c.viewAs !== false} onChange={e => { const n = { ...c }; if (e.target.checked) delete n.viewAs; else n.viewAs = false; onChange({ ...widget, config: n }, `${widget.id}:viewAs`); }} />{' '}Viewers can show it as another chart (“as …” menu)</label>
               </div>
             )}
             {widget.type === 'kpi' && (

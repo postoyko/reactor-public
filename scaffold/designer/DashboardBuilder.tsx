@@ -35,6 +35,7 @@ import { wiredIds } from './Wiring';
 import WireLayer from './WireLayer';
 import { canSend } from './Wiring';
 import { pivotFields, retitle } from './pivot';
+import { viewAsByName, viewAsChoices } from './chart-kinds';
 import ViewsMenu, { SavedView } from './ViewsMenu';
 import { LinkCtx } from './nest';
 import StartScreen from './StartScreen';
@@ -117,7 +118,7 @@ export default function DashboardBuilder(props: Props) {
   const [drillReq, setDrillReq] = useState<DrillRequest | null>(null);
   const [values, setValues] = useState<Record<string, string>>({});
   // Action wiring: what the wires have done to widgets since the dashboard was opened (see actions.tsx). Never saved.
-  type ActState = Record<string, { hidden?: boolean; title?: string; text?: string; props?: Record<string, unknown>; cfg?: Record<string, unknown> }>;
+  type ActState = Record<string, { hidden?: boolean; title?: string; text?: string; props?: Record<string, unknown>; cfg?: Record<string, unknown>; type?: string }>;
   const [act, setAct] = useState<ActState>({});
   const cmdN = useRef(0);
   const depth = useRef(0);
@@ -135,7 +136,7 @@ export default function DashboardBuilder(props: Props) {
   const baseActive: Dashboard = store.dashboards.find(d => d.id === store.activeId) || store.dashboards[0];
   // Runtime links: while viewing, people can re-wire which widgets follow which, and whether a widget follows the filter bar.
   // Kept in this browser, per dashboard; the saved dashboard is not changed.
-  type LinkOver = Record<string, { send?: Record<string, string[] | null>; follow?: Record<string, boolean>; pivot?: Record<string, string>; layout?: Record<string, { x: number; y: number; w: number; h: number }> }>;
+  type LinkOver = Record<string, { send?: Record<string, string[] | null>; follow?: Record<string, boolean>; pivot?: Record<string, string>; view?: Record<string, string>; layout?: Record<string, { x: number; y: number; w: number; h: number }> }>;
   const [linkOver, setLinkOver] = useState<LinkOver>(() => { try { return JSON.parse(window.localStorage.getItem('db-links') || '{}'); } catch (e) { return {}; } });
   const [linkMode, setLinkMode] = useState(false);
   const [resizeMode, setResizeMode] = useState(false);
@@ -164,6 +165,10 @@ export default function DashboardBuilder(props: Props) {
           if (f !== undefined) { if (f) delete cfg.followBar; else cfg.followBar = false; }
           w = { ...w, title, config: cfg };
         }
+        // "View as": a chart type this person (or an action) chose, from the same family as the saved one
+        const byAction = actOn && actOn[w.id] ? actOn[w.id].type : undefined;
+        const vt = byAction || (lo && lo.view ? lo.view[w.id] : undefined);
+        if (vt && vt !== w.type && (viewAsChoices(w) || []).some(x => x.type === vt)) w = { ...w, type: vt as Widget['type'] };
         const a = actOn ? actOn[w.id] : undefined;
         if (a) {
           const cfg = { ...w.config };
@@ -191,6 +196,16 @@ export default function DashboardBuilder(props: Props) {
     viewing,
     pivotFields: (w: Widget) => (viewing ? pivotFields(w) : null),
     setPivot: (w: Widget, key: string) => saveLinks(baseActive.id, cur => ({ ...cur, pivot: { ...(cur.pivot || {}), [w.id]: key } })),
+    viewAsChoices: (w: Widget) => (viewing && w.config.viewAs !== false ? viewAsChoices(w) : null),
+    viewAsChanged: (w: Widget) => { const saved = baseActive.widgets.find(b => b.id === w.id); return Boolean(saved && saved.type !== w.type); },
+    setViewAs: (w: Widget, type: string) => saveLinks(baseActive.id, cur => {
+      const saved = baseActive.widgets.find(b => b.id === w.id);
+      const view = { ...(cur.view || {}) };
+      if (!saved || saved.type === type) delete view[w.id]; else view[w.id] = type;
+      const out = { ...cur };
+      if (Object.keys(view).length) out.view = view; else delete out.view;
+      return Object.keys(out).length ? out : undefined;
+    }),
     resizeOn: resizeMode && viewing,
     setLayout: (next: Widget[]) => saveLinks(baseActive.id, cur => {
       const layout = { ...(cur.layout || {}) };
@@ -380,6 +395,7 @@ export default function DashboardBuilder(props: Props) {
     }
     else if (d === 'addValue') setValue(id, String((Number(valuesRef.current[id] !== undefined ? valuesRef.current[id] : inputDefault(t)) || 0) + (Number(arg) || 0)));
     else if (d.startsWith('set:')) { const k = d.slice(4), kind = argKind(t, d); patch(c => ({ ...c, props: { ...(c.props || {}), [k]: coerce(kind, arg) } })); }
+    else if (d === 'viewAs') { const type = viewAsByName(t, arg); if (type) patch(c => ({ ...c, type: type === t.type ? undefined : type })); }
     else if (d.startsWith('cmd:')) { const n = ++cmdN.current; patch(c => ({ ...c, props: { ...(c.props || {}), __cmd: { name: d.slice(4), arg, n } } })); }
     else if (d === 'value') setValue(id, arg);
     else if (d === 'clear' || d === 'off') setValue(id, '');

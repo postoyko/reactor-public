@@ -1,5 +1,11 @@
 # Dashboard Designer changes
 
+## v1.61.0
+**View as.** While a dashboard is used, a chart can be shown as another kind of chart that reads the same data: an *as …* menu on the widget (shown on hover, and kept visible once switched).
+- Families: groups (bar, donut, simple bar, lollipop, pie, Carbon donut, treemap, word cloud, grouped and stacked bar, heatmap, radar), over time (timeline, line, area, stacked area, scatter), one figure (number, gauge, meter) and rows (table, data table, structured list). A chart only offers its own family, so nothing is lost and switching back restores it.
+- The choice is kept per person and dashboard, like Arrange widgets; *Reset changes* puts every chart back. Designers can turn it off per widget (Interact > *Viewers can show it as another chart*).
+- New action *Change its chart type* (Data) in Flows, for example a toggle that flips a chart between bars and a word cloud.
+
 ## v1.60.0
 **Policies by name.** Policy actions (activate, deploy, stop deploying, reject, restore, rename) take policy names as well as ids. Names are looked up in the Policies source (fetched once if no widget shows it); names that match no policy are listed in the confirmation and left out. Names keep their spaces: several are separated by commas. New template **Policy manager**: every policy in a searchable table, with a box per action.
 

@@ -13,6 +13,7 @@ import { carbonSpec, Kind } from './carbon-specs';
 import { ActionLink, Widget } from './types';
 import { ArgPart, defaultParts, OFFERED_PLATFORM_ACTIONS, PlatformAction, ROW_ACTIONS } from './platform-actions';
 import { isAlertSource, PLATFORM_ID } from './sources';
+import { viewAsChoices } from './chart-kinds';
 
 export interface EventSpec { id: string; label: string; /** What the event carries, for "only when the value is" and {value}. */ carries?: string }
 /** `parts`: an action with several fields (kept in the link's arg as JSON, see platform-actions.ts). */
@@ -87,6 +88,11 @@ export function actionsOf(w: W): ActionSpec[] {
   else if (n === 'Slider' || n === 'NumberInput') out.push({ id: 'addValue', label: 'Add to its value', group: 'Value', arg: arg('number', 'Amount to add (negative subtracts)', { def: '1' }) }, { id: 'value', label: 'Set its value', group: 'Value', arg: arg('text', 'Value', { def: '{value}' }) }, { id: 'clear', label: 'Clear its value', group: 'Value' });
   else if (VALUE_TYPES.has(n)) out.push({ id: 'value', label: 'Set its value', group: 'Value', arg: arg('text', 'Value', { def: '{value}' }) }, { id: 'clear', label: 'Clear its value', group: 'Value' });
   if (isPickable(w)) out.push({ id: 'pick', label: 'Pick a value (filters the others)', group: 'Data', arg: arg('text', 'Value to pick', { def: '{value}' }) }, { id: 'clearPick', label: 'Clear its pick', group: 'Data' });
+  const kinds = viewAsChoices(w);
+  if (kinds) {
+    const others = kinds.filter(k => k.type !== w.type);
+    out.push({ id: 'viewAs', label: 'Change its chart type', group: 'Data', arg: arg('enum', 'Show it as', { options: kinds.map(k => k.label), ...(others[0] ? { def: others[0].label } : {}) }) });
+  }
   if (CFG_TYPES.has(w.type) || (carbonSpec(w.type) || { uses: undefined }).uses) {
     CFG.forEach(c => out.push({ id: `cfg:${c.key}`, label: c.label, group: 'Data', arg: arg(c.kind, c.hint, { options: c.options, ...(c.def !== undefined ? { def: c.def } : {}) }) }));
     if (isAlertSource(w.config.query)) ROW_ACTIONS.forEach(a => out.push(apiSpec(a)));

@@ -591,3 +591,34 @@ describe('policies by name', () => {
     expect(c.params.policyIds).toEqual(['a b c', 'd e']);
   });
 });
+
+import { FAMILIES, familyOf, viewAsByName, viewAsChoices } from './chart-kinds';
+describe('View as (chart type switching)', () => {
+  const w = (type: string) => ({ type: type as any, config: { query: 'getAlerts' as const } });
+  it('a bar chart can be shown as any chart that groups, a word cloud included', () => {
+    const types = viewAsChoices(w('bar'))!.map(c => c.type);
+    expect(types).toEqual(expect.arrayContaining(['bar', 'donut', 'carbon:PieChart', 'carbon:TreemapChart', 'carbon:WordCloudChart', 'carbon:StackedBarChart']));
+    expect(types).not.toContain('carbon:LineChart');
+    expect(types).not.toContain('table');
+  });
+  it('time charts only switch among time charts; figures among figures; rows among rows', () => {
+    expect(viewAsChoices(w('carbon:LineChart'))!.map(c => c.type)).toEqual(['timeseries', 'carbon:LineChart', 'carbon:AreaChart', 'carbon:StackedAreaChart', 'carbon:ScatterChart']);
+    expect(viewAsChoices(w('kpi'))!.map(c => c.type)).toEqual(['kpi', 'carbon:GaugeChart', 'carbon:MeterChart']);
+    expect(viewAsChoices(w('carbon:DataTable'))!.map(c => c.type)).toEqual(['table', 'carbon:DataTable', 'carbon:StructuredList']);
+  });
+  it('widgets without a family have no menu; every family type exists', () => {
+    expect(viewAsChoices(w('text'))).toBeNull();
+    expect(viewAsChoices(w('carbon:AlluvialChart'))).toBeNull();
+    FAMILIES.forEach(f => f.types.forEach(t => expect(familyOf(t)).toBe(f)));
+    FAMILIES.forEach(f => expect(viewAsChoices(w(f.types[0]))!.length).toBe(f.types.length));
+  });
+  it('the action finds a type by its label, ignoring case, or by the start of it', () => {
+    expect(viewAsByName(w('bar'), 'Word cloud')).toBe('carbon:WordCloudChart');
+    expect(viewAsByName(w('bar'), 'pie')).toBe('carbon:PieChart');
+    expect(viewAsByName(w('bar'), 'line chart')).toBeUndefined();
+  });
+  it('the switch is kept per widget and survives loading', () => {
+    const d = sanitizeDashboard({ name: 'x', widgets: [{ id: 'a', type: 'bar', title: 'B', x: 0, y: 0, w: 4, h: 4, config: { query: 'getAlerts', viewAs: false } }] })!;
+    expect(d.dashboard.widgets[0].config.viewAs).toBe(false);
+  });
+});

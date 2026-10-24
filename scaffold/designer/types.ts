@@ -62,6 +62,8 @@ export interface WidgetConfig {
   followBar?: boolean;
   /** Viewers can regroup this chart with the "by ..." dropdown (default yes). */
   pivot?: boolean;
+  /** false: viewers cannot switch this chart to another type ("View as" menu). */
+  viewAs?: boolean;
   /** Viewers can drag this widget's corner to resize it while using the dashboard (default yes). */
   resize?: boolean;
   /** Viewers can set a "notify me" threshold on this number (default yes). */

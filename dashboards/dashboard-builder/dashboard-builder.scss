@@ -3514,3 +3514,24 @@ body.db-dragging iframe { pointer-events: none; }
 
   .db-ac-area { position: absolute; left: -9999px; width: 1px; height: 1px; }
 }
+
+/* "View as" menu: shown while the pointer is on the widget or it has the keyboard focus, and always once switched */
+.dashboard-builder-container {
+  .db-viewas {
+    max-width: 150px;
+    opacity: 0;
+    transition: opacity 0.12s;
+
+    &.is-changed { opacity: 1; }
+  }
+
+  .db-widget:hover .db-viewas,
+  .db-widget:focus-within .db-viewas,
+  .db-viewas:focus {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    .db-viewas { opacity: 1; }
+  }
+}

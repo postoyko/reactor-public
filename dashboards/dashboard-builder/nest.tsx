@@ -23,6 +23,11 @@ export interface LinkApi {
   /** Fields this widget can be regrouped by, or null when it cannot be pivoted. */
   pivotFields: (w: Widget) => Array<{ key: string; label: string }> | null;
   setPivot: (w: Widget, key: string) => void;
+  /** Chart types this widget can be viewed as, or null when it cannot be switched. */
+  viewAsChoices: (w: Widget) => Array<{ type: string; label: string }> | null;
+  setViewAs: (w: Widget, type: string) => void;
+  /** This person switched the widget from the type it was saved with. */
+  viewAsChanged: (w: Widget) => boolean;
   /** Runtime resizing: handles are showing, and where a finished resize goes (only for this person, this browser). */
   resizeOn: boolean;
   setLayout: (next: Widget[]) => void;

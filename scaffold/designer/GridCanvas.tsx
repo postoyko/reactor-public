@@ -209,6 +209,12 @@ export default function GridCanvas({ widgets, rowH, editing, selectedId, onSelec
                   {(link.pivotFields(w) || []).map(f => <option key={f.key} value={f.key}>by {f.label}</option>)}
                 </select>
               )}
+              {link && !editing && link.viewAsChoices(w) && (
+                <select className={`db-pivot db-viewas${link.viewAsChanged(w) ? ' is-changed' : ''}`} aria-label={`Show ${w.title} as`} title="Show this as another kind of chart (only for you)" value={w.type}
+                  onPointerDown={e => e.stopPropagation()} onChange={e => link.setViewAs(w, e.target.value)}>
+                  {(link.viewAsChoices(w) || []).map(c => <option key={c.type} value={c.type}>as {c.label.toLowerCase()}</option>)}
+                </select>
+              )}
               {link && link.on && !editing && w.config.query && canListen(w) && (
                 <button type="button" className={`db-linkchip${link.follows(w) ? ' is-on' : ''}`} aria-pressed={link.follows(w)} title={link.follows(w) ? 'Follows the filter bar. Click to ignore it.' : 'Ignores the filter bar. Click to follow it.'}
                   onPointerDown={e => e.stopPropagation()} onClick={() => link.toggle(w)}><FilterIcon size={14} aria-hidden="true" />{link.follows(w) ? 'Filter bar' : 'Not linked'}</button>

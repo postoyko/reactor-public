@@ -149,6 +149,7 @@ export function sanitizeConfig(raw: unknown, type: Widget['type']): WidgetConfig
   if (typeof r.fg === 'string' && /^#[0-9a-fA-F]{6}$/.test(r.fg)) cfg.fg = r.fg.toLowerCase();
   if (r.followBar === false) cfg.followBar = false;
   if (r.pivot === false) cfg.pivot = false;
+  if (r.viewAs === false) cfg.viewAs = false;
   if (r.resize === false) cfg.resize = false;
   if (r.notify === false) cfg.notify = false;
   if (typeof r.text === 'string') cfg.text = r.text.slice(0, 2000);
