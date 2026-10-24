@@ -885,9 +885,17 @@ function bundledList() {
     if (!panel || !fs.existsSync(path.join(base, panel))) return;
     let comp = known[dir] ? known[dir].comp : null;
     if (!comp) { try { const m = /components\/([^/'"]+)\//.exec(fs.readFileSync(path.join(base, panel), 'utf8')); comp = m ? m[1] : dir; } catch (e) { comp = dir; } }
-    const installed = fs.existsSync(path.join(PANELS_DIR, panel)) && fs.existsSync(path.join(EXT_DIR, 'src', 'components', comp));
+    // Dashboards listed in deploy-dashboards.sh are copied into src/components on every deploy (that copy is not kept in
+    // git), so for them the panel file alone says they are installed, and the next deploy brings their source in.
+    const synced = Boolean(known[dir]);
+    const installed = fs.existsSync(path.join(PANELS_DIR, panel)) && (synced || fs.existsSync(path.join(EXT_DIR, 'src', 'components', comp)));
     const row = { dir, comp, panel, installed, title: prettify(panel.replace(/\.panel\.ts$/, '')) };
-    if (installed) {
+    if (installed && synced) {
+      row.synced = true;
+      row.srcVersion = readVer(base);
+      row.changed = stale;
+      if (stale) row.fromStudio = true;
+    } else if (installed) {
       const dst = path.join(EXT_DIR, 'src', 'components', comp);
       row.srcVersion = readVer(base); row.instVersion = readVer(dst);
       row.changed = stale || dirDiffers(base, dst);
