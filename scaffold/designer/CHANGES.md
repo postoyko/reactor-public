@@ -1,5 +1,12 @@
 # Dashboard Designer changes
 
+## v1.57.0
+From the second API check against a real Concert Operate (every source now reads correctly):
+- New sources: **Policies** (getPoliciesMetadata: id and name of every policy, so the policy actions get real ids), **Open alert count** and **Open incident count** (getStandingAlertCount / getStandingStoryCount: one number straight from Concert, much faster than counting rows; show it with Sum of Quantity).
+- *Related incidents* leaves out the incident it was asked about (Concert lists it among its own relations).
+- Generic sources take a record's name from `metadata.name` when it has no name of its own (policies).
+- API check: `graphql` takes the query as text, so the check now sends the description request as text, tries smaller requests when it is refused, and reports the server's own reason. Errors from every source include the server's reason too.
+
 ## v1.56.0
 Fixes from the first API check against a real Concert Operate (2026-10-24):
 - *Incidents of matching alerts* and *Related incidents* read the incidents themselves, not the insight records inside each one. Generic sources take the outermost list of an answer, so *User groups* lists the groups (with their members) rather than the users inside them.

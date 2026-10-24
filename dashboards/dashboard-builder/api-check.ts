@@ -111,9 +111,9 @@ export async function runApiCheck(hub: DataHub, opt: CheckOptions, onResult: (r:
     try {
       const fn = a[def.api];
       const data = await withTimeout(Promise.resolve(fn(params)), 25000);
-      return { data, rows: toRows(q, data), ms: Date.now() - t0, params };
+      return { data, rows: toRows(q, data, param), ms: Date.now() - t0, params };
     } catch (e: any) {
-      return { rows: [], ms: Date.now() - t0, params, error: e && e.message ? String(e.message) : String(e) };
+      return { rows: [], ms: Date.now() - t0, params, error: errDetail(e) };
     }
   };
 
@@ -156,7 +156,7 @@ export async function runApiCheck(hub: DataHub, opt: CheckOptions, onResult: (r:
   // obviously needs one), to see what they return. All are reads.
   const EXTRA: Array<[string, Record<string, unknown>]> = [
     ['getIncident', { incident: incidentId }], ['getAlertSummary', {}], ['getStandingAlertCount', {}], ['getStandingStoryCount', {}],
-    ['getPoliciesSummary', {}], ['getPoliciesMetadata', {}], ['getTickets', {}], ['getProfiles', {}], ['getSeasonalFindings', {}],
+    ['getTickets', {}], ['getProfiles', {}], ['getSeasonalFindings', {}],
     ['getDataQualityIssues', {}], ['getBlockedResources', {}], ['getStoriesWithAlertFilter', { filter: "state != 'clear'" }], ['getAlertSchema', {}], ['getStorySchema', {}]
   ];
   for (const [name, extra] of EXTRA) {
@@ -168,7 +168,7 @@ export async function runApiCheck(hub: DataHub, opt: CheckOptions, onResult: (r:
       const list = data === undefined || data === null ? [] : [data];
       push({ name, api: name, kind: 'extra', status: list.length ? 'ok' : 'empty', ms: Date.now() - t0, params: showParams(params, opt.values), outline: outline(data, opt.values) });
     } catch (e: any) {
-      push({ name, api: name, kind: 'extra', status: 'error', ms: Date.now() - t0, params: showParams(params, opt.values), note: e && e.message ? String(e.message).slice(0, 400) : String(e) });
+      push({ name, api: name, kind: 'extra', status: 'error', ms: Date.now() - t0, params: showParams(params, opt.values), note: errDetail(e) });
     }
   }
 
@@ -218,10 +218,13 @@ const typeText = (t: any): string => (!t ? '?' : t.kind === 'NON_NULL' ? `${type
 async function schemaCheck(a: Record<string, any>): Promise<CheckResult> {
   const base: CheckResult = { name: 'API description (GraphQL introspection)', api: 'graphql', kind: 'schema', status: 'ok' };
   if (typeof a.graphql !== 'function') return { ...base, status: 'missing', note: 'There is no graphql function here.' };
+  // graphql(text) sends the text as the query (an object arrives as "[object Object]", checked 2026-10-24). From the
+  // full description down to the smallest possible query, to tell "switched off" from "too deep" from "not working".
   const tries: Array<[string, () => unknown]> = [
-    ['graphql({ query })', () => a.graphql({ query: INTROSPECT })],
-    ['graphql(query)', () => a.graphql(INTROSPECT)],
-    ['graphql({ query, variables })', () => a.graphql({ query: INTROSPECT, variables: {} })]
+    ['full description', () => a.graphql(INTROSPECT)],
+    ['root types only', () => a.graphql('query { __schema { queryType { name } mutationType { name } } }')],
+    ['mutation list', () => a.graphql('query { __schema { mutationType { fields { name args { name type { kind name ofType { kind name ofType { kind name } } } } } } } }')],
+    ['smallest query', () => a.graphql('{ __typename }')]
   ];
   const errors: string[] = [];
   for (const [how, call] of tries) {
@@ -231,7 +234,11 @@ async function schemaCheck(a: Record<string, any>): Promise<CheckResult> {
       let schema: any;
       const find = (v: any, d: number) => { if (schema || !v || typeof v !== 'object' || d > 4) return; if (v.__schema) { schema = v.__schema; return; } Object.keys(v).forEach(k => find(v[k], d + 1)); };
       find(res, 0);
-      if (!schema || !Array.isArray(schema.types)) { errors.push(`${how}: answered without a schema (${outline(res, false).slice(0, 200)})`); continue; }
+      if (schema && schema.mutationType && Array.isArray(schema.mutationType.fields)) {
+        const lines = schema.mutationType.fields.map((f: any) => `  ${f.name}(${(f.args || []).map((x: any) => `${x.name}: ${typeText(x.type)}`).join(', ')})`);
+        return { ...base, ms: Date.now() - t0, note: `Answered to "${how}". ${[...errors].join(' ')}`.trim(), outline: ['mutations', ...lines].join('\n') };
+      }
+      if (!schema || !Array.isArray(schema.types)) { errors.push(`${how}: answered ${outline(res, true).replace(/\s+/g, ' ').slice(0, 300)}`); continue; }
       const roots = [schema.queryType && schema.queryType.name, schema.mutationType && schema.mutationType.name].filter(Boolean);
       const keep = schema.types.filter((t: any) => t && Array.isArray(t.fields) && (roots.includes(t.name) || /tenant|mutation/i.test(t.name)) && !/^__/.test(t.name));
       const lines: string[] = [];
@@ -241,8 +248,20 @@ async function schemaCheck(a: Record<string, any>): Promise<CheckResult> {
       });
       return { ...base, ms: Date.now() - t0, note: `Answered to ${how}. ${keep.length} types with their fields and parameters.`, outline: lines.join('\n') };
     } catch (e: any) {
-      errors.push(`${how}: ${e && e.message ? String(e.message).slice(0, 200) : String(e)}`);
+      errors.push(`${how}: ${errDetail(e)}`);
     }
   }
   return { ...base, status: 'error', note: errors.join('\n') };
+}
+
+/** The server's own reason for refusing a request (Apollo keeps it under networkError.result or graphQLErrors). */
+function errDetail(e: any): string {
+  const parts: string[] = [];
+  if (e && e.message) parts.push(String(e.message));
+  const net = e && e.networkError;
+  const body = net && (net.result || net.bodyText);
+  const errs = (body && body.errors) || (e && e.graphQLErrors) || [];
+  if (Array.isArray(errs)) errs.slice(0, 3).forEach((x: any) => parts.push(`server: ${x && x.message ? x.message : JSON.stringify(x)}`));
+  if (typeof body === 'string') parts.push(`server: ${body.slice(0, 300)}`);
+  return parts.join(' | ').slice(0, 600) || String(e);
 }

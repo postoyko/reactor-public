@@ -484,3 +484,19 @@ describe('real Concert Operate responses', () => {
     expect(rows[1]).toMatchObject({ kind: 'Group', name: 'All Users', members: 1 });
   });
 });
+
+describe('policies, counts and related incidents (second real check)', () => {
+  it('getPoliciesMetadata: one row per policy, the name taken from metadata', () => {
+    const rows = toRows('getPolicies', { tenant: { __typename: 'Tenant', aiopsPolicies: [{ __typename: 'AIopsPolicy', id: 'p1', metadata: { __typename: 'AIopsPolicyMetadata', name: 'Default alert repeat create guard policy' } }, { id: 'p2', metadata: { name: 'Other' } }] } });
+    expect(rows).toEqual([{ id: 'p1', name: 'Default alert repeat create guard policy' }, { id: 'p2', name: 'Other' }]);
+  });
+  it('getStandingAlertCount: one row with the quantity', () => {
+    expect(toRows('getAlertCount', { tenant: { __typename: 'Tenant', alertCount: { __typename: 'AlertCount', quantity: 380 } } })).toEqual([{ quantity: 380, id: 'total' }]);
+    expect(toRows('getIncidentCount', { tenant: { storyCount: { quantity: 15 } } })[0].quantity).toBe(15);
+  });
+  it('getRelatedStories: leaves out the incident it was asked about', () => {
+    const data = { tenant: { relatedStories: [{ __typename: 'Story', id: 's1', title: 'Self', priority: 3 }, { id: 's2', title: 'Other', priority: 2 }] } };
+    expect(toRows('getRelatedStories', data, 's1').map(r => r.id)).toEqual(['s2']);
+    expect(toRows('getRelatedStories', data, 'a1, a2').map(r => r.id)).toEqual(['s1', 's2']);
+  });
+});

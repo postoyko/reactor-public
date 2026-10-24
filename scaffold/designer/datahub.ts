@@ -319,7 +319,7 @@ export class DataHub {
     p.then(
       data => {
         if (e.seq !== seq) return;
-        e.state = { rows: toRows(e.query, data), loading: false, updated: Date.now() };
+        e.state = { rows: toRows(e.query, data, e.filter), loading: false, updated: Date.now() };
         this.applyTeams(e);
         this.notify(e);
         this.shareRunbooks(e);

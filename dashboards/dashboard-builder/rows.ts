@@ -370,14 +370,19 @@ export function metricRows(data: any): Row[] {
   return out;
 }
 
-export function toRows(query: QueryName, data: any): Row[] {
+/** `param` is the source's parameter (an incident id ...), for sources whose answer includes what was asked about. */
+export function toRows(query: QueryName, data: any, param = ''): Row[] {
   if (query === 'getAlerts') return alertRows(data);
   if (query === 'getStories') return incidentRows(data);
   if (query === 'getApplications') return applicationRows(data);
   if (query === 'getMetricSeries') return metricRows(data);
   const shape = shapeOf(query);
   if (shape === 'alerts') return anyAlertRows(data);
-  if (shape === 'stories') return incidentRows({ tenant: { stories: largestList(data, isStory) } });
+  if (shape === 'stories') {
+    const rows = incidentRows({ tenant: { stories: largestList(data, isStory) } });
+    // getRelatedStories lists the incident it was asked about among its relations
+    return query === 'getRelatedStories' && param ? rows.filter(r => r.id !== param.trim()) : rows;
+  }
   if (shape === 'people') return peopleRows(data);
   const rows = genericRows(data);
   learnFields(query, rows);
@@ -444,6 +449,8 @@ export function genericRows(data: any): Row[] {
   if (list.length) {
     return list.slice(0, 5000).map((o, i) => {
       const r = flatten(o);
+      // policies and other Kubernetes-style records keep their name under metadata
+      if (r.name === undefined && r['metadata.name'] !== undefined) { r.name = r['metadata.name']; delete r['metadata.name']; }
       if (r.id === undefined) r.id = String(o.uuid || o._id || o.key || o.name || i + 1);
       else r.id = String(r.id);
       return r;
@@ -451,11 +458,12 @@ export function genericRows(data: any): Row[] {
   }
   // one record: the deepest object under tenant that has scalar fields
   let rec: Record<string, any> | undefined = isRec(data) && isRec(data.tenant) ? data.tenant : isRec(data) ? data : undefined;
-  while (rec && Object.keys(rec).length === 1 && isRec(rec[Object.keys(rec)[0]])) rec = rec[Object.keys(rec)[0]];
+  const keys = (o: Record<string, any>) => Object.keys(o).filter(k => k !== '__typename');
+  while (rec && keys(rec).length === 1 && isRec(rec[keys(rec)[0]])) rec = rec[keys(rec)[0]];
   if (!rec) return [];
   const r = flatten(rec);
   if (!Object.keys(r).length) return [];
-  r.id = String(r.id || r.uniqueId || r.name || 'resource');
+  r.id = String(r.id || r.uniqueId || r.name || 'total');
   return [r];
 }
 

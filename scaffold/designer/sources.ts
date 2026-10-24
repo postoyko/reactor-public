@@ -71,6 +71,9 @@ export const SOURCES: SourceDef[] = [
     description: 'The properties of one topology resource.',
     param: { label: 'Resource id', help: 'The topology resource to read.', placeholder: 'resource id', required: true }
   },
+  { id: 'getAlertCount', label: 'Open alert count', api: 'getStandingAlertCount', group: 'Live data', shape: 'generic', description: 'One number, straight from Concert: how many alerts are standing. Fast; use Sum of Quantity.' },
+  { id: 'getIncidentCount', label: 'Open incident count', api: 'getStandingStoryCount', group: 'Live data', shape: 'generic', description: 'One number, straight from Concert: how many incidents are standing. Fast; use Sum of Quantity.' },
+  { id: 'getPolicies', label: 'Policies', api: 'getPoliciesMetadata', group: 'People and configuration', shape: 'generic', description: 'Every policy (id and name). Large tenants have thousands: allow a few seconds. Picking one gives its id to the policy actions.' },
   { id: 'getPeople', label: 'People and teams', api: 'getUsersAndGroups', group: 'People and configuration', shape: 'people', description: 'Users and user groups of the tenant, one row each.' },
   { id: 'getGroups', label: 'User groups', api: 'getGroups', group: 'People and configuration', shape: 'generic', description: 'The user groups of the tenant and their members.' },
   { id: 'getActions', label: 'Automation actions', api: 'getActions', group: 'People and configuration', shape: 'generic', description: 'The automation actions available in the tenant.' },
