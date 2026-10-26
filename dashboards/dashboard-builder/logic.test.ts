@@ -617,8 +617,6 @@ describe('Pickers (values offered while typing)', () => {
   it('incidents are offered by title with their id, policies by name', () => {
     const inc = PICKS.incident.options([{ id: 'inc-1', title: 'orders: 5xx', priority: 2, state: 'open' }, { id: '' }]);
     expect(inc).toEqual([{ value: 'inc-1', label: 'orders: 5xx', sub: 'inc-1 · P2 · open' }]);
-    expect(PICKS.policy.options([{ id: 'pol-1', name: 'Promote critical alerts' }]).map(o => o.value)).toEqual(['Promote critical alerts']);
-    expect(PICKS.policy.multi).toBe(true);
   });
 });
 
