@@ -5,7 +5,7 @@
  * API check: runs every read-only data source against the real Concert Operate and records the shape of what comes
  * back, so the Designer's readers (rows.ts) can be checked and fixed against real responses rather than guesses.
  *
- * Nothing is changed: mutations (create incident, policies) are only looked up, never called. By default the report
+ * Nothing is changed: mutations (create incident) are only looked up, never called. By default the report
  * holds the structure of each response (keys, types, list lengths), not its values; sample values are opt-in.
  */
 

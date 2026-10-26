@@ -13,7 +13,7 @@ import './dashboard-builder.scss';
 import { ActionLink, Cond, Dashboard, Filter, FilterBarConfig, QueryName, Row, Widget } from './types';
 import { ActionApi, ActionCtx, coerce } from './actions';
 import { argKind, fill } from './component-api';
-import { hasPolicyNames, partValues, platformAction, POLICY_PARTS, resolvePolicies } from './platform-actions';
+import { partValues, platformAction } from './platform-actions';
 import { PLATFORM_ID } from './sources';
 import { carbonSpec, carbonDefaults } from './carbon-specs';
 import Library, { DockTab, LibSection } from './Library';
@@ -321,7 +321,7 @@ export default function DashboardBuilder(props: Props) {
   const actRef = useRef(act);
   actRef.current = act;
   const barRef = useRef<{ pass: (q: QueryName, r: Row) => boolean } | undefined>(undefined);
-  /** Calls Concert Operate (create an incident, change policies), only after the person using the dashboard confirms. */
+  /** Calls Concert Operate (create an incident, add alerts to one), only after the person using the dashboard confirms. */
   const runPlatform = (l: ActionLink, value: string, t?: Widget) => {
     const spec = platformAction(l.do);
     if (!spec) return;
@@ -340,29 +340,12 @@ export default function DashboardBuilder(props: Props) {
       alertIds = rows.map(r => String(r.id)).filter(Boolean).slice(0, 1000);
       if (!alertIds.length) { setNotice({ kind: 'warning', text: `“${t.title}” shows no alerts, so nothing was sent.` }); return; }
     }
-    // Policies may be named rather than given by id: look the names up in the Policies source (loaded if no widget has it)
-    const named = POLICY_PARTS.filter(k => hasPolicyNames(v[k]));
-    const policyRows = (): Promise<Row[]> => {
-      const have = hub.snapshot(sourceKey('getPolicies', '')).rows;
-      if (have.length) return Promise.resolve(have);
-      setNotice({ kind: 'info', text: 'Looking up policy names… (the first time takes a few seconds on large tenants)' });
-      return callApi('getPoliciesMetadata', {}, props.tenantId || undefined).then(d => toRows('getPolicies', d));
-    };
-    (named.length ? policyRows() : Promise.resolve([] as Row[])).then(rows => {
-      const unknown: string[] = [];
-      named.forEach(k => { const r = resolvePolicies(v[k], rows); v[k] = r.text; unknown.push(...r.unknown); });
-      if (named.length && POLICY_PARTS.every(k => !v[k] || !v[k].trim()) && unknown.length) {
-        setNotice({ kind: 'warning', text: `No policy is called ${unknown.map(u => `“${u}”`).join(', ')}, so nothing was sent.` });
-        return;
-      }
-      const c = spec.call(v, alertIds);
-      const extra = unknown.length ? `\n\nNot found, left out: ${unknown.join(', ')}` : '';
-      if (!window.confirm(`${c.summary}?${extra}\n\nThis changes data in Concert Operate.`)) return;
-      hub.call(c.name, c.params).then(
-        () => setNotice({ kind: 'info', text: `${c.summary}: done.` }),
-        (err: any) => setNotice({ kind: 'error', text: `${c.summary} failed: ${err && err.message ? err.message : 'the server refused it'}` })
-      );
-    }, (err: any) => setNotice({ kind: 'error', text: `The policy names could not be looked up: ${err && err.message ? err.message : err}` }));
+    const c = spec.call(v, alertIds);
+    if (!window.confirm(`${c.summary}?\n\nThis changes data in Concert Operate.`)) return;
+    hub.call(c.name, c.params).then(
+      () => setNotice({ kind: 'info', text: `${c.summary}: done.` }),
+      (err: any) => setNotice({ kind: 'error', text: `${c.summary} failed: ${err && err.message ? err.message : 'the server refused it'}` })
+    );
   };
   const runAction = useCallback((l: ActionLink, value: string) => {
     if (l.to === PLATFORM_ID) { runPlatform(l, value); return; }

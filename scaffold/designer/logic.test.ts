@@ -448,9 +448,9 @@ describe('more data sources', () => {
 
 describe('Concert Operate actions', () => {
   it('the platform target offers the mutations; alert widgets offer the row actions', () => {
-    expect(actionsOf(PLATFORM).map(a => a.id)).toEqual(expect.arrayContaining(['api:createIncident', 'api:addToIncident', 'api:activatePolicy', 'api:rejectPolicy', 'api:deployPolicy', 'api:renamePolicy']));
-    // refused by Concert Operate's API (setPolicyLock), so not offered
-    expect(actionsOf(PLATFORM).some(a => a.id === 'api:lockPolicy' || a.id === 'api:unlockPolicy')).toBe(false);
+    expect(actionsOf(PLATFORM).map(a => a.id)).toEqual(expect.arrayContaining(['api:createIncident', 'api:addToIncident']));
+    // policies are managed in Concert Operate itself, not from dashboards
+    expect(actionsOf(PLATFORM).some(a => /polic/i.test(a.id))).toBe(false);
     expect(actionsOf({ type: 'table', config: { query: 'getAlerts' } }).map(a => a.id)).toEqual(expect.arrayContaining(ROW_ACTIONS.map(a => a.id)));
     expect(actionsOf({ type: 'table', config: { query: 'getStories' } }).some(a => a.id.startsWith('api:'))).toBe(false);
     expect(actionsOf({ type: 'table', config: { query: 'getStories' } }).some(a => a.id === 'cfg:filter')).toBe(true);
@@ -461,9 +461,6 @@ describe('Concert Operate actions', () => {
     expect(create.call(v, [])).toEqual({ name: 'createIncidentMutation', params: { alertIds: ['a1', 'a2', 'a3'], priority: 5, description: 'Disk' }, summary: 'Create a P5 incident from 3 alerts' });
     const rows = platformAction('api:incidentFromRows')!;
     expect(rows.call(partValues(rows.parts, undefined), ['x']).params).toEqual({ alertIds: ['x'], priority: 3, description: 'Created from the dashboard' });
-    const lock = platformAction('api:unlockPolicy')!;
-    expect(lock.call({ policyIds: 'p1' }, [])).toMatchObject({ name: 'setPolicyLock', params: { policyIds: ['p1'], locked: false }, summary: 'Unlock 1 policy' });
-    expect(platformAction('api:activatePolicy')!.call({ policyIds: 'p1,p2' }, []).summary).toBe('Activate 2 policies');
   });
   it('missing or broken fields fall back to the defaults', () => {
     expect(partValues(platformAction('api:addToIncident')!.parts, 'not json')).toEqual({ alertIds: '{value}', correlationKey: '{value}' });
@@ -557,15 +554,6 @@ describe('change actions match the parameters Concert Operate requires (probe, 2
     expect(Number.isInteger(c.params.priority)).toBe(true);
   });
   it('updateIncidentMutation: alertIds [String]!', () => { expect(call('api:rowsToIncident', { correlationKey: 'k' }, ['a1']).params).toMatchObject({ alertIds: ['a1'] }); });
-  it('activate / reject / restore: policyIds [ID!]!', () => {
-    ['api:activatePolicy', 'api:rejectPolicy', 'api:restorePolicy'].forEach(id => expect(call(id, { policyIds: 'p1, p2' }).params.policyIds).toEqual(['p1', 'p2']));
-  });
-  it('setPolicyDeployed: policyId ID!, deployed Boolean!', () => {
-    expect(call('api:deployPolicy', { policyId: ' p1 ' }).params).toEqual({ policyId: 'p1', deployed: true });
-    expect(call('api:undeployPolicy', { policyId: 'p1' }).params).toEqual({ policyId: 'p1', deployed: false });
-  });
-  it('renamePolicy: policyId ID!, name String!', () => { expect(call('api:renamePolicy', { policyId: 'p1', name: 'New' }).params).toEqual({ policyId: 'p1', name: 'New' }); });
-  it('lock / unlock are marked unsupported', () => { expect(platformAction('api:lockPolicy')!.unsupported).toBeTruthy(); });
 });
 
 describe('topology resource (fourth real check)', () => {
@@ -573,22 +561,6 @@ describe('topology resource (fourth real check)', () => {
     const rows = toRows('getTopologyResource', { tenant: { __typename: 'Tenant', topologyResource: { __typename: 'TopologyResource', _id: 'Epg9I0zlCjLNbXBkwHfgOA', name: 'tu201_12.55.182.10_12346_5062', beginTime: 1791366456101, observedTime: 1791366456101, endTime: null } } });
     expect(rows).toEqual([{ _id: 'Epg9I0zlCjLNbXBkwHfgOA', name: 'tu201_12.55.182.10_12346_5062', beginTime: 1791366456101, observedTime: 1791366456101, id: 'Epg9I0zlCjLNbXBkwHfgOA' }]);
     expect(fieldsOf('getTopologyResource').find(f => f.key === 'beginTime')!.kind).toBe('time');
-  });
-});
-
-import { hasPolicyNames, resolvePolicies } from './platform-actions';
-describe('policies by name', () => {
-  const policies = [{ id: '092a9508-1f46-4535-942c-ed48280ff96f', name: 'Default alert repeat create guard policy' }, { id: '11111111-2222-3333-4444-555555555555', name: 'Close incidents when all alerts clear' }];
-  it('turns names into ids, keeps ids, reports names it does not know', () => {
-    expect(hasPolicyNames('092a9508-1f46-4535-942c-ed48280ff96f')).toBe(false);
-    expect(hasPolicyNames('Close incidents when all alerts clear')).toBe(true);
-    const r = resolvePolicies('Default alert repeat create guard policy, close INCIDENTS when all alerts clear, 11111111-2222-3333-4444-555555555555, No such policy', policies);
-    expect(r.text).toBe('092a9508-1f46-4535-942c-ed48280ff96f, 11111111-2222-3333-4444-555555555555, 11111111-2222-3333-4444-555555555555');
-    expect(r.unknown).toEqual(['No such policy']);
-  });
-  it('names with spaces stay whole when the action splits them', () => {
-    const c = platformAction('api:activatePolicy')!.call({ policyIds: 'a b c, d e' }, []);
-    expect(c.params.policyIds).toEqual(['a b c', 'd e']);
   });
 });
 

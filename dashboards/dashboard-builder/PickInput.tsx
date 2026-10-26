@@ -2,9 +2,8 @@
  * © Copyright IBM Corp. 2022, 2026
  * SPDX-License-Identifier: Apache-2.0
  *
- * A text field that also offers values from live data (pickers.ts): open incidents for an incident id, policy names
- * for the policy actions. Typing stays free (an id, {value}, a list), the list only helps. The source is loaded the
- * first time the field gets the focus, never before, so large lists (thousands of policies) cost nothing until used.
+ * A text field that also offers values from live data (pickers.ts): open incidents for an incident id. Typing stays free (an id, {value}, a list), the list only helps. The source is loaded the
+ * first time the field gets the focus, never before, so large lists cost nothing until used.
  */
 
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -85,7 +84,7 @@ export default function PickInput({ id, kind, value, onChange, placeholder, clas
       />
       {open && (
         <ul className="db-pick-list" id={listId} role="listbox">
-          {loading && <li className="db-pick-note">Loading…{kind === 'policy' ? ' (a few seconds on large tenants)' : ''}</li>}
+          {loading && <li className="db-pick-note">Loading…</li>}
           {!loading && state && state.error && <li className="db-pick-note">Could not load the list. Type the value instead.</li>}
           {!loading && !(state && state.error) && !shown.length && <li className="db-pick-note">{all.length ? 'Nothing matches. You can still type any value.' : 'Nothing to pick from. Type the value.'}</li>}
           {shown.map((o, i) => (

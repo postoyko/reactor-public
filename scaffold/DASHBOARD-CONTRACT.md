@@ -78,7 +78,6 @@ Anything else stays a fixed tile, which is fine.
 What the real API does (found with the Designer's API check, October 2026):
 - `getIncidentAlerts` fails inside Concert Operate. Read an incident's alerts with `getAlerts` and the incident as `storyId`.
 - `getFiltersViews` without a type fails on tenants with inventory filters. Use `getFilters` with a type condition (`alert` or `incident`).
-- `setPolicyLock` is refused by the server (it sends `locked`, which the mutation does not accept). Do not offer locking.
 - GraphQL introspection is disabled, and `graphql()` takes the query as text, not an object.
 - Answers carry `__typename` fields and nested lists (each alert's `insights`): take the records from the shallowest list, and skip `__typename`.
 - Times may be epoch milliseconds (topology). Severity counts may be `null`: show "Not reported", not 0.
@@ -89,9 +88,9 @@ Large tenants:
 - Time out slow calls (the Designer uses 60 s), keep one load in flight at a time, and pause refreshing while the browser tab is hidden.
 - `getPoliciesMetadata` can return thousands of policies: load it once, not on every refresh.
 
-Changing data (mutations: create or update an incident, activate, deploy, reject, restore or rename policies):
+Changing data (mutations: create or update an incident only; policies are managed in Concert Operate, never from a dashboard):
 - Always ask the person to confirm first, saying what will change and how many items.
-- Act on exactly the rows on screen, after every filter. Accept policy names as well as ids, and list names that match nothing.
+- Act on exactly the rows on screen, after every filter.
 - Report the result (done or the server's error) where the person can see it.
 
 ## 5. Look and behaviour

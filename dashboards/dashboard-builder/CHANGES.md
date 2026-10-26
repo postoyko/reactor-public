@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.65.0
+- Policies are no longer managed from dashboards: the policy actions (activate, deploy, stop deploying, reject, restore, rename), the policy picker, the policy name lookup and the Policy manager template are gone. The actions template is now *Incident actions*. The Policies source stays, read-only.
+
 ## v1.64.3
 - The side panel (Explain, rows behind a click) resizes from every edge and corner once it is moved off the right side, with a grip in the bottom-right corner; docked, its left edge resizes it and now shows a handle.
 

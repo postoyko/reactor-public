@@ -576,7 +576,7 @@ const incidentDrill = (): Widget[] => {
   return s.list;
 };
 
-/** Concert Operate actions: buttons and boxes that create incidents and change policies, always after a confirmation. */
+/** Concert Operate actions: buttons and boxes that create incidents, always after a confirmation. */
 const incidentActions = (): Widget[] => {
   const s = new Sheet();
   fig(s, 'Need attention', 'Major or worse, not acknowledged', 0, 0, 3, { ...attention(), ...ORANGE });
@@ -589,10 +589,6 @@ const incidentActions = (): Widget[] => {
     on: [{ event: 'enter', to: table.id, do: 'api:rowsToIncident', arg: JSON.stringify({ correlationKey: '{value}' }) }] });
   s.add(cc('TextInput'), 'Incident from ids', 8, 8, 4, 3, { props: { labelText: 'Create an incident from alert ids', placeholder: 'alert-1, alert-2, then Enter' },
     on: [{ event: 'enter', to: PLATFORM_ID, do: 'api:createIncident', arg: JSON.stringify({ alertIds: '{value}', priority: '3', description: 'Created from alert ids' }) }] });
-  s.add('text', 'Policies', 8, 11, 4, 4, { ...NOTE, text: 'Policies: type one or more policy ids (separated by commas) in a box below and press Enter.' });
-  s.add(cc('TextInput'), 'Reject policies', 0, 15, 4, 3, { props: { labelText: 'Reject policies', placeholder: 'policy names or ids, then Enter' }, on: [{ event: 'enter', to: PLATFORM_ID, do: 'api:rejectPolicy', arg: JSON.stringify({ policyIds: '{value}', commentText: 'Rejected from the Incident and policy actions dashboard' }) }] });
-  s.add(cc('TextInput'), 'Restore policies', 4, 15, 4, 3, { props: { labelText: 'Restore policies', placeholder: 'policy names or ids, then Enter' }, on: [{ event: 'enter', to: PLATFORM_ID, do: 'api:restorePolicy', arg: JSON.stringify({ policyIds: '{value}' }) }] });
-  s.add(cc('TextInput'), 'Activate policies', 8, 15, 4, 3, { props: { labelText: 'Activate policies', placeholder: 'policy names or ids, then Enter' }, on: [{ event: 'enter', to: PLATFORM_ID, do: 'api:activatePolicy', arg: JSON.stringify({ policyIds: '{value}' }) }] });
   return s.list;
 };
 
@@ -610,23 +606,6 @@ const filterLab = (): Widget[] => {
   const list = s.add(cc('DataTable'), 'Matching alerts', 0, 11, 7, 10, { ...raw, columns: ['severityLabel', 'resource', 'summary', 'state'], sortBy: 'severity', sortDesc: true, limit: 200, props: { size: 'sm' } });
   const incs = s.add(cc('DataTable'), 'Incidents of those alerts', 7, 11, 5, 10, { ...byInc, columns: ['priority', 'title', 'state'], sortBy: 'priority', limit: 100, props: { size: 'sm', search: false } });
   box.config.on = [k1, k2, sev, src, list, incs].map(t => ({ event: 'enter', to: t.id, do: 'cfg:filter', arg: '{value}' }));
-  return s.list;
-};
-
-/** Policies: browse every policy and act on them by name (the Designer looks the ids up). */
-const policyManager = (): Widget[] => {
-  const s = new Sheet();
-  const pol = { query: 'getPolicies' as const };
-  kpi(s, 'Policies', 0, 0, 3, { ...pol, ...NAVY });
-  s.add('text', 'How this works', 3, 0, 9, 3, { ...NOTE, text: 'Find a policy in the table (its search box narrows it), then type its name, or several separated by commas, in a box on the right and press Enter. Each box asks you to confirm before it changes anything. The list loads in a few seconds on large tenants.' });
-  s.add(cc('DataTable'), 'All policies', 0, 3, 7, 16, { ...pol, columns: ['name', 'id'], sortBy: 'name', limit: 5000, props: { size: 'sm', pageSize: 12 } });
-  const box = (title: string, label: string, y: number, link: ActionLink) => s.add(cc('TextInput'), title, 7, y, 5, 3, { props: { labelText: label, placeholder: 'policy names or ids, then Enter' }, on: [link] });
-  const to = (d: string, extra: Record<string, string> = {}): ActionLink => ({ event: 'enter', to: PLATFORM_ID, do: d, arg: JSON.stringify({ ...extra }) });
-  box('Activate', 'Activate policies', 3, to('api:activatePolicy', { policyIds: '{value}' }));
-  box('Deploy', 'Deploy a policy', 6, to('api:deployPolicy', { policyId: '{value}' }));
-  box('Stop deploying', 'Stop deploying a policy', 9, to('api:undeployPolicy', { policyId: '{value}' }));
-  box('Reject', 'Reject policies', 12, to('api:rejectPolicy', { policyIds: '{value}', commentText: 'Rejected from the Policy manager dashboard' }));
-  box('Restore', 'Restore policies', 15, to('api:restorePolicy', { policyIds: '{value}' }));
   return s.list;
 };
 
@@ -701,15 +680,12 @@ export const TEMPLATES: Template[] = [
   { id: 'drill', rowH: 28, name: 'Incident drill-down', tagline: 'Pick an incident; its alerts, groups and related incidents follow',
     detail: 'Master and detail with the incident sources: a dropdown of incident ids sets the source parameter of four widgets (Alerts of an incident, Alert groups of an incident, Related incidents) through "Change its source parameter" actions. Open Flows to see the wiring.',
     build: headed('Incident drill-down', 'Choose an incident: its alerts, alert groups and related incidents follow. Built with Change its source parameter.', incidentDrill) },
-  { id: 'opsactions', rowH: 28, bar: bar(A('severityLabel', 'team')), name: 'Incident and policy actions', tagline: 'Create incidents and change policies from the dashboard',
-    detail: 'The Concert Operate actions: a button creates a P2 incident from the alerts the table shows, a box adds them to an incident, others create an incident from alert ids or reject, restore and activate policies. Each one asks for confirmation before anything is sent.',
-    build: headed('Incident and policy actions', 'Buttons and boxes that change Concert Operate. Each asks you to confirm first.', incidentActions) },
+  { id: 'opsactions', rowH: 28, bar: bar(A('severityLabel', 'team')), name: 'Incident actions', tagline: 'Create incidents from the dashboard',
+    detail: 'The Concert Operate actions: a button creates a P2 incident from the alerts the table shows, a box adds them to an incident, another creates an incident from alert ids. Each one asks for confirmation before anything is sent.',
+    build: headed('Incident actions', 'Buttons and boxes that change Concert Operate. Each asks you to confirm first.', incidentActions) },
   { id: 'filterlab', rowH: 28, name: 'Alert filter lab', tagline: 'One server filter driving raw alerts and their incidents',
     detail: 'Type any alert filter and press Enter: figures, charts and tables on raw alerts (getRawAlerts) and on the incidents that contain them (getStoriesByAlerts) all switch to it.',
     build: headed('Alert filter lab', 'Type an alert filter and press Enter. Raw alerts and the incidents that contain them follow.', filterLab) },
-  { id: 'policies', rowH: 28, name: 'Policy manager', tagline: 'Every policy, and actions that take policy names',
-    detail: 'All policies (getPoliciesMetadata) in a searchable table, with boxes that activate, deploy, stop deploying, reject or restore policies by name or id. Names are looked up in the policy list; each change asks for confirmation.',
-    build: headed('Policy manager', 'Find a policy, type its name, press Enter. Every change asks you to confirm first.', policyManager) },
   { id: 'tenant', rowH: 28, name: 'Tenant configuration', tagline: 'People, teams, actions, tools, saved views and topology',
     detail: 'The configuration sources: people and teams, automation actions, tools, saved filters and views, resource groups, and a topology resource looked up by id. Their columns are learnt from the first answer.',
     build: headed('Tenant configuration', 'Who is in the tenant and what it is set up with. Look up any topology resource at the bottom.', tenantConfig) },

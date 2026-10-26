@@ -184,7 +184,7 @@ Type a value and the widget loads straight away:
 ![The same widget with an incident id](img/src-2.png)
 
 
-**Pick instead of typing.** Incident fields list the open incidents as you type (title, id, priority, state); pick one with the mouse or the arrow keys and Enter. The policy fields in Action flows list policy names the same way, adding to a list separated by commas. You can still type anything, including `{value}`.
+**Pick instead of typing.** Incident fields list the open incidents as you type (title, id, priority, state); pick one with the mouse or the arrow keys and Enter. You can still type anything, including `{value}`.
 
 ![Picking an incident instead of typing its id](img/pick.png)
 
@@ -292,20 +292,14 @@ The alerts used are exactly the rows the widget shows: after its own condition, 
 | --- | --- |
 | Create an incident | Alert ids, Priority, Description |
 | Add alerts to an incident | Alert ids, Incident |
-| Activate policies | Policies |
-| Deploy a policy / Stop deploying a policy | Policy |
-| Reject policies / Restore policies | Policies, Comment (optional) |
-| Rename a policy | Policy, New name |
 
 Fields default to `{value}`, so a search box or a picked row can supply the ids.
-
-**Policies by name.** Policy fields accept **names or ids**, separated by commas. Names are looked up in the *Policies* source (exact match first, then ignoring case); names that match nothing are left out and listed in the confirmation.
 
 **Safety.** Every Concert Operate action asks the viewer to confirm first (*This changes data in Concert Operate.*), then reports the result in a banner at the top:
 
 ![A button that created a P2 incident from the 31 alerts shown](img/tpl-actions-run.png)
 
-Locking and unlocking policies is not offered: current Concert Operate refuses it from the API.
+Policies are not changed from dashboards: manage them in Concert Operate itself.
 
 ## 9. Using a dashboard: Preview, View as, Arrange, Reset
 
@@ -398,17 +392,10 @@ The choice is kept per viewer. As the designer you can turn it off per widget (I
 | **Incident command center**, **NOC command center**, **Operations overview** | Classic overview layouts with numbers, charts and click-to-filter |
 | **Incident drill-down** | Pick an incident; its alerts, alert groups and related incidents follow (*Change its source parameter*) |
 | **Alert filter lab** | Type a raw alert filter (e.g. `severity = 6`) and see matching alerts and their incidents |
-| **Incident and policy actions** | Buttons and boxes that create incidents and change policies, each confirmed first |
-| **Policy manager** | Find a policy, type its name, press Enter: activate, deploy, stop deploying, reject, restore |
+| **Incident actions** | Buttons and boxes that create incidents or add alerts to one, each confirmed first |
 | **Tenant configuration** | People, user groups, automation actions, tools and saved filters |
 | **Chart gallery: compare / patterns** | Every chart type side by side |
 | **Interactive controls** | Inputs (dropdowns, search, toggles) driving other widgets |
-
-### Policy manager in use
-
-The table lists every policy. Type one or more names (or ids), separated by commas, in a box and press Enter. Here *No such policy* matched nothing, so only one policy was activated:
-
-![Policy manager: one policy activated, an unknown name left out](img/pm-view.png)
 
 Open **Flows** on any template to see how it is wired.
 
@@ -421,7 +408,7 @@ The **API check** (⋮ menu in the toolbar) tests the Designer against *your* Co
 1. Optionally enter an **Incident id** and a **Topology resource id** (otherwise the first open incident is used; the topology check is skipped).
 2. Choose the options:
     - *Include the start of each function’s code*: shows which fields each query asks for.
-    - *Ask the server which parameters each incident and policy action needs*: sends each action a request with an invalid tenant id, which the server refuses before doing anything. Nothing is changed.
+    - *Ask the server which parameters each incident action needs*: sends each action a request with an invalid tenant id, which the server refuses before doing anything. Nothing is changed.
     - *Include sample values*: one record per source. Leave it off if the data is sensitive.
 3. Press **Run**. Each row shows OK / failed / skipped, rows returned and time; click a row for the fields read and the answer’s shape.
 4. **Copy report** or **Download** it to share when something fails.
@@ -539,7 +526,7 @@ The deploy stops if the two copies differ (`./sync-designer.sh --back` keeps edi
 ### Checklist before going live
 
 - ☐ Every widget loads in Preview (no *Waiting for a value* left).
-- ☐ Flows tested in Preview; Concert Operate actions confirmed on a test incident or policy.
+- ☐ Flows tested in Preview; Concert Operate actions confirmed on a test incident.
 - ☐ API check run against the target tenant.
 - ☐ Committed and pushed (Design › Versions).
 - ☐ Saved, published and deployed; the dashboard opens from **Reactor** in the sidebar.
@@ -573,7 +560,7 @@ The contract is also served by the Workbench at http://127.0.0.1:4000/api/contra
 | Versions: Pull refused, same files changed | See *Git from the terminal* above |
 | A widget says *Not in the data snapshot* | The snapshot holds the first 10 incidents only: pick one of those, or record a new snapshot (section 11) |
 | Slow on a large tenant | Policies and raw alerts can take seconds; narrow with filters. Each source keeps at most 5,000 rows and the widget says when it was cut |
-| A Concert Operate action reports an error | Read the banner: it quotes the server. Policy lock and unlock are not supported by the server |
+| A Concert Operate action reports an error | Read the banner: it quotes the server. |
 
 ## 15. How it all connects: interaction diagrams
 

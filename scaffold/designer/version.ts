@@ -4,4 +4,4 @@
  */
 
 /** Bump on every release and add an entry to CHANGES.md. */
-export const VERSION = 'v1.64.3';
+export const VERSION = 'v1.65.0';

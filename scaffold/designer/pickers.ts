@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * What a typed field can offer from live data, so nobody has to find an id by hand: open incidents for an incident
- * id, policy names for the policy actions. Plain data, no React; PickInput.tsx draws the list.
+ * id. Plain data, no React; PickInput.tsx draws the list.
  */
 
 import { QueryName, Row } from './types';
 
-export type PickKind = 'incident' | 'policy' | 'filterType';
+export type PickKind = 'incident' | 'filterType';
 
 export interface PickOption { value: string; label: string; sub?: string }
 
@@ -31,11 +31,6 @@ export const PICKS: Record<PickKind, PickSpec> = {
       label: text(r.title) || text(r.id),
       sub: [text(r.id), r.priority !== undefined && r.priority !== '' ? `P${text(r.priority)}` : '', text(r.state)].filter(Boolean).join(' · ')
     }))
-  },
-  policy: {
-    query: 'getPolicies',
-    multi: true,
-    options: rows => rows.filter(r => text(r.name)).map(r => ({ value: text(r.name), label: text(r.name), sub: text(r.id) }))
   },
   filterType: {
     fixed: [{ value: 'alert', label: 'alert', sub: 'alert filters' }, { value: 'incident', label: 'incident', sub: 'incident filters' }],

@@ -75,7 +75,7 @@ export default function ApiCheck({ hub, onClose }: { hub: DataHub; onClose: () =
         <header className="db-ac-head">
           <div>
             <h2>Check the Concert Operate API</h2>
-            <p>Calls each data source once and records the shape of its answer, so the Designer can be fixed against your real data. Nothing is changed: incident and policy actions are only looked up, or, if you tick the option below, sent a request the server must refuse.</p>
+            <p>Calls each data source once and records the shape of its answer, so the Designer can be fixed against your real data. Nothing is changed: incident actions are only looked up, or, if you tick the option below, sent a request the server must refuse.</p>
           </div>
           <button type="button" className="db-af-x" aria-label="Close" onClick={onClose}><Close size={20} /></button>
         </header>
@@ -84,7 +84,7 @@ export default function ApiCheck({ hub, onClose }: { hub: DataHub; onClose: () =
           <label className="db-ac-field"><span>Incident id (optional)</span><input value={incidentId} placeholder="first open incident" onChange={e => setIncidentId(e.target.value)} /></label>
           <label className="db-ac-field"><span>Topology resource id (optional)</span><input value={resourceId} placeholder="needed for Topology resource" onChange={e => setResourceId(e.target.value)} /></label>
           <label className="db-check"><input type="checkbox" checked={code} onChange={e => setCode(e.target.checked)} /> Include the start of each function's code (shows which fields the query asks for)</label>
-          <label className="db-check"><input type="checkbox" checked={probe} onChange={e => setProbe(e.target.checked)} /> Ask the server which parameters each incident and policy action needs (sends each one a request with an invalid tenant id, which the server refuses before doing anything)</label>
+          <label className="db-check"><input type="checkbox" checked={probe} onChange={e => setProbe(e.target.checked)} /> Ask the server which parameters each incident action needs (sends each one a request with an invalid tenant id, which the server refuses before doing anything)</label>
           <label className="db-check"><input type="checkbox" checked={values} onChange={e => setValues(e.target.checked)} /> Include sample values (one record per source; leave off if the data is sensitive)</label>
           <div className="db-ac-actions">
             <button type="button" className="db-af-btn db-af-btn--primary" disabled={running} onClick={run}><Play size={16} />{running ? 'Checking…' : results.length ? 'Run again' : 'Run the check'}</button>
