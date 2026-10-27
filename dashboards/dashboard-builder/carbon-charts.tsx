@@ -229,7 +229,10 @@ function build(name: string, p: Props, w: Widget, d: WidgetData, selected: Set<s
     }
     case 'GaugeChart': case 'MeterChart': {
       const v = metricValue(rows, metric, c.valueField);
-      const max = Math.max(num(p.max, 100), 1);
+      // No maximum set: a count is measured against every row before click filters (116 of 364 after clicking
+      // Critical); any other measure against 100.
+      const set = p.max !== undefined && p.max !== '' && Number.isFinite(Number(p.max));
+      const max = Math.max(set ? Number(p.max) : metric === 'count' ? d.base.length : 100, 1);
       if (v === undefined) return { data: [], options: base, empty: metric === 'count' ? none : 'Pick a field under Data.' };
       const pct = Math.min(Math.max((v / max) * 100, 0), 100);
       const th: Thresholds = { warnAt: p.warnAt, critAt: p.critAt, direction: p.direction };
@@ -240,20 +243,21 @@ function build(name: string, p: Props, w: Widget, d: WidgetData, selected: Set<s
       const sem = c.where ? semanticColor(c.where.field, c.where.value) : undefined;
       const tone = hasT ? (lvl === 'crit' ? '#da1e28' : lvl === 'warn' ? '#f1c21b' : '#24a148') : sem ? sem.fill : NEUTRAL;
       const shown = `${formatNumber(v)}${p.unit ? ` ${p.unit}` : ''}`;
-      if (name === 'GaugeChart') {
-        // Colour bands: the rows split by the field of the chart that drives this gauge, in that chart's order and colours.
-        let bands: GaugeSpec['bands'];
-        if (bandField && p.bands !== 'none') {
-          let g = groupMetric(rows, bandField, 'count', undefined, 8);
-          if (bandField === 'severityLabel') g = orderSeverity(g).slice().reverse();
-          const total = g.reduce((t, x) => t + x.value, 0);
-          const colors = scaleFor(bandField, g.map(x => x.key));
-          if (total > 0 && g.length > 0) bands = g.map(x => ({ key: x.key, share: x.value / total, color: colors[x.key], count: x.value }));
-        }
-        return { data: [], options: base, gauge: { pct, shown, color: tone, full: p.type === 'full', bands, numberColor: bands && hasT ? tone : undefined } };
+      // Colour bands: the rows split by the field of the chart that drives this dial, in that chart's colours.
+      let bands: GaugeSpec['bands'];
+      if (bandField && p.bands !== 'none') {
+        let g = groupMetric(rows, bandField, 'count', undefined, 8);
+        if (bandField === 'severityLabel') g = orderSeverity(g).slice().reverse();
+        const total = g.reduce((t, x) => t + x.value, 0);
+        const colors = scaleFor(bandField, g.map(x => x.key));
+        if (total > 0 && g.length > 0) bands = g.map(x => ({ key: x.key, share: x.value / total, color: colors[x.key], count: x.value }));
       }
+      if (name === 'GaugeChart') return { data: [], options: base, gauge: { pct, shown, color: tone, full: p.type === 'full', bands, numberColor: bands && hasT ? tone : undefined } };
+      const total = { total: max, unit: p.unit || '', totalFormatter: () => `${shown} of ${formatNumber(max)}` };
+      // the meter's bar holds the bands side by side, each as long as its share of the figure
+      if (bands) return { data: bands.map(x => ({ group: x.key, value: (Math.min(v, max) * x.share) })), options: { ...base, color: { scale: Object.fromEntries(bands.map(x => [x.key, x.color])) }, meter: { showLabels: true, proportional: total } } };
       const grp = p.label || 'Value';
-      return { data: [{ group: grp, value: Math.min(v, max) }], options: { ...base, color: { scale: { [grp]: tone } }, meter: { showLabels: true, proportional: { total: max, unit: p.unit || '', totalFormatter: () => `${shown} of ${formatNumber(max)}` } } } };
+      return { data: [{ group: grp, value: Math.min(v, max) }], options: { ...base, color: { scale: { [grp]: tone } }, meter: { showLabels: true, proportional: total } } };
     }
     default: return { data: [], options: base, empty: `Unknown chart “${name}”.` };
   }
@@ -371,7 +375,7 @@ function ChartView({ name, p, w, d }: { name: string; p: Props; w: Widget; d: Wi
   const theme = useChartTheme(hold);
   const selKey = Array.from(d.selected).sort().join('\u0001');
   const nest = useContext(NestCtx);
-  const bandField = name === 'GaugeChart' && nest ? bandFieldFor(nest.widgets, w) : undefined;
+  const bandField = (name === 'GaugeChart' || name === 'MeterChart') && nest ? bandFieldFor(nest.widgets, w) : undefined;
   const built = useMemo(() => build(name, p, w, d, d.selected, bandField), [name, JSON.stringify(p), JSON.stringify(c), d.rows, selKey, bandField]);
   const options = useMemo(() => ({
     title: p.title || undefined,

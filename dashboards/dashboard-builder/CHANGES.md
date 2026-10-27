@@ -1,5 +1,9 @@
 # Dashboard Designer changes
 
+## v1.66.1
+- Meters get colour bands too (also a gauge viewed "as meter"): the bar holds the driving chart's groups side by side.
+- Gauges and meters with no Maximum set measure a count against every row before click filters, so clicking Critical reads "12 of 113" instead of a full dial at "364 of 100". Other measures still use 100.
+
 ## v1.66.0
 - Gauge colour bands: when a chart such as a pie sends its selections to a gauge, the dial is split into that chart's groups, in its colours (setting *Colour bands*: auto or none). Clicking a slice narrows the gauge to it. With bands, the threshold colour goes on the number.
 - Gauges and meters have no thresholds until someone sets them, and are neutral blue until then (they used to start at warning 10, critical 25, so most count gauges were red). An empty threshold field now removes the threshold instead of setting 0.
