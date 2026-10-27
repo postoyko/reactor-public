@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.65.1
+- Code only, no change in behaviour: DashboardBuilder.tsx (1,000 lines) is split into TopBar.tsx (the top bar), history.ts (undo and redo), overrides.ts (what a viewer changed for themselves), action-runner.ts (running action wires), filter-bar-state.ts (the filter bar's state), library-sections.ts and dashboard-files.ts. DashboardBuilder.tsx keeps the dashboards and puts the page together (about 620 lines).
+
 ## v1.65.0
 - Policies are no longer managed from dashboards: the policy actions (activate, deploy, stop deploying, reject, restore, rename), the policy picker, the policy name lookup and the Policy manager template are gone. The actions template is now *Incident actions*. The Policies source stays, read-only.
 

@@ -684,3 +684,17 @@ describe('title band', () => {
   it('needs a colour and no frame', () => expect(titleBand([{ ...band, config: { chromeless: true } }])).toBeUndefined());
   it('ignores a hidden band', () => expect(titleBand([{ ...band, config: { ...band.config, hidden: true } }])).toBeUndefined());
 });
+
+import { applyOverrides } from './overrides';
+
+describe('viewer overrides', () => {
+  const base = { id: 'd', name: 'D', updated: 0, widgets: [{ id: 'a', type: 'kpi', title: 'A', x: 0, y: 0, w: 3, h: 3, config: { query: 'getAlerts', sendTo: ['b'] } }] } as any;
+  it('changes nothing without overrides', () => expect(applyOverrides(base, undefined, undefined)).toBe(base));
+  it('applies arranged sizes, cut links and action effects, leaving the saved dashboard alone', () => {
+    const d = applyOverrides(base, { layout: { a: { x: 3, y: 1, w: 4, h: 2 } }, send: { a: null } }, { a: { title: 'New', hidden: true } });
+    expect(d.widgets[0]).toMatchObject({ x: 3, y: 1, w: 4, h: 2, title: 'New' });
+    expect(d.widgets[0].config.sendTo).toBeUndefined();
+    expect(d.widgets[0].config.hidden).toBe(true);
+    expect(base.widgets[0].config.sendTo).toEqual(['b']);
+  });
+});
