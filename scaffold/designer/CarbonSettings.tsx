@@ -26,7 +26,12 @@ export default function CarbonSettings({ widget, onChange, partsFor }: Props) {
   if (!def) return null;
   const cur = widget.config.props || {};
   const value = (s: PropSpec) => (cur[s.key] !== undefined ? cur[s.key] : s.def);
-  const set = (s: PropSpec, v: unknown) => onChange({ ...widget, config: { ...widget.config, props: { ...cur, [s.key]: v } } }, `${widget.id}:cp:${s.key}`);
+  // undefined removes the setting (an optional number left empty)
+  const set = (s: PropSpec, v: unknown) => {
+    const props: Record<string, unknown> = { ...cur, [s.key]: v };
+    if (v === undefined) delete props[s.key];
+    onChange({ ...widget, config: { ...widget.config, props } }, `${widget.id}:cp:${s.key}`);
+  };
   const id = (s: PropSpec) => `db-${widget.id}-cp-${s.key}`;
 
   const field = (s: PropSpec) => {
@@ -49,7 +54,7 @@ export default function CarbonSettings({ widget, onChange, partsFor }: Props) {
           </Select>
         );
       case 'number':
-        return <TextInput key={s.key} id={id(s)} labelText={s.label} type="number" value={String(v ?? '')} onChange={(e: React.ChangeEvent<HTMLInputElement>) => set(s, e.target.value === '' ? 0 : Number(e.target.value))} />;
+        return <TextInput key={s.key} id={id(s)} labelText={s.label} type="number" value={String(v ?? '')} onChange={(e: React.ChangeEvent<HTMLInputElement>) => set(s, e.target.value === '' ? (s.def === undefined ? undefined : 0) : Number(e.target.value))} />;
       case 'lines': {
         const text = Array.isArray(v) ? (v as unknown[]).join('\n') : String(v ?? '');
         return (

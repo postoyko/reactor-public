@@ -1,5 +1,10 @@
 # Dashboard Designer changes
 
+## v1.66.0
+- Gauge colour bands: when a chart such as a pie sends its selections to a gauge, the dial is split into that chart's groups, in its colours (setting *Colour bands*: auto or none). Clicking a slice narrows the gauge to it. With bands, the threshold colour goes on the number.
+- Gauges and meters have no thresholds until someone sets them, and are neutral blue until then (they used to start at warning 10, critical 25, so most count gauges were red). An empty threshold field now removes the threshold instead of setting 0.
+- Thresholds someone set win over the severity colour of a gauge or meter that counts one severity (the Scorecard template's gauges now follow their thresholds).
+
 ## v1.65.3
 - Gauges fit their box at any size: the Designer draws them itself (FitGauge in carbon-charts.tsx), taking the largest arc that fits both the width and the height, centred, with the number inside. Carbon's gauge sized the arc from the width alone, so a short or wide gauge showed only part of the arc and no number. Colours, thresholds, half or full circle and click actions are unchanged.
 

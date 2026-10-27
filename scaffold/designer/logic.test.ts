@@ -698,3 +698,17 @@ describe('viewer overrides', () => {
     expect(base.widgets[0].config.sendTo).toEqual(['b']);
   });
 });
+
+import { bandFieldFor } from './gauge-bands';
+
+describe('gauge colour bands', () => {
+  const g = { id: 'g', type: 'carbon:GaugeChart', title: 'G', x: 0, y: 0, w: 3, h: 4, config: { query: 'getAlerts' } } as any;
+  const pie = (id: string, groupBy: string, sendTo?: string[]) => ({ id, type: 'carbon:PieChart', title: id, x: 0, y: 0, w: 3, h: 4, config: { query: 'getAlerts', groupBy, ...(sendTo ? { sendTo } : {}) } }) as any;
+  it('follows the chart that sends to the gauge', () => expect(bandFieldFor([g, pie('p', 'severityLabel')], g)).toBe('severityLabel'));
+  it('a chart wired to the gauge by name wins', () => expect(bandFieldFor([g, pie('a', 'team'), pie('b', 'sender', ['g'])], g)).toBe('sender'));
+  it('none when the chart sends elsewhere, or the gauge does not listen', () => {
+    expect(bandFieldFor([g, pie('p', 'team', ['x'])], g)).toBeUndefined();
+    const deaf = { ...g, config: { ...g.config, listens: false } };
+    expect(bandFieldFor([deaf, pie('p', 'team')], deaf)).toBeUndefined();
+  });
+});

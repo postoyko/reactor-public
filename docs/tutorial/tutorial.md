@@ -383,6 +383,8 @@ Hover a chart and an **as …** menu appears next to its title. A viewer can tur
 
 The choice is kept per viewer. As the designer you can turn it off per widget (Interact tab, *Viewers can show it as another chart*), or change it from a flow with the **Change its chart type** action.
 
+**Gauges.** A gauge fits its box at any size. It is neutral blue until you set *Warning at* or *Critical at*; once set, green, yellow and red follow them (even on a gauge that counts one severity). When a chart such as a pie sends its selections to the gauge, the dial is split into that chart's groups in its colours (*Colour bands: auto*), and clicking a slice narrows the gauge to it. With bands, the threshold colour goes on the number.
+
 ## 10. Templates
 
 **Templates** (toolbar) lists 29 ready-made dashboards. Applying one replaces the canvas; undo with `Ctrl Z`. Some worth opening to learn from:

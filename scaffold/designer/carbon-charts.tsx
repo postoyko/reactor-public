@@ -12,7 +12,7 @@
  * as the status indicators (see carbon-status.tsx).
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import * as CC from '@carbon/charts-react';
 import { Row, Widget } from './types';
 import { useBuilder } from './context';
@@ -20,11 +20,15 @@ import { cell, DEFAULT_GROUP, DEFAULT_TIME, fieldLabel, formatNumber, groupMetri
 import { Note, Status, useDrillAction, WidgetData } from './Widgets';
 import { levelOf, Thresholds } from './carbon-status';
 import { shapeOf } from './sources';
+import { NestCtx } from './nest';
+import { bandFieldFor } from './gauge-bands';
 
 type Props = Record<string, any>;
 
 const PALETTE = ['#6929c4', '#1192e8', '#005d5d', '#9f1853', '#fa4d56', '#570408', '#198038', '#002d9c', '#ee538b', '#b28600', '#009d9a', '#012749', '#8a3800', '#a56eff'];
 const DIM = '#c6c6c6';
+/** A gauge or meter with no thresholds and no severity of its own. */
+const NEUTRAL = '#0f62fe';
 const OTHER = /^Other \(/;
 
 const COMPONENTS: Record<string, React.ComponentType<any>> = {
@@ -115,7 +119,7 @@ function timeTab(rows: Row[], c: Widget['config'], field: string, bins: number) 
   return { data, missing: rows.length - stamped.length };
 }
 
-function build(name: string, p: Props, w: Widget, d: WidgetData, selected: Set<string>): Built {
+function build(name: string, p: Props, w: Widget, d: WidgetData, selected: Set<string>, bandField?: string): Built {
   const c = w.config;
   const group = c.groupBy || DEFAULT_GROUP[c.query];
   const metric = c.metric || 'count';
@@ -230,14 +234,26 @@ function build(name: string, p: Props, w: Widget, d: WidgetData, selected: Set<s
       const pct = Math.min(Math.max((v / max) * 100, 0), 100);
       const th: Thresholds = { warnAt: p.warnAt, critAt: p.critAt, direction: p.direction };
       const lvl = levelOf(v, th);
-      // A gauge or meter that counts one severity or priority keeps that colour; otherwise green, yellow, red say how it is against its limits.
+      // Thresholds someone set win; without them a gauge or meter that counts one severity or priority keeps that
+      // colour; otherwise it is a neutral blue.
+      const hasT = [p.warnAt, p.critAt].some(x => x !== undefined && x !== '' && Number.isFinite(Number(x)));
       const sem = c.where ? semanticColor(c.where.field, c.where.value) : undefined;
-      const tone = sem ? sem.fill : lvl === 'crit' ? '#da1e28' : lvl === 'warn' ? '#f1c21b' : '#24a148';
+      const tone = hasT ? (lvl === 'crit' ? '#da1e28' : lvl === 'warn' ? '#f1c21b' : '#24a148') : sem ? sem.fill : NEUTRAL;
       const shown = `${formatNumber(v)}${p.unit ? ` ${p.unit}` : ''}`;
-      const hasT = !!sem || [p.warnAt, p.critAt].some(x => x !== undefined && x !== '' && Number.isFinite(Number(x)));
-      if (name === 'GaugeChart') return { data: [], options: base, gauge: { pct, shown, color: hasT ? tone : undefined, full: p.type === 'full' } };
+      if (name === 'GaugeChart') {
+        // Colour bands: the rows split by the field of the chart that drives this gauge, in that chart's order and colours.
+        let bands: GaugeSpec['bands'];
+        if (bandField && p.bands !== 'none') {
+          let g = groupMetric(rows, bandField, 'count', undefined, 8);
+          if (bandField === 'severityLabel') g = orderSeverity(g).slice().reverse();
+          const total = g.reduce((t, x) => t + x.value, 0);
+          const colors = scaleFor(bandField, g.map(x => x.key));
+          if (total > 0 && g.length > 0) bands = g.map(x => ({ key: x.key, share: x.value / total, color: colors[x.key], count: x.value }));
+        }
+        return { data: [], options: base, gauge: { pct, shown, color: tone, full: p.type === 'full', bands, numberColor: bands && hasT ? tone : undefined } };
+      }
       const grp = p.label || 'Value';
-      return { data: [{ group: grp, value: Math.min(v, max) }], options: { ...base, ...(hasT ? { color: { scale: { [grp]: tone } } } : {}), meter: { showLabels: true, proportional: { total: max, unit: p.unit || '', totalFormatter: () => `${shown} of ${formatNumber(max)}` } } } };
+      return { data: [{ group: grp, value: Math.min(v, max) }], options: { ...base, color: { scale: { [grp]: tone } }, meter: { showLabels: true, proportional: { total: max, unit: p.unit || '', totalFormatter: () => `${shown} of ${formatNumber(max)}` } } } };
     }
     default: return { data: [], options: base, empty: `Unknown chart “${name}”.` };
   }
@@ -300,7 +316,13 @@ function useChartTheme(ref: React.RefObject<HTMLElement>): string {
   return t;
 }
 
-interface GaugeSpec { pct: number; shown: string; color?: string; full: boolean }
+interface GaugeSpec {
+  pct: number; shown: string; color: string; full: boolean;
+  /** The filled part split into the driving chart's groups (shares add up to 1), when there is such a chart. */
+  bands?: Array<{ key: string; share: number; color: string; count: number }>;
+  /** With bands, the threshold colour goes on the number instead. */
+  numberColor?: string;
+}
 
 /**
  * The gauge, drawn here rather than by Carbon: Carbon sizes its arc from the width alone, so in a short or wide box
@@ -315,17 +337,24 @@ function FitGauge({ g, w, h, onClick }: { g: GaugeSpec; w: number; h: number; on
   const cx = w / 2, cy = g.full ? h / 2 : (h + r) / 2;
   const sweep = g.full ? 360 : 180;
   const point = (deg: number) => { const a = ((g.full ? -90 : 180) + deg) * Math.PI / 180; return [cx + ring * Math.cos(a), cy + ring * Math.sin(a)]; };
-  const arc = (deg: number) => {
-    const d = Math.min(deg, sweep - 0.01);
-    const [x0, y0] = point(0), [x1, y1] = point(d);
-    return `M ${x0} ${y0} A ${ring} ${ring} 0 ${d > 180 ? 1 : 0} 1 ${x1} ${y1}`;
+  /** The ring from `from` to `to` degrees along the dial. */
+  const arc = (from: number, to: number) => {
+    const t = Math.min(to, sweep - 0.01);
+    const [x0, y0] = point(from), [x1, y1] = point(t);
+    return `M ${x0} ${y0} A ${ring} ${ring} 0 ${t - from > 180 ? 1 : 0} 1 ${x1} ${y1}`;
   };
   const font = Math.max(10, Math.min(r * (g.full ? 0.5 : 0.48), (w - 2 * pad) / Math.max(g.shown.length * 0.62, 1)));
   return (
     <svg className="db-gauge" width={w} height={h} role="img" aria-label={`${g.shown} (${Math.round(g.pct)}%)`} onClick={onClick} style={onClick ? { cursor: 'pointer' } : undefined}>
-      <path d={arc(sweep)} fill="none" stroke="var(--db-gauge-track, #e0e0e0)" strokeWidth={stroke} />
-      {g.pct > 0 && <path d={arc(sweep * g.pct / 100)} fill="none" stroke={g.color || 'var(--db-gauge, #da1e28)'} strokeWidth={stroke} />}
-      <text x={cx} y={g.full ? cy : cy - stroke / 2} textAnchor="middle" dominantBaseline={g.full ? 'central' : 'auto'} fontSize={font} fill="currentColor">{g.shown}</text>
+      <path d={arc(0, sweep)} fill="none" stroke="var(--db-gauge-track, #e0e0e0)" strokeWidth={stroke} />
+      {g.pct > 0 && !g.bands && <path d={arc(0, sweep * g.pct / 100)} fill="none" stroke={g.color} strokeWidth={stroke} />}
+      {g.pct > 0 && g.bands && g.bands.reduce<{ at: number; out: React.ReactNode[] }>((acc, b) => {
+        const len = sweep * (g.pct / 100) * b.share;
+        acc.out.push(<path key={b.key} d={arc(acc.at, acc.at + len)} fill="none" stroke={b.color} strokeWidth={stroke}><title>{`${b.key}: ${formatNumber(b.count)}`}</title></path>);
+        acc.at += len;
+        return acc;
+      }, { at: 0, out: [] }).out}
+      <text x={cx} y={g.full ? cy : cy - stroke / 2} textAnchor="middle" dominantBaseline={g.full ? 'central' : 'auto'} fontSize={font} fill={g.numberColor || 'currentColor'}>{g.shown}</text>
     </svg>
   );
 }
@@ -341,7 +370,9 @@ function ChartView({ name, p, w, d }: { name: string; p: Props; w: Widget; d: Wi
   const size = useSize(hold);
   const theme = useChartTheme(hold);
   const selKey = Array.from(d.selected).sort().join('\u0001');
-  const built = useMemo(() => build(name, p, w, d, d.selected), [name, JSON.stringify(p), JSON.stringify(c), d.rows, selKey]);
+  const nest = useContext(NestCtx);
+  const bandField = name === 'GaugeChart' && nest ? bandFieldFor(nest.widgets, w) : undefined;
+  const built = useMemo(() => build(name, p, w, d, d.selected, bandField), [name, JSON.stringify(p), JSON.stringify(c), d.rows, selKey, bandField]);
   const options = useMemo(() => ({
     title: p.title || undefined,
     theme,

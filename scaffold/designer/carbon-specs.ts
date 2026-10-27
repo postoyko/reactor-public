@@ -67,6 +67,13 @@ const THRESH: PropSpec[] = [
   P('critAt', 'Critical at', 'number', 25),
   P('direction', 'Worse when the value is', 'enum', 'higher', { options: ['higher', 'lower'] })
 ];
+/** Gauge and meter thresholds: none until someone sets them (the dial is neutral blue until then). */
+const THRESH_OPT: PropSpec[] = [
+  P('warnAt', 'Warning at', 'number', undefined, { help: 'Leave empty for no thresholds. Once set, the warning and critical colours win over a severity colour.' }),
+  P('critAt', 'Critical at', 'number', undefined),
+  P('direction', 'Worse when the value is', 'enum', 'higher', { options: ['higher', 'lower'] })
+];
+const BANDS = P('bands', 'Colour bands', 'enum', 'auto', { options: ['auto', 'none'], help: '“auto”: when a chart such as a pie sends its selections to this gauge, the dial is split into that chart’s groups, in its colours.' });
 const SHAPE_KINDS = ['failed', 'critical', 'high', 'medium', 'low', 'cautious', 'undefined', 'stable', 'informative', 'incomplete', 'draft'];
 const ICON_KINDS = ['failed', 'caution-major', 'caution-minor', 'undefined', 'succeeded', 'normal', 'in-progress', 'incomplete', 'not-started', 'pending', 'unknown', 'informative'];
 const IND_SRC = (extra: string) => P('source', 'Status comes from', 'enum', 'live', { options: ['fixed', 'live', 'severity'], help: `“fixed” always shows the kind below. “live” turns warning / critical when the measure under Data crosses the thresholds. “severity” shows the worst ${extra} among the rows.` });
@@ -101,9 +108,9 @@ const CHART_SPECS: CarbonSpec[] = [
   CH('ScatterChart', 'Scatter chart', 'One dot per row: time across, a number (Data > Field) up.', { time: true, series: true }, [P('maxPoints', 'Most dots', 'number', 400)]),
   CH('PieChart', 'Pie chart', 'Share per group. Click a slice to filter other widgets.', { group: true }, []),
   CH('DonutChart', 'Donut chart', 'Share per group with the total in the middle.', { group: true }, []),
-  CH('GaugeChart', 'Gauge', 'A dial for one figure against a maximum. Changes colour at the warning and critical values.', undefined, [P('max', 'Maximum', 'number', 100), P('type', 'Shape', 'enum', 'semi', { options: ['semi', 'full'] }), P('unit', 'Unit shown after the figure', 'text', ''), ...THRESH],
+  CH('GaugeChart', 'Gauge', 'A dial for one figure against a maximum. Changes colour at the warning and critical values.', undefined, [P('max', 'Maximum', 'number', 100), P('type', 'Shape', 'enum', 'semi', { options: ['semi', 'full'] }), P('unit', 'Unit shown after the figure', 'text', ''), ...THRESH_OPT, BANDS],
     { uses: 'measure', emits: false, w: 4, h: 7, minW: 3, minH: 4 }),
-  CH('MeterChart', 'Meter', 'A horizontal bar for one figure against a maximum, with coloured ranges.', undefined, [P('label', 'Label', 'text', 'Utilisation'), P('max', 'Maximum', 'number', 100), ...THRESH],
+  CH('MeterChart', 'Meter', 'A horizontal bar for one figure against a maximum, with coloured ranges.', undefined, [P('label', 'Label', 'text', 'Utilisation'), P('max', 'Maximum', 'number', 100), ...THRESH_OPT],
     { uses: 'measure', emits: false, w: 6, h: 3, minW: 3, minH: 2 }),
   CH('HeatmapChart', 'Heatmap', 'A grid: Group by across, Series by down, colour = the measure. Click a cell to filter by both.', { group: true, series: true }, [], { w: 8, h: 8 }),
   CH('TreemapChart', 'Treemap', 'Rectangles sized by the measure for each group. Click one to filter.', { group: true }, [], { w: 8, h: 8 }),
