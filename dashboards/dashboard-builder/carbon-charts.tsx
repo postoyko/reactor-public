@@ -325,7 +325,10 @@ function ChartView({ name, p, w, d }: { name: string; p: Props; w: Widget; d: Wi
   }), [built.options, theme, size.h, p.title, p.legend, name]);
 
   // Carbon builds its legend and title parts when the chart is created, so a change to them starts a fresh chart.
-  const chartKey = `${name}|${options.legend.enabled}|${options.legend.position}|${!!p.title}`;
+  // Carbon's alluvial chart fails when it updates in place (it finds each node's label by its position in the update,
+  // not by its id, and gets null), so new alluvial data starts a fresh chart too. Its data is a few dozen nodes.
+  const fresh = name === 'AlluvialChart' && !built.empty ? `|${JSON.stringify(built.data)}` : '';
+  const chartKey = `${name}|${options.legend.enabled}|${options.legend.position}|${!!p.title}${fresh}`;
   const ref = useRef<any>(null);
   const on = useRef<(e: any) => void>(() => undefined);
   on.current = (e: any) => {

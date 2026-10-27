@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.65.2
+- Alluvial charts no longer throw "Cannot read properties of null (reading 'getAttribute')" when their data changes (after a click filter, for example). Carbon's alluvial chart cannot update in place, so new data now draws a fresh chart.
+
 ## v1.65.1
 - Code only, no change in behaviour: DashboardBuilder.tsx (1,000 lines) is split into TopBar.tsx (the top bar), history.ts (undo and redo), overrides.ts (what a viewer changed for themselves), action-runner.ts (running action wires), filter-bar-state.ts (the filter bar's state), library-sections.ts and dashboard-files.ts. DashboardBuilder.tsx keeps the dashboards and puts the page together (about 620 lines).
 
