@@ -1,5 +1,8 @@
 # Dashboard Designer changes
 
+## v1.65.3
+- Gauges fit their box at any size: the Designer draws them itself (FitGauge in carbon-charts.tsx), taking the largest arc that fits both the width and the height, centred, with the number inside. Carbon's gauge sized the arc from the width alone, so a short or wide gauge showed only part of the arc and no number. Colours, thresholds, half or full circle and click actions are unchanged.
+
 ## v1.65.2
 - Alluvial charts no longer throw "Cannot read properties of null (reading 'getAttribute')" when their data changes (after a click filter, for example). Carbon's alluvial chart cannot update in place, so new data now draws a fresh chart.
 

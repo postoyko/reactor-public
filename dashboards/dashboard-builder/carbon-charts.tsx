@@ -55,7 +55,7 @@ function scaleFor(field: string, keys: string[], selected?: Set<string>): Record
   return o;
 }
 
-interface Built { data: any; options: Record<string, any>; empty?: string; rowsOf?: (e: any) => { title: string; pairs: Array<[string, string]> } | null }
+interface Built { data: any; options: Record<string, any>; empty?: string; gauge?: GaugeSpec; rowsOf?: (e: any) => { title: string; pairs: Array<[string, string]> } | null }
 
 function metricName(c: Widget['config']): string {
   const m = c.metric || 'count';
@@ -235,7 +235,7 @@ function build(name: string, p: Props, w: Widget, d: WidgetData, selected: Set<s
       const tone = sem ? sem.fill : lvl === 'crit' ? '#da1e28' : lvl === 'warn' ? '#f1c21b' : '#24a148';
       const shown = `${formatNumber(v)}${p.unit ? ` ${p.unit}` : ''}`;
       const hasT = !!sem || [p.warnAt, p.critAt].some(x => x !== undefined && x !== '' && Number.isFinite(Number(x)));
-      if (name === 'GaugeChart') return { data: [{ group: 'value', value: pct }], options: { ...base, ...(hasT ? { color: { scale: { value: tone } } } : {}), gauge: { type: p.type === 'full' ? 'full' : 'semi', numberFormatter: () => shown, showPercentageSymbol: false } } };
+      if (name === 'GaugeChart') return { data: [], options: base, gauge: { pct, shown, color: hasT ? tone : undefined, full: p.type === 'full' } };
       const grp = p.label || 'Value';
       return { data: [{ group: grp, value: Math.min(v, max) }], options: { ...base, ...(hasT ? { color: { scale: { [grp]: tone } } } : {}), meter: { showLabels: true, proportional: { total: max, unit: p.unit || '', totalFormatter: () => `${shown} of ${formatNumber(max)}` } } } };
     }
@@ -300,6 +300,36 @@ function useChartTheme(ref: React.RefObject<HTMLElement>): string {
   return t;
 }
 
+interface GaugeSpec { pct: number; shown: string; color?: string; full: boolean }
+
+/**
+ * The gauge, drawn here rather than by Carbon: Carbon sizes its arc from the width alone, so in a short or wide box
+ * the arc spilled out and the number was cut off. This one takes the largest arc that fits both ways, centred, with
+ * the number inside it. A half circle needs a box twice as wide as it is tall; a full circle a square.
+ */
+function FitGauge({ g, w, h, onClick }: { g: GaugeSpec; w: number; h: number; onClick?: () => void }) {
+  const pad = 6;
+  const r = Math.max(8, g.full ? Math.min(w, h) / 2 - pad : Math.min(w / 2, h) - pad);
+  const stroke = Math.max(4, Math.round(r * 0.14));
+  const ring = r - stroke / 2;
+  const cx = w / 2, cy = g.full ? h / 2 : (h + r) / 2;
+  const sweep = g.full ? 360 : 180;
+  const point = (deg: number) => { const a = ((g.full ? -90 : 180) + deg) * Math.PI / 180; return [cx + ring * Math.cos(a), cy + ring * Math.sin(a)]; };
+  const arc = (deg: number) => {
+    const d = Math.min(deg, sweep - 0.01);
+    const [x0, y0] = point(0), [x1, y1] = point(d);
+    return `M ${x0} ${y0} A ${ring} ${ring} 0 ${d > 180 ? 1 : 0} 1 ${x1} ${y1}`;
+  };
+  const font = Math.max(10, Math.min(r * (g.full ? 0.5 : 0.48), (w - 2 * pad) / Math.max(g.shown.length * 0.62, 1)));
+  return (
+    <svg className="db-gauge" width={w} height={h} role="img" aria-label={`${g.shown} (${Math.round(g.pct)}%)`} onClick={onClick} style={onClick ? { cursor: 'pointer' } : undefined}>
+      <path d={arc(sweep)} fill="none" stroke="var(--db-gauge-track, #e0e0e0)" strokeWidth={stroke} />
+      {g.pct > 0 && <path d={arc(sweep * g.pct / 100)} fill="none" stroke={g.color || 'var(--db-gauge, #da1e28)'} strokeWidth={stroke} />}
+      <text x={cx} y={g.full ? cy : cy - stroke / 2} textAnchor="middle" dominantBaseline={g.full ? 'central' : 'auto'} fontSize={font} fill="currentColor">{g.shown}</text>
+    </svg>
+  );
+}
+
 function ChartView({ name, p, w, d }: { name: string; p: Props; w: Widget; d: WidgetData }) {
   const { toggleFilter } = useBuilder();
   const c = w.config;
@@ -362,7 +392,9 @@ function ChartView({ name, p, w, d }: { name: string; p: Props; w: Widget; d: Wi
   return (
     <div className="db-chart">
       <div className="db-chart-hold" ref={hold} data-chart={name}>
-        {built.empty || !Chart ? <div className="db-empty">{built.empty || 'This chart is not available.'}</div> : size.h > 0 && <Chart key={chartKey} ref={ref} data={built.data} options={options} />}
+        {built.empty || !Chart ? <div className="db-empty">{built.empty || 'This chart is not available.'}</div>
+          : built.gauge ? size.h > 0 && <FitGauge g={built.gauge} w={size.w} h={size.h} onClick={act ? () => act.go(w.title, d.rows, { count: d.rows.length }) : undefined} />
+            : size.h > 0 && <Chart key={chartKey} ref={ref} data={built.data} options={options} />}
       </div>
       <Note d={d} />
     </div>
